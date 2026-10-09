@@ -1,0 +1,18 @@
+---
+source: tests/cli.rs
+expression: stdout(&output)
+---
+example-agent, all calls
+  calls               3
+  sessions            2
+  uncached input      1,350
+  cache write         0
+  cache read          2,250
+  output              170
+  of which reasoning  20 in the 2 calls that record it
+  earliest call       2026-09-30T10:00:05Z
+  latest call         2026-10-01T08:00:04Z
+example-agent logs read so far
+  files               2
+  unreadable lines    1
+  files without usage 0

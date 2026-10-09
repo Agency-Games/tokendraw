@@ -1,0 +1,6 @@
+---
+source: tests/cli.rs
+expression: labelled
+---
+labelled ~/repo-* and every directory below a match: project=~/repo
+1 call in the ledger in 1 matching directory that no checkout holds

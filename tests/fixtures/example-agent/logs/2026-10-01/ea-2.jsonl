@@ -1,0 +1,2 @@
+{"type":"session","session":"ea-2","time":"2026-10-01T08:00:00.000Z","cwd":"/work/beta"}
+{"type":"response","id":"resp-4","time":"2026-10-01T08:00:04.000Z","session":"ea-2","cwd":"/work/beta","model":"example-large","usage":{"prompt_tokens":900,"cached_tokens":0,"completion_tokens":60,"reasoning_tokens":0}}

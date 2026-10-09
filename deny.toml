@@ -1,0 +1,12 @@
+[advisories]
+unmaintained = "all"
+yanked = "deny"
+
+[licenses]
+# Exactly the licenses the dependency graph uses; a new one is a deliberate choice.
+# CC-BY-4.0 is in tokendraw's own license, for Ember's grid data in data/grid/.
+allow = ["Apache-2.0", "CC-BY-4.0", "MIT", "Unicode-3.0"]
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"

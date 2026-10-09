@@ -1,0 +1,268 @@
+# Where clients without an adapter keep logs with per-call usage, so a
+# report can say that their logs were found but not read.
+#
+# A path starts with ~ for the home directory, or with $NAME or %NAME% for
+# an environment variable, and is skipped when that variable is unset,
+# empty or relative. Components are separated by / on every OS. The first
+# path for the OS that exists is shown.
+
+[sources.opencode-paths]
+title = "OpenCode database location (Global.Path.data and OPENCODE_DB)"
+url = "https://github.com/anomalyco/opencode/blob/v1.18.35/packages/opencode/src/session/session.ts#L338-L378"
+publisher = "OpenCode"
+accessed = 2026-10-08
+
+[[location]]
+id = "opencode"
+paths = [
+  { os = ["linux", "macos", "windows"], path = "$OPENCODE_DB" },
+  { os = ["linux", "macos", "windows"], path = "$XDG_DATA_HOME/opencode/opencode.db" },
+  { os = ["linux", "macos", "windows"], path = "~/.local/share/opencode/opencode.db" },
+  { os = ["windows"], path = "%APPDATA%/opencode/opencode.db" },
+]
+label = "C"
+sources = ["opencode-paths"]
+basis = "From the source; the v1.2.0 release note names %APPDATA% on Windows, unverified."
+reviewed = 2026-10-08
+
+[sources.gemini-cli-paths]
+title = "Gemini CLI chat recording location"
+url = "https://github.com/google-gemini/gemini-cli/blob/v0.63.0/packages/core/src/services/chatRecordingTypes.ts#L19-L104"
+publisher = "Google"
+accessed = 2026-10-08
+
+[[location]]
+id = "gemini-cli"
+paths = [
+  { os = ["linux", "macos", "windows"], path = "$GEMINI_CLI_HOME/.gemini/tmp" },
+  { os = ["linux", "macos", "windows"], path = "~/.gemini/tmp" },
+]
+label = "C"
+sources = ["gemini-cli-paths"]
+basis = "From the source at v0.63.0, not observed on disk; GEMINI_CLI_HOME replaces the home directory; Windows inferred, unverified."
+reviewed = 2026-10-08
+
+[sources.copilot-cli-paths]
+title = "Copilot CLI config directory reference"
+url = "https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-config-dir-reference"
+publisher = "GitHub"
+accessed = 2026-10-08
+
+[[location]]
+id = "copilot-cli"
+paths = [
+  { os = ["linux", "macos", "windows"], path = "$COPILOT_HOME/session-store.db" },
+  { os = ["linux", "macos", "windows"], path = "~/.copilot/session-store.db" },
+]
+label = "C"
+sources = ["copilot-cli-paths"]
+basis = "Directory from GitHub's documentation on every OS; the session-store.db file and its assistant_usage_events table rest on third-party parsers."
+reviewed = 2026-10-08
+
+[sources.cline-paths]
+title = "Cline task storage in the VS Code user data directory"
+url = "https://github.com/cline/cline/blob/v3.89.2/apps/vscode/src/shared/ExtensionMessage.ts#L345-L360"
+publisher = "Cline"
+accessed = 2026-10-08
+
+[[location]]
+id = "cline"
+paths = [
+  { os = ["linux"], path = "~/.config/Code/User/globalStorage/saoudrizwan.claude-dev/tasks" },
+  { os = ["macos"], path = "~/Library/Application Support/Code/User/globalStorage/saoudrizwan.claude-dev/tasks" },
+  { os = ["windows"], path = "%APPDATA%/Code/User/globalStorage/saoudrizwan.claude-dev/tasks" },
+]
+label = "C"
+sources = ["cline-paths"]
+basis = "Legacy VS Code bundle (3.x) from the source at v3.89.2, with the VS Code root from documentation; macOS and Windows unverified, and the 4.x CLI sessions under ~/.cline are not listed."
+reviewed = 2026-10-08
+
+[sources.kilo-code-paths]
+title = "Kilo Code database location (KILO_DB and XDG data home)"
+url = "https://github.com/Kilo-Org/kilocode/blob/v7.8.8/packages/opencode/src/session/session.ts#L420-L462"
+publisher = "Kilo-Org"
+accessed = 2026-10-08
+
+[[location]]
+id = "kilo-code"
+paths = [
+  { os = ["linux", "macos", "windows"], path = "$KILO_DB" },
+  { os = ["linux", "macos", "windows"], path = "$XDG_DATA_HOME/kilo/kilo.db" },
+  { os = ["linux", "macos", "windows"], path = "~/.local/share/kilo/kilo.db" },
+]
+label = "C"
+sources = ["kilo-code-paths"]
+basis = "From the source at v7.8.8; macOS and Windows unverified and use the Linux paths."
+reviewed = 2026-10-08
+
+[sources.antigravity-paths]
+title = "Antigravity conversation database location (reverse engineered)"
+url = "https://github.com/junhoyeo/tokscale/blob/d4d1c751856e25913bce97bfbd7b254308863239/crates/tokscale-core/src/sessions/antigravity_cli.rs"
+publisher = "junhoyeo/tokscale"
+accessed = 2026-10-08
+
+[[location]]
+id = "antigravity"
+paths = [
+  { os = ["linux", "macos", "windows"], path = "$GEMINI_CLI_HOME/.gemini/antigravity-cli/conversations" },
+  { os = ["linux", "macos", "windows"], path = "~/.gemini/antigravity-cli/conversations" },
+  { os = ["linux", "macos", "windows"], path = "~/.gemini/antigravity/conversations" },
+]
+label = "I"
+sources = ["antigravity-paths"]
+basis = "Reverse engineered by tokscale and not confirmed by the client's own code or docs; Windows unverified and uses the Linux paths."
+reviewed = 2026-10-08
+
+[sources.devin-cli-paths]
+title = "Devin CLI and Devin Desktop session stores (third-party parser)"
+url = "https://github.com/junhoyeo/tokscale/blob/d4d1c751856e25913bce97bfbd7b254308863239/crates/tokscale-core/src/sessions/devin.rs"
+publisher = "junhoyeo/tokscale"
+accessed = 2026-10-08
+
+[[location]]
+id = "devin-cli"
+paths = [
+  { os = ["linux", "windows"], path = "~/.local/share/devin/cli/sessions.db" },
+  { os = ["macos"], path = "~/Library/Application Support/Devin/User/acp-events" },
+]
+label = "I"
+sources = ["devin-cli-paths"]
+basis = "Linux and macOS desktop paths from tokscale's parser, not the client's docs; Windows inferred, unverified; the macOS CLI path is unknown, so it is not listed."
+reviewed = 2026-10-08
+
+[sources.junie-cli-paths]
+title = "Junie session directory and JUNIE_HOME"
+url = "https://junie.jetbrains.com/docs/environment-variables.html"
+publisher = "JetBrains"
+accessed = 2026-10-08
+
+[[location]]
+id = "junie-cli"
+paths = [
+  { os = ["linux", "macos", "windows"], path = "$JUNIE_HOME/sessions" },
+  { os = ["linux", "macos", "windows"], path = "~/.junie/sessions" },
+]
+label = "C"
+sources = ["junie-cli-paths"]
+basis = "Directory from JetBrains documentation for all OSes and the events.jsonl format from tokscale's parser; Windows inferred, unverified."
+reviewed = 2026-10-08
+
+[sources.augment-paths]
+title = "Auggie CLI session directory (third-party parser)"
+url = "https://github.com/junhoyeo/tokscale/blob/d4d1c751856e25913bce97bfbd7b254308863239/crates/tokscale-core/src/sessions/augment.rs"
+publisher = "junhoyeo/tokscale"
+accessed = 2026-10-08
+
+[[location]]
+id = "augment"
+paths = [
+  { os = ["linux", "macos", "windows"], path = "~/.augment/sessions" },
+]
+label = "I"
+sources = ["augment-paths"]
+basis = "Linux and macOS paths from tokscale's parser; Windows inferred, unverified; the --augment-cache-dir option is not covered."
+reviewed = 2026-10-08
+
+[sources.roo-code-paths]
+title = "Roo Code task storage in the VS Code global storage"
+url = "https://github.com/RooCodeInc/Roo-Code/blob/v3.54.0/src/utils/storage.ts#L14-L60"
+publisher = "RooCodeInc"
+accessed = 2026-10-08
+
+[[location]]
+id = "roo-code"
+paths = [
+  { os = ["linux"], path = "~/.config/Code/User/globalStorage/rooveterinaryinc.roo-cline/tasks" },
+  { os = ["macos"], path = "~/Library/Application Support/Code/User/globalStorage/rooveterinaryinc.roo-cline/tasks" },
+  { os = ["windows"], path = "%APPDATA%/Code/User/globalStorage/rooveterinaryinc.roo-cline/tasks" },
+]
+label = "C"
+sources = ["roo-code-paths"]
+basis = "Extension path from the source at v3.54.0 and the VS Code root from documentation; the repository was archived on 2026-05-15, and the roo-cline.customStoragePath setting is not covered."
+reviewed = 2026-10-08
+
+[sources.openhands-paths]
+title = "OpenHands CLI conversation directories (locations.py)"
+url = "https://github.com/OpenHands/OpenHands-CLI/blob/1.16.0/openhands_cli/locations.py"
+publisher = "OpenHands"
+accessed = 2026-10-08
+
+[[location]]
+id = "openhands"
+paths = [
+  { os = ["linux", "macos", "windows"], path = "$OPENHANDS_CONVERSATIONS_DIR" },
+  { os = ["linux", "macos", "windows"], path = "~/.openhands/conversations" },
+  { os = ["linux", "macos", "windows"], path = "~/.openhands/agent-canvas/dev_conversations" },
+]
+label = "C"
+sources = ["openhands-paths"]
+basis = "Paths from the OpenHands CLI source at 1.16.0; Windows inferred, unverified; OPENHANDS_CONVERSATIONS_DIR is assumed to replace ~/.openhands/conversations, and OPENHANDS_PERSISTENCE_DIR is not listed because the path it moves is unknown."
+reviewed = 2026-10-08
+
+[sources.goose-paths]
+title = "Goose session database location"
+url = "https://github.com/block/goose/blob/v1.53.0/documentation/docs/guides/logs.md"
+publisher = "Block"
+accessed = 2026-10-08
+
+[[location]]
+id = "goose"
+paths = [
+  { os = ["linux", "macos"], path = "~/.local/share/goose/sessions/sessions.db" },
+  { os = ["windows"], path = "%APPDATA%/Block/goose/data/sessions/sessions.db" },
+]
+label = "C"
+sources = ["goose-paths"]
+basis = "Paths from the Goose source at v1.53.0 and its logs guide; GOOSE_PATH_ROOT is not listed because the path it moves is unknown."
+reviewed = 2026-10-08
+
+[sources.qwen-code-paths]
+title = "Qwen Code chat recording location (storage.ts)"
+url = "https://github.com/QwenLM/qwen-code/blob/v0.25.0/packages/core/src/config/storage.ts#L165-L202"
+publisher = "QwenLM"
+accessed = 2026-10-08
+
+[[location]]
+id = "qwen-code"
+paths = [
+  { os = ["linux", "macos", "windows"], path = "$QWEN_RUNTIME_DIR/projects" },
+  { os = ["linux", "macos", "windows"], path = "$QWEN_HOME/projects" },
+  { os = ["linux", "macos", "windows"], path = "~/.qwen/projects" },
+]
+label = "C"
+sources = ["qwen-code-paths"]
+basis = "From the source at v0.25.0, not observed on disk; the two variables are assumed to replace ~/.qwen, unverified, and Windows directory names are lowercased."
+reviewed = 2026-10-08
+
+[sources.amp-paths]
+title = "Amp thread storage (third-party parser)"
+url = "https://github.com/ryoppippi/ccusage/blob/34d2c884164f7b0b62bbc4502664c636fdbd3d9f/rust/adapters/amp/src/parser.rs"
+publisher = "ryoppippi/ccusage"
+accessed = 2026-10-08
+
+[[location]]
+id = "amp"
+paths = [
+  { os = ["linux", "macos", "windows"], path = "~/.local/share/amp/threads" },
+]
+label = "I"
+sources = ["amp-paths"]
+basis = "Linux path from ccusage's parser; macOS and Windows unverified and use the Linux path; threads also sync to Amp's servers (docs)."
+reviewed = 2026-10-08
+
+[sources.kimi-cli-paths]
+title = "Kimi CLI session directory (share.py)"
+url = "https://github.com/MoonshotAI/kimi-cli/blob/1.52.0/src/kimi_cli/share.py"
+publisher = "MoonshotAI"
+accessed = 2026-10-08
+
+[[location]]
+id = "kimi-cli"
+paths = [
+  { os = ["linux", "macos", "windows"], path = "$KIMI_SHARE_DIR/sessions" },
+  { os = ["linux", "macos", "windows"], path = "~/.kimi/sessions" },
+]
+label = "C"
+sources = ["kimi-cli-paths"]
+basis = "From the source at 1.52.0 for all OSes, not observed on disk; KIMI_SHARE_DIR is assumed to replace ~/.kimi, unverified."
+reviewed = 2026-10-08

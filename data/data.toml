@@ -1,0 +1,261 @@
+# The data version and the sources the shipped data cites.
+#
+# Every value in the shipped data names its sources by the ids below, a
+# quality label and a review date. Labels: M provider-disclosed for this
+# model, C company-published and not verified, I independent research, D
+# tool default with a range, S spend-based.
+
+# The date of the last change to any shipped data file.
+id = "2026-10-09"
+
+# Values last reviewed longer ago than this are flagged as stale.
+review_interval_days = 90
+
+# The same for list prices, which labs change within weeks.
+price_review_interval_days = 30
+
+[sources.deepseek-v3-hardware]
+title = "Insights into DeepSeek-V3: Scaling Challenges and Reflections on Hardware for AI Architectures (KV cache size per token of documented models)"
+url = "https://arxiv.org/abs/2505.09343"
+publisher = "DeepSeek-AI, on arXiv"
+published = "2025-05-14"
+accessed = 2026-10-06
+
+[sources.mlenergy-v3]
+title = "Diagnosing inference energy consumption with the ML.ENERGY Leaderboard v3.0"
+url = "https://ml.energy/blog/measurement/energy/diagnosing-inference-energy-consumption-with-the-mlenergy-leaderboard-v30/"
+publisher = "ML.ENERGY"
+accessed = 2026-10-06
+
+[sources.dynamollm]
+title = "DynamoLLM: Designing LLM Inference Clusters for Performance and Energy Efficiency (section III-B, peak against average load of Azure LLM inference traces)"
+url = "https://arxiv.org/abs/2408.00741"
+publisher = "Stojkovic, Zhang, Goiri, Torrellas and Choukse, on arXiv"
+published = "2024-08-01"
+accessed = 2026-10-07
+
+[sources.inverse-w-law]
+title = "The 1/W Law: An Analytical Study of Context-Length Routing Topology and GPU Generation Gains for LLM Inference Energy Efficiency (section 2.1, H100 power at one and at 128 sequences in flight, fitted to ML.ENERGY measurements)"
+url = "https://arxiv.org/abs/2603.17280"
+publisher = "Chen, Liu, Liu, Jiang, He and Liu, on arXiv"
+published = "2026-04-27"
+accessed = 2026-10-07
+
+[sources.deepseek-fleet]
+title = "DeepSeek-V3/R1 Inference System Overview (24-hour fleet statistics, 2025-02-27 to 2025-02-28)"
+url = "https://github.com/deepseek-ai/open-infra-index/blob/main/202502OpenSourceWeek/day_6_one_more_thing_deepseekV3R1_inference_system_overview.md"
+publisher = "DeepSeek-AI"
+published = "2025-03-01"
+accessed = 2026-10-06
+
+[sources.google-gemini-energy]
+title = "Measuring the environmental impact of delivering AI at Google Scale"
+url = "https://arxiv.org/abs/2508.15734"
+publisher = "Google, on arXiv"
+published = "2025-08-21"
+accessed = 2026-10-06
+
+[sources.google-pue]
+title = "Google data centers: efficiency (fleet PUE 1.09 in 2025)"
+url = "https://datacenters.google/efficiency/"
+publisher = "Google"
+accessed = 2026-10-06
+
+[sources.aws-pue]
+title = "AWS Cloud sustainability (global PUE 1.14 in 2025)"
+url = "https://sustainability.aboutamazon.com/products-services/aws-cloud"
+publisher = "Amazon"
+accessed = 2026-10-06
+
+[sources.microsoft-pue]
+title = "Microsoft datacenter efficiency (fleet PUE 1.17 in fiscal 2025)"
+url = "https://datacenters.microsoft.com/sustainability/efficiency/"
+publisher = "Microsoft"
+accessed = 2026-10-06
+
+[sources.uptime-2024]
+title = "Uptime Institute Global Data Center Survey 2024 (industry average PUE 1.56)"
+url = "https://uptimeinstitute.com/resources/research-and-reports/uptime-institute-global-data-center-survey-results-2024"
+publisher = "Uptime Institute"
+published = "2024"
+accessed = 2026-10-06
+
+[sources.anthropic-data-residency]
+title = "Claude API data residency: inference_geo global or us"
+url = "https://platform.claude.com/docs/en/manage-claude/data-residency"
+publisher = "Anthropic"
+accessed = 2026-10-06
+
+[sources.aws-rainier]
+title = "AWS Project Rainier, St. Joseph County, Indiana, for Anthropic's training and inference"
+url = "https://www.aboutamazon.com/news/aws/aws-project-rainier-ai-trainium-chips-compute-cluster"
+publisher = "Amazon"
+accessed = 2026-10-06
+
+[sources.anthropic-google-tpus]
+title = "Expanding our use of Google Cloud TPUs and services"
+url = "https://www.anthropic.com/news/expanding-our-use-of-google-cloud-tpus-and-services"
+publisher = "Anthropic"
+published = "2025-10-23"
+accessed = 2026-10-06
+
+[sources.anthropic-us-infrastructure]
+title = "Anthropic invests $50 billion in American AI infrastructure (Fluidstack sites in Texas and New York)"
+url = "https://www.anthropic.com/news/anthropic-invests-50-billion-in-american-ai-infrastructure"
+publisher = "Anthropic"
+published = "2025-11-12"
+accessed = 2026-10-06
+
+[sources.stargate]
+title = "Stargate LLC (sites in Texas, New Mexico, Ohio and the Midwest)"
+url = "https://en.wikipedia.org/wiki/Stargate_LLC"
+publisher = "Wikipedia"
+accessed = 2026-10-06
+
+[sources.crusoe-abilene]
+title = "An inside look at the Abilene AI data center"
+url = "https://www.crusoe.ai/resources/blog/an-inside-look-at-the-abilene-ai-data-center"
+publisher = "Crusoe"
+published = "2025-08-05"
+accessed = 2026-10-06
+
+[sources.microsoft-fairwater]
+title = "Inside the world's most powerful AI datacenter (Fairwater, Mount Pleasant, Wisconsin)"
+url = "https://blogs.microsoft.com/blog/2025/09/18/inside-the-worlds-most-powerful-ai-datacenter/"
+publisher = "Microsoft"
+published = "2025-09-18"
+accessed = 2026-10-06
+
+[sources.nebius-regions]
+title = "Nebius regions"
+url = "https://docs.nebius.com/overview/regions"
+publisher = "Nebius"
+accessed = 2026-10-06
+
+[sources.nebius-endpoints]
+title = "Nebius Token Factory dedicated endpoints: control and data plane (default endpoint in eu-north1)"
+url = "https://docs.tokenfactory.nebius.com/ai-models-inference/dedicated-endpoints/control-data-plane.md"
+publisher = "Nebius"
+accessed = 2026-10-06
+
+[sources.anthropic-models]
+title = "Claude models overview (served through Anthropic's API and cloud platforms; no weights published)"
+url = "https://platform.claude.com/docs/en/about-claude/models/overview"
+publisher = "Anthropic"
+accessed = 2026-10-06
+
+[sources.openai-models]
+title = "OpenAI API models (served through OpenAI's API; weights published only for gpt-oss)"
+url = "https://developers.openai.com/api/docs/models"
+publisher = "OpenAI"
+accessed = 2026-10-06
+
+[sources.hf-gpt-oss]
+title = "openai/gpt-oss-120b weights, Apache 2.0"
+url = "https://huggingface.co/openai/gpt-oss-120b"
+publisher = "OpenAI, on Hugging Face"
+published = "2025-08-04"
+accessed = 2026-10-06
+
+[sources.hf-kimi-k3]
+title = "moonshotai/Kimi-K3 weights"
+url = "https://huggingface.co/moonshotai/Kimi-K3"
+publisher = "Moonshot AI, on Hugging Face"
+published = "2026-06-13"
+accessed = 2026-10-06
+
+[sources.hf-kimi-k2-6]
+title = "moonshotai/Kimi-K2.6 weights"
+url = "https://huggingface.co/moonshotai/Kimi-K2.6"
+publisher = "Moonshot AI, on Hugging Face"
+published = "2026-04-14"
+accessed = 2026-10-06
+
+[sources.hf-deepseek-v4-pro]
+title = "deepseek-ai/DeepSeek-V4-Pro weights, MIT"
+url = "https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro"
+publisher = "DeepSeek-AI, on Hugging Face"
+published = "2026-04-22"
+accessed = 2026-10-06
+
+[sources.hf-glm-5-2]
+title = "zai-org/GLM-5.2 weights, MIT"
+url = "https://huggingface.co/zai-org/GLM-5.2"
+publisher = "Z.ai, on Hugging Face"
+published = "2026-06-16"
+accessed = 2026-10-06
+
+[sources.moonshot-platform]
+title = "Moonshot AI open platform, the Kimi API on a mainland China domain"
+url = "https://platform.moonshot.cn/"
+publisher = "Moonshot AI"
+accessed = 2026-10-06
+
+[sources.anthropic-pricing]
+title = "Claude API pricing"
+url = "https://platform.claude.com/docs/en/about-claude/pricing"
+publisher = "Anthropic"
+accessed = 2026-10-07
+sha256 = "578902a2a4b4f38dfaabb6a9676a3c51d2d7ca2907d408cf44c24a8d9647d572"
+
+[sources.openai-pricing]
+title = "OpenAI API pricing"
+url = "https://developers.openai.com/api/docs/pricing.md"
+publisher = "OpenAI"
+accessed = 2026-10-07
+sha256 = "0d9fb6b240209bb7b5a05d1d6ce0b8a796e0924b7e34c5ab183a3f1f890febe6"
+
+[sources.google-pricing]
+title = "Gemini Developer API pricing"
+url = "https://ai.google.dev/gemini-api/docs/pricing"
+publisher = "Google"
+accessed = 2026-10-07
+sha256 = "2c18e5c6b3bc1b63ab767ae0a4970ddad838ee7ffc97a10d32fa81240f4097f6"
+
+[sources.google-models]
+title = "Gemini models (served through Google's APIs; no weights published)"
+url = "https://ai.google.dev/gemini-api/docs/models"
+publisher = "Google"
+accessed = 2026-10-07
+
+[sources.deepseek-pricing]
+title = "DeepSeek API models and pricing (deepseek-flash is DeepSeek V4.1 Flash)"
+url = "https://api-docs.deepseek.com/quick_start/pricing"
+publisher = "DeepSeek"
+accessed = 2026-10-07
+
+[sources.zai-pricing]
+title = "Z.ai API pricing (GLM-5.3)"
+url = "https://docs.z.ai/guides/overview/pricing"
+publisher = "Z.ai"
+accessed = 2026-10-08
+
+[sources.mistral-models]
+title = "Mistral models overview (GLM 5.3 as zai-glm-5-3)"
+url = "https://docs.mistral.ai/getting-started/models/models_overview/"
+publisher = "Mistral AI"
+accessed = 2026-10-07
+
+[sources.kimi-pricing]
+title = "Kimi API chat model pricing (kimi-k3)"
+url = "https://platform.kimi.ai/docs/pricing/chat"
+publisher = "Moonshot AI"
+accessed = 2026-10-08
+
+[sources.groq-models]
+title = "GroqCloud supported models (llama-3.3-70b-versatile, openai/gpt-oss-120b)"
+url = "https://console.groq.com/docs/models"
+publisher = "Groq"
+accessed = 2026-10-08
+
+[sources.foundry-models]
+title = "Microsoft Foundry models sold directly by Azure (Llama-3.3-70B-Instruct)"
+url = "https://learn.microsoft.com/en-us/azure/ai-foundry/foundry-models/concepts/models-sold-directly-by-azure"
+publisher = "Microsoft"
+accessed = 2026-10-07
+
+[sources.minimax-models]
+title = "MiniMax models (MiniMax-M3)"
+url = "https://platform.minimax.io/docs/guides/models-intro"
+publisher = "MiniMax"
+accessed = 2026-10-08

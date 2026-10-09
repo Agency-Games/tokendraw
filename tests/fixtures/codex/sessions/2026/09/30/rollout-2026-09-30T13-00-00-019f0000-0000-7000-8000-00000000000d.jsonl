@@ -1,0 +1,3 @@
+{"timestamp":"2026-09-30T13:00:00.000Z","type":"session_meta","payload":{"id":"019f0000-0000-7000-8000-00000000000d","timestamp":"2026-09-30T13:00:00.000Z","cwd":"/work/alpha","originator":"codex-tui","cli_version":"0.200.0","source":"cli","thread_source":"user","model_provider":"openai","base_instructions":{"text":"synthetic instructions"}}}
+{"timestamp":"2026-09-30T13:00:00.010Z","type":"event_msg","payload":{"type":"task_started","turn_id":"turn-d1","started_at":1790773200,"model_context_window":258400}}
+{"timestamp":"2026-09-30T13:00:00.020Z","type":"event_msg","payload":{"type":"token_count","info":null,"rate_limits":null}}

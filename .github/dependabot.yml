@@ -1,0 +1,30 @@
+version: 2
+
+updates:
+  # The commit hashes the workflows pin, and with them the cargo-deny and
+  # zizmor versions their actions install.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    # A release that turns out to be compromised is usually withdrawn within days.
+    cooldown:
+      default-days: 7
+    groups:
+      actions:
+        patterns: ["*"]
+
+  - package-ecosystem: cargo
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    # Also updates the transitive dependencies, which only Cargo.lock names.
+    allow:
+      - dependency-type: all
+    # Major updates may need code changes, so each comes on its own.
+    groups:
+      crates:
+        patterns: ["*"]
+        update-types: [minor, patch]

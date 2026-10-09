@@ -1,0 +1,63 @@
+[package]
+name = "tokendraw"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.97"
+description = "Estimate the energy usage and emissions of LLM coding agent use"
+license = "MIT AND CC-BY-4.0"
+repository = "https://github.com/Agency-Games/tokendraw"
+homepage = "https://github.com/Agency-Games/tokendraw"
+readme = "README.md"
+keywords = ["llm", "energy", "emissions", "carbon", "cli"]
+categories = ["command-line-utilities"]
+include = ["/src", "/data", "/docs", "/README.md", "/LICENSE", "/CHANGELOG.md"]
+
+[dependencies]
+# Context for the errors the command prints
+anyhow = "1"
+# Command-line parsing, help and usage errors
+clap = { version = "4.6.7", features = ["derive"] }
+# Timestamps in the logs, the ledger and the time range
+jiff = { version = "0.2.37", default-features = false, features = ["std", "serde"] }
+# The ledger; bundled SQLite, so no system library is needed on any platform
+rusqlite = { version = "0.40.2", default-features = false, features = ["bundled", "fallible_uint"] }
+# Typed reading of log lines and writing of output
+serde = { version = "1", features = ["derive"] }
+# The JSON of the logs and of --json
+serde_json = "1"
+# Content hashes of the data files in the data version
+sha2 = "0.11.0"
+# Typed errors in the library
+thiserror = "2"
+# User adapter and data files
+toml = { version = "1", default-features = false, features = ["parse", "serde", "std"] }
+
+[lints]
+workspace = true
+
+[dev-dependencies]
+# Snapshots of the command's text and JSON output
+insta = "1"
+# Property tests of the log parsers
+proptest = "1"
+# Temporary state and log directories
+tempfile = "3"
+
+[workspace]
+members = ["xtask"]
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+unwrap_used = "warn"
+expect_used = "warn"
+get_unwrap = "warn"
+todo = "warn"
+dbg_macro = "warn"
+print_stdout = "warn"
+
+[profile.dist]
+inherits = "release"
+lto = "thin"

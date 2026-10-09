@@ -1,0 +1,134 @@
+---
+source: tests/cli.rs
+expression: stdout(&output)
+---
+{
+  "schema_version": 1,
+  "since": "2026-09-01T00:00:00Z",
+  "until": "2026-10-01T00:00:00Z",
+  "clients": [
+    {
+      "client": "claude-code",
+      "calls": 4,
+      "sessions": 1,
+      "tokens": {
+        "uncached_input": 13,
+        "cache_write": 1800,
+        "cache_read": 1000,
+        "output": 86,
+        "reasoning": 10
+      },
+      "calls_with_reasoning": 3,
+      "final_usage": {
+        "missing": 1,
+        "missing_logged_output": 4,
+        "estimated_missing_output": 0,
+        "missing_without_estimate": 1,
+        "unknown": 0
+      },
+      "unrecorded": {
+        "calls": 0,
+        "estimated_uncached_input": 0,
+        "estimated_cache_read": 0,
+        "estimated_output": 0,
+        "without_input_estimate": 0,
+        "without_output_estimate": 0
+      },
+      "earliest_call": "2026-09-30T10:00:02.1Z",
+      "latest_call": "2026-09-30T10:05:03Z",
+      "client_versions": [
+        {
+          "version": "2.1.0",
+          "calls": 4
+        }
+      ],
+      "sources": {
+        "files": 4,
+        "unreadable_lines": 1,
+        "files_without_usage": 1
+      }
+    },
+    {
+      "client": "codex",
+      "calls": 6,
+      "sessions": 3,
+      "tokens": {
+        "uncached_input": 24528,
+        "cache_write": 0,
+        "cache_read": 41472,
+        "output": 880,
+        "reasoning": 260
+      },
+      "calls_with_reasoning": 6,
+      "final_usage": {
+        "missing": 0,
+        "missing_logged_output": 0,
+        "estimated_missing_output": 0,
+        "missing_without_estimate": 0,
+        "unknown": 0
+      },
+      "unrecorded": {
+        "calls": 0,
+        "estimated_uncached_input": 0,
+        "estimated_cache_read": 0,
+        "estimated_output": 0,
+        "without_input_estimate": 0,
+        "without_output_estimate": 0
+      },
+      "earliest_call": "2026-09-30T10:00:05.1Z",
+      "latest_call": "2026-09-30T12:00:06Z",
+      "client_versions": [
+        {
+          "version": "0.200.0",
+          "calls": 6
+        }
+      ],
+      "sources": {
+        "files": 4,
+        "unreadable_lines": 1,
+        "files_without_usage": 1
+      }
+    },
+    {
+      "client": "pi",
+      "calls": 3,
+      "sessions": 2,
+      "tokens": {
+        "uncached_input": 1650,
+        "cache_write": 100,
+        "cache_read": 3680,
+        "output": 400,
+        "reasoning": null
+      },
+      "calls_with_reasoning": 0,
+      "final_usage": {
+        "missing": 0,
+        "missing_logged_output": 0,
+        "estimated_missing_output": 0,
+        "missing_without_estimate": 0,
+        "unknown": 0
+      },
+      "unrecorded": {
+        "calls": 0,
+        "estimated_uncached_input": 0,
+        "estimated_cache_read": 0,
+        "estimated_output": 0,
+        "without_input_estimate": 0,
+        "without_output_estimate": 0
+      },
+      "earliest_call": "2026-09-30T09:00:05.1Z",
+      "latest_call": "2026-09-30T10:00:07Z",
+      "client_versions": [
+        {
+          "version": null,
+          "calls": 3
+        }
+      ],
+      "sources": {
+        "files": 3,
+        "unreadable_lines": 1,
+        "files_without_usage": 1
+      }
+    }
+  ]
+}

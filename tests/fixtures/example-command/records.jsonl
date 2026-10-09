@@ -1,0 +1,4 @@
+{"id":"gen-1","timestamp":"2026-09-29T12:00:00Z","provider":"example-proxy","model":"example-medium","session_id":"job-1","tokens":{"uncached_input":300,"cache_read":200,"output":50}}
+{"id":"gen-2","timestamp":"2026-09-29T12:05:00Z","provider":"example-proxy","model":"example-medium","session_id":"job-1","role":"headless","tokens":{"uncached_input":100,"output":20,"reasoning":5}}
+{"id":"gen-3","timestamp":"2026-09-29T12:06:00Z","provider":"example-proxy","model":"example-medium","session_id":"job-1","tokens":{"uncached_input":0,"output":0}}
+{"id":"gen-4","timestamp":"2026-10-02T09:00:00Z","provider":"example-proxy","model":"example-medium","session_id":"job-2","cwd":"/work/gamma","tokens":{"uncached_input":70,"cache_write":30,"output":10}}

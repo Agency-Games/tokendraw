@@ -1,0 +1,403 @@
+# The inputs of `cargo xtask open-weight-sets`: the attention layout of
+# each open-weight model in price-calibration.toml, read from its published
+# configuration, and the energy of attention work on three serving
+# scenarios. Active parameters, the weight energy anchor and the hardware
+# weight factors come from price-calibration.toml. The command writes
+# data/energy/open-weight-sets.toml. Source ids that this file does not
+# define are defined in data/data.toml or price-calibration.toml.
+#
+# A model has groups of attention layers:
+#
+# - `kind`: how many earlier tokens a token attends to at position c:
+#   "full" c; "sliding" min(c, window); "sparse" min(c, topk) plus
+#   min(c, window) when `window` is set; "compressed" c / ratio, capped at
+#   `topk` when set, plus min(c, window) when set; "linear" none (a fixed
+#   state per sequence instead).
+# - `layout`: "gqa" (query heads `heads`, key-value heads `kv_heads`, key
+#   and value widths `qk_dim`, `v_dim`, `kv_bytes` per stored element);
+#   "mla" (query heads `heads`, latent `kv_lora` and `rope`, prefill widths
+#   `qk_dim` and `v_dim`, `kv_bytes` per stored element); "shared_kv"
+#   (query heads `heads`, one key-value vector of `head_dim` serving as key
+#   and value, `kv_entry_bytes` per stored entry); "linear" (a state of
+#   `heads` x `qk_dim` x `v_dim` values of `state_bytes` bytes).
+# - `index_*`: a lightning indexer that scores every earlier entry (after
+#   compression) with `index_heads` x `index_dim` at `index_bits` bits, in
+#   `index_layers` of the group's layers.
+#
+# `kv_bytes` is 2 (BF16) where a model's documentation does not state the
+# format of its key-value cache.
+
+# Node energy of attention work at load on each scenario of
+# price-calibration.toml's hardware factors: energy per attention FLOP at
+# 16-bit precision (8-bit counts half, 4-bit a quarter), per byte read from
+# accelerator memory in memory-bound decode, and per byte of a cached
+# token's key-value entries reloaded from host memory once per call.
+[hardware]
+sources = ["mlenergy-v3", "flashmla"]
+basis = "Whole-node power divided by achieved throughput. Per FLOP: an H100 or H800 node draws about 7.5 to 8 kW over 8 x about 600 TFLOPS achieved, about 1.6 pJ; a B200 node about 11 to 12 kW over 8 x about 1,350 TFLOPS (FlashMLA sparse prefill on B200), about 1.05 pJ; FP8 attention on Blackwell about 0.5 pJ. Per byte: node power over 80 percent of peak memory bandwidth, H100 3.35 TB/s at about 7.75 kW per 8 GPUs (360 pJ), B200 8 TB/s at about 11.5 kW (225 pJ), GB200-class 150 pJ; about 30 uJ per pair of an output token and a context token for Qwen3-32B on B200 in the ML.ENERGY Leaderboard v3.0 is consistent with them. Reload: host memory read and PCIe transfer, 0.1 to 0.3 nJ per byte."
+
+[hardware.low]
+description = "GB200-class, FP8 attention"
+e_flop_pj = 0.5
+e_byte_pj = 150
+reload_nj_per_byte = 0.1
+
+[hardware.central]
+description = "B200, 16-bit attention"
+e_flop_pj = 1.05
+e_byte_pj = 225
+reload_nj_per_byte = 0.2
+
+[hardware.high]
+description = "H100 or H800"
+e_flop_pj = 1.6
+e_byte_pj = 360
+reload_nj_per_byte = 0.3
+
+[sources.flashmla]
+title = "FlashMLA: efficient multi-head latent attention kernels (sparse prefill on B200 up to 1,350 TFLOPS)"
+url = "https://github.com/deepseek-ai/FlashMLA"
+publisher = "DeepSeek-AI"
+accessed = 2026-10-06
+
+[[model]]
+id = "deepseek-v4-pro"
+name = "DeepSeek V4 Pro"
+hf_repo = "deepseek-ai/DeepSeek-V4-Pro"
+sources = ["config-deepseek-v4-pro", "card-deepseek-v4-pro"]
+basis = "61 layers: 30 Compressed Sparse Attention layers (compression ratio 4, lightning indexer top-k 1,024) and 31 Heavily Compressed Attention layers (ratio 128, dense over the compressed entries), each with a 128-token sliding branch; 128 query heads over one shared 512-wide key-value vector, stored in FP8 with BF16 rotary dimensions (448 + 64 x 2 = 576 bytes per entry); FP4 indexer, 64 heads x 128. The multi-token prediction layer and hyper-connections are not counted."
+
+[[model.group]]
+kind = "compressed"
+layers = 30
+layout = "shared_kv"
+heads = 128
+head_dim = 512
+kv_entry_bytes = 576
+ratio = 4
+topk = 1024
+window = 128
+index_heads = 64
+index_dim = 128
+index_bits = 4
+index_layers = 30
+
+[[model.group]]
+kind = "compressed"
+layers = 31
+layout = "shared_kv"
+heads = 128
+head_dim = 512
+kv_entry_bytes = 576
+ratio = 128
+window = 128
+
+[[model]]
+id = "deepseek-v4.1-flash"
+name = "DeepSeek V4.1 Flash"
+hf_repo = "deepseek-ai/DeepSeek-V4.1-Flash"
+sources = ["config-deepseek-v4-1-flash", "card-deepseek-v4-1-flash"]
+basis = "40 layers: layers 0 and 1 sliding only (window 128); 18 encoder layers with compression ratio 2 and 20 decoder layers uncompressed, all with top-k 512 and the 128-token sliding branch; 64 query heads over one shared 512-wide key-value vector; global KV cache 890 bytes per token over the model, FP4 with E4M3 scales (taken as 890 / 38 = 23.4 bytes per entry per layer); indexer 32 heads x 128 at FP4 in the 8 index-source layers. Not modelled: the Reuse and Reindex modes, the encoder-decoder prefill shortcut and Engram memory, which overstates prefill attention."
+
+[[model.group]]
+kind = "sliding"
+layers = 2
+layout = "shared_kv"
+heads = 64
+head_dim = 512
+kv_entry_bytes = 512
+window = 128
+
+[[model.group]]
+kind = "compressed"
+layers = 18
+layout = "shared_kv"
+heads = 64
+head_dim = 512
+kv_entry_bytes = 23.4
+ratio = 2
+topk = 512
+window = 128
+index_heads = 32
+index_dim = 128
+index_bits = 4
+index_layers = 3
+
+[[model.group]]
+kind = "sparse"
+layers = 20
+layout = "shared_kv"
+heads = 64
+head_dim = 512
+kv_entry_bytes = 23.4
+topk = 512
+window = 128
+index_heads = 32
+index_dim = 128
+index_bits = 4
+index_layers = 5
+
+[[model]]
+id = "glm-5.3"
+name = "GLM 5.3"
+hf_repo = "zai-org/GLM-5.3"
+sources = ["config-glm-5-3"]
+basis = "78 multi-head latent attention layers, 64 heads, latent 512, rotary 64, key and value widths 256; sparse attention with top-k 2,048 in every layer; indexer 32 heads x 128 computed in 21 layers and shared by the others, at FP8 as in DeepSeek-V3.2 (not stated for GLM). KV format not documented: BF16."
+
+[[model.group]]
+kind = "sparse"
+layers = 78
+layout = "mla"
+heads = 64
+kv_lora = 512
+rope = 64
+qk_dim = 256
+v_dim = 256
+kv_bytes = 2
+topk = 2048
+index_heads = 32
+index_dim = 128
+index_bits = 8
+index_layers = 21
+
+[[model]]
+id = "kimi-k3"
+name = "Kimi K3"
+hf_repo = "moonshotai/Kimi-K3"
+sources = ["config-kimi-k3"]
+basis = "24 gated multi-head latent attention layers (96 heads, latent 512, rotary 64, key width 192, value width 128) and 69 Kimi Delta Attention layers (96 heads x 128 x 128 state). KV format not documented: BF16; the state's precision is not stated: FP32, as Qwen's Gated DeltaNet."
+
+[[model.group]]
+kind = "full"
+layers = 24
+layout = "mla"
+heads = 96
+kv_lora = 512
+rope = 64
+qk_dim = 192
+v_dim = 128
+kv_bytes = 2
+
+[[model.group]]
+kind = "linear"
+layers = 69
+layout = "linear"
+heads = 96
+qk_dim = 128
+v_dim = 128
+state_bytes = 4
+
+[[model]]
+id = "gpt-oss-120b"
+name = "gpt-oss-120b"
+hf_repo = "openai/gpt-oss-120b"
+sources = ["config-gpt-oss-120b"]
+basis = "36 layers alternating sliding (window 128) and full attention; 64 query heads, 8 key-value heads, head width 64. KV format not documented: BF16."
+
+[[model.group]]
+kind = "full"
+layers = 18
+layout = "gqa"
+heads = 64
+kv_heads = 8
+qk_dim = 64
+v_dim = 64
+kv_bytes = 2
+
+[[model.group]]
+kind = "sliding"
+layers = 18
+layout = "gqa"
+heads = 64
+kv_heads = 8
+qk_dim = 64
+v_dim = 64
+kv_bytes = 2
+window = 128
+
+[[model]]
+id = "qwen3.5-397b-a17b"
+name = "Qwen3.5-397B-A17B"
+hf_repo = "Qwen/Qwen3.5-397B-A17B"
+sources = ["config-qwen3-5-397b-a17b"]
+basis = "15 gated full-attention layers (32 query heads, 2 key-value heads, head width 256) and 45 Gated DeltaNet layers (64 value heads x 128 x 128 state, FP32 per mamba_ssm_dtype). KV format not documented: BF16."
+
+[[model.group]]
+kind = "full"
+layers = 15
+layout = "gqa"
+heads = 32
+kv_heads = 2
+qk_dim = 256
+v_dim = 256
+kv_bytes = 2
+
+[[model.group]]
+kind = "linear"
+layers = 45
+layout = "linear"
+heads = 64
+qk_dim = 128
+v_dim = 128
+state_bytes = 4
+
+[[model]]
+id = "qwen3.8-2.4t-a95b"
+name = "Qwen3.8-2.4T-A95B"
+hf_repo = "Qwen/Qwen3.8-2.4T-A95B"
+sources = ["config-qwen3-8-2-4t-a95b"]
+basis = "23 gated full-attention layers (64 query heads, 4 key-value heads, head width 256) and 69 Gated DeltaNet layers (128 value heads x 128 x 128 state); the state's precision is not stated: FP32, as Qwen3.5. KV format not documented: BF16."
+
+[[model.group]]
+kind = "full"
+layers = 23
+layout = "gqa"
+heads = 64
+kv_heads = 4
+qk_dim = 256
+v_dim = 256
+kv_bytes = 2
+
+[[model.group]]
+kind = "linear"
+layers = 69
+layout = "linear"
+heads = 128
+qk_dim = 128
+v_dim = 128
+state_bytes = 4
+
+[[model]]
+id = "llama-3.3-70b-instruct"
+name = "Llama 3.3 70B Instruct"
+hf_repo = "meta-llama/Llama-3.3-70B-Instruct"
+sources = ["config-llama-3-3-70b-instruct"]
+basis = "80 full grouped-query attention layers, 64 query heads, 8 key-value heads, head width 128; dense. KV in BF16."
+
+[[model.group]]
+kind = "full"
+layers = 80
+layout = "gqa"
+heads = 64
+kv_heads = 8
+qk_dim = 128
+v_dim = 128
+kv_bytes = 2
+
+[[model]]
+id = "minimax-m3"
+name = "MiniMax M3"
+hf_repo = "MiniMaxAI/MiniMax-M3"
+sources = ["config-minimax-m3"]
+basis = "60 grouped-query attention layers, 64 query heads, 4 key-value heads, head width 128; layers 3 to 59 use MiniMax Sparse Attention, 16 blocks of 128 tokens plus the local block (taken as top-k 2,048 and a 128-token window), with an index branch of 4 heads x 128 (precision not stated: BF16) scoring every token. KV format not documented: BF16."
+
+[[model.group]]
+kind = "full"
+layers = 3
+layout = "gqa"
+heads = 64
+kv_heads = 4
+qk_dim = 128
+v_dim = 128
+kv_bytes = 2
+
+[[model.group]]
+kind = "sparse"
+layers = 57
+layout = "gqa"
+heads = 64
+kv_heads = 4
+qk_dim = 128
+v_dim = 128
+kv_bytes = 2
+topk = 2048
+window = 128
+index_heads = 4
+index_dim = 128
+index_bits = 16
+index_layers = 57
+
+[[model]]
+id = "mimo-v2.6-flash"
+name = "MiMo V2.6 Flash"
+hf_repo = "XiaomiMiMo/MiMo-V2.6-Flash-RL"
+sources = ["config-mimo-v2-6-flash"]
+basis = "9 global layers (64 query heads, 4 key-value heads, key width 192, value width 128) and 39 sliding layers (window 128, 64 query heads, 8 key-value heads, same widths). KV format not documented: BF16."
+
+[[model.group]]
+kind = "full"
+layers = 9
+layout = "gqa"
+heads = 64
+kv_heads = 4
+qk_dim = 192
+v_dim = 128
+kv_bytes = 2
+
+[[model.group]]
+kind = "sliding"
+layers = 39
+layout = "gqa"
+heads = 64
+kv_heads = 8
+qk_dim = 192
+v_dim = 128
+kv_bytes = 2
+window = 128
+
+[sources.config-deepseek-v4-pro]
+title = "deepseek-ai/DeepSeek-V4-Pro config.json, commit b5968e9190ef611bbf34a7229255be88a0e937c1"
+url = "https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro/resolve/main/config.json"
+publisher = "DeepSeek-AI, on Hugging Face"
+accessed = 2026-10-07
+sha256 = "5fe4568daee51c208cb8a79538eaeda090ae011ade1dee2c386aa95f569c810e"
+
+[sources.config-deepseek-v4-1-flash]
+title = "deepseek-ai/DeepSeek-V4.1-Flash config.json, commit 2cba9e42aa026125f3ed06c6d98c1db82f7ca027"
+url = "https://huggingface.co/deepseek-ai/DeepSeek-V4.1-Flash/resolve/main/config.json"
+publisher = "DeepSeek-AI, on Hugging Face"
+accessed = 2026-10-07
+sha256 = "8be45ce0476004a3f529fd896115a4a2e800a129ad2d3ec05b16050f52e21879"
+
+[sources.config-kimi-k3]
+title = "moonshotai/Kimi-K3 config.json, commit f831ab66814297da540d832a5235f8e904f29d06"
+url = "https://huggingface.co/moonshotai/Kimi-K3/resolve/main/config.json"
+publisher = "Moonshot AI, on Hugging Face"
+accessed = 2026-10-07
+sha256 = "9710e121a58d03ac92c8d6da287a19541994319afbbe6d6202af001ffd379213"
+
+[sources.config-gpt-oss-120b]
+title = "openai/gpt-oss-120b config.json, commit b5c939de8f754692c1647ca79fbf85e8c1e70f8a"
+url = "https://huggingface.co/openai/gpt-oss-120b/resolve/main/config.json"
+publisher = "OpenAI, on Hugging Face"
+accessed = 2026-10-07
+sha256 = "933aeb666a3fd851133ddd7686414f369bc564c4185fb5704416550879f10566"
+
+[sources.config-qwen3-5-397b-a17b]
+title = "Qwen/Qwen3.5-397B-A17B config.json, commit 8472618112abcbd45acbcdc58436aff4233c23f7"
+url = "https://huggingface.co/Qwen/Qwen3.5-397B-A17B/resolve/main/config.json"
+publisher = "Qwen, on Hugging Face"
+accessed = 2026-10-07
+sha256 = "3ae7fa89c2f7d1354096418ddaf1331e9e0898a8ca11e804fb6dbaa087efb7da"
+
+[sources.config-qwen3-8-2-4t-a95b]
+title = "Qwen/Qwen3.8-2.4T-A95B config.json, commit 207bd685a7e3696cfaff12ded7c6a7ea0f88c996"
+url = "https://huggingface.co/Qwen/Qwen3.8-2.4T-A95B/resolve/main/config.json"
+publisher = "Qwen, on Hugging Face"
+accessed = 2026-10-07
+sha256 = "4e3819548967e319ab435d044a3a331dbe3b078590ce822e9d74b79430533987"
+
+[sources.config-minimax-m3]
+title = "MiniMaxAI/MiniMax-M3 config.json, commit f0e1c1e04d40177e4673a22097036854f536e9c0"
+url = "https://huggingface.co/MiniMaxAI/MiniMax-M3/resolve/main/config.json"
+publisher = "MiniMax, on Hugging Face"
+accessed = 2026-10-07
+sha256 = "c9c97ce1e4eece60012d5a10ea87717458bfb1f19c2c7a615a3dbff83d090c6b"
+
+[sources.config-mimo-v2-6-flash]
+title = "XiaomiMiMo/MiMo-V2.6-Flash-RL config.json, commit 5711b268169967567844e1e560e8a3966da959b1"
+url = "https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Flash-RL/resolve/main/config.json"
+publisher = "Xiaomi, on Hugging Face"
+accessed = 2026-10-07
+sha256 = "61bea4a0f7a0dd8969f8cae528761e26b697dd12ff63e98804c3f0945492e621"
+

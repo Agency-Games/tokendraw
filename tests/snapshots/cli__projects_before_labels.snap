@@ -1,0 +1,21 @@
+---
+source: tests/cli.rs
+expression: "projects.shown(&[\"projects\"])?"
+---
+tokendraw projects, all calls
+
+Projects   calls   label   checkout   recorded   ancestor
+  ~/repo       3       0          3          0          0
+
+Unresolved               calls   sessions   directories   clients
+  ~/repo-*                   1          1             1   example-command
+    May belong to ~/repo. To assign it, run:
+    `tokendraw label dir '~/repo-*' project=~/repo`
+  no working directory       1          1                 example-command
+    To assign a session, run:
+    `tokendraw label session <client> <session-id> project=<dir>`
+
+  total                      2
+
+The suggested labels are not applied. Run `tokendraw projects --json` to
+list every directory and session.

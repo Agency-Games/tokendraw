@@ -1,0 +1,240 @@
+# List prices of closed models in USD per million tokens, Standard tier,
+# without batch, cache or regional surcharges. A model record that names a
+# price gets its weight terms, b_in and b_out, from the price and the
+# calibration it names (README.md, "Prices"). A tier's prices apply to a
+# whole call whose prompt (uncached input, cache writes and cache reads)
+# exceeds its threshold.
+
+[[price]]
+id = "claude-fable-5-1"
+calibration = "open-weight-hosts"
+input_usd_per_mtok = 10
+output_usd_per_mtok = 50
+label = "C"
+sources = ["anthropic-pricing"]
+basis = "Anthropic's pricing page, standard prices for input and output. No long-context price is listed."
+reviewed = 2026-10-07
+
+[[price]]
+id = "claude-opus-5-5"
+calibration = "open-weight-hosts"
+input_usd_per_mtok = 4
+output_usd_per_mtok = 20
+label = "C"
+sources = ["anthropic-pricing"]
+basis = "Anthropic's pricing page, standard prices for input and output. No long-context price is listed."
+reviewed = 2026-10-07
+
+[[price]]
+id = "claude-opus-5"
+calibration = "open-weight-hosts"
+input_usd_per_mtok = 5
+output_usd_per_mtok = 25
+label = "C"
+sources = ["anthropic-pricing"]
+basis = "Anthropic's pricing page, standard prices for input and output. No long-context price is listed."
+reviewed = 2026-10-07
+
+[[price]]
+id = "claude-sonnet-5-5"
+calibration = "open-weight-hosts"
+input_usd_per_mtok = 2
+output_usd_per_mtok = 10
+label = "C"
+sources = ["anthropic-pricing"]
+basis = "Anthropic's pricing page, standard prices for input and output. No long-context price is listed."
+reviewed = 2026-10-07
+
+[[price]]
+id = "claude-sonnet-5"
+calibration = "open-weight-hosts"
+input_usd_per_mtok = 2
+output_usd_per_mtok = 10
+label = "C"
+sources = ["anthropic-pricing"]
+basis = "Anthropic's pricing page, standard prices for input and output. No long-context price is listed."
+reviewed = 2026-10-07
+
+[[price]]
+id = "claude-haiku-5-5"
+calibration = "open-weight-hosts"
+input_usd_per_mtok = 0.1
+output_usd_per_mtok = 0.5
+label = "C"
+sources = ["anthropic-pricing"]
+basis = "Anthropic's pricing page, standard prices for input and output. Above 100,000 prompt tokens the whole call is charged at the tier's prices."
+reviewed = 2026-10-07
+[[price.tier]]
+above_prompt_tokens = 100000
+input_usd_per_mtok = 0.5
+output_usd_per_mtok = 2.5
+
+[[price]]
+id = "claude-haiku-4-5-20251001"
+calibration = "open-weight-hosts"
+input_usd_per_mtok = 1
+output_usd_per_mtok = 5
+label = "C"
+sources = ["anthropic-pricing"]
+basis = "Anthropic's pricing page, standard prices for input and output. No long-context price is listed."
+reviewed = 2026-10-07
+
+[[price]]
+id = "gpt-6-astra"
+calibration = "open-weight-hosts"
+input_usd_per_mtok = 10
+output_usd_per_mtok = 50
+label = "C"
+sources = ["openai-pricing"]
+basis = "OpenAI's pricing page, standard prices for input and output. Above 272,000 prompt tokens the whole call is charged at the tier's prices."
+reviewed = 2026-10-07
+[[price.tier]]
+above_prompt_tokens = 272000
+input_usd_per_mtok = 20
+output_usd_per_mtok = 75
+
+[[price]]
+id = "gpt-6.1-sol"
+calibration = "open-weight-hosts"
+input_usd_per_mtok = 2
+output_usd_per_mtok = 10
+label = "C"
+sources = ["openai-pricing"]
+basis = "OpenAI's pricing page, standard prices for input and output. Above 272,000 prompt tokens the whole call is charged at the tier's prices."
+reviewed = 2026-10-07
+[[price.tier]]
+above_prompt_tokens = 272000
+input_usd_per_mtok = 4
+output_usd_per_mtok = 15
+
+[[price]]
+id = "gpt-6-sol"
+calibration = "open-weight-hosts"
+input_usd_per_mtok = 2
+output_usd_per_mtok = 10
+label = "C"
+sources = ["openai-pricing"]
+basis = "OpenAI's pricing page, standard prices for input and output. Above 272,000 prompt tokens the whole call is charged at the tier's prices."
+reviewed = 2026-10-07
+[[price.tier]]
+above_prompt_tokens = 272000
+input_usd_per_mtok = 4
+output_usd_per_mtok = 15
+
+[[price]]
+id = "gpt-6-luna"
+calibration = "open-weight-hosts"
+input_usd_per_mtok = 0.1
+output_usd_per_mtok = 0.5
+label = "C"
+sources = ["openai-pricing"]
+basis = "OpenAI's pricing page, standard prices for input and output. Above 272,000 prompt tokens the whole call is charged at the tier's prices."
+reviewed = 2026-10-07
+[[price.tier]]
+above_prompt_tokens = 272000
+input_usd_per_mtok = 0.2
+output_usd_per_mtok = 0.75
+
+[[price]]
+id = "gpt-5.6-sol"
+calibration = "open-weight-hosts"
+input_usd_per_mtok = 4
+output_usd_per_mtok = 20
+label = "C"
+sources = ["openai-pricing"]
+basis = "OpenAI's pricing page, standard prices for input and output. Above 272,000 prompt tokens the whole call is charged at the tier's prices. A promotional price, available at least through 2026-11-21."
+reviewed = 2026-10-07
+[[price.tier]]
+above_prompt_tokens = 272000
+input_usd_per_mtok = 8
+output_usd_per_mtok = 30
+
+[[price]]
+id = "gpt-5.6-terra"
+calibration = "open-weight-hosts"
+input_usd_per_mtok = 2
+output_usd_per_mtok = 12
+label = "C"
+sources = ["openai-pricing"]
+basis = "OpenAI's pricing page, standard prices for input and output. Above 272,000 prompt tokens the whole call is charged at the tier's prices."
+reviewed = 2026-10-07
+[[price.tier]]
+above_prompt_tokens = 272000
+input_usd_per_mtok = 4
+output_usd_per_mtok = 18
+
+[[price]]
+id = "gpt-5.6-luna"
+calibration = "open-weight-hosts"
+input_usd_per_mtok = 0.2
+output_usd_per_mtok = 1.2
+label = "C"
+sources = ["openai-pricing"]
+basis = "OpenAI's pricing page, standard prices for input and output. Above 272,000 prompt tokens the whole call is charged at the tier's prices."
+reviewed = 2026-10-07
+[[price.tier]]
+above_prompt_tokens = 272000
+input_usd_per_mtok = 0.4
+output_usd_per_mtok = 1.8
+
+[[price]]
+id = "gpt-5.5"
+calibration = "open-weight-hosts"
+input_usd_per_mtok = 5
+output_usd_per_mtok = 30
+label = "C"
+sources = ["openai-pricing"]
+basis = "OpenAI's pricing page, standard prices for input and output. Above 272,000 prompt tokens the whole call is charged at the tier's prices."
+reviewed = 2026-10-07
+[[price.tier]]
+above_prompt_tokens = 272000
+input_usd_per_mtok = 10
+output_usd_per_mtok = 45
+
+[[price]]
+id = "gpt-5.3-codex"
+calibration = "open-weight-hosts"
+input_usd_per_mtok = 1.75
+output_usd_per_mtok = 14
+label = "C"
+sources = ["openai-pricing"]
+basis = "OpenAI's pricing page, standard prices for input and output. No long-context price is listed."
+reviewed = 2026-10-07
+
+[[price]]
+id = "gemini-3.8-flash"
+calibration = "open-weight-hosts"
+input_usd_per_mtok = 0.75
+output_usd_per_mtok = 3.75
+label = "C"
+sources = ["google-pricing"]
+basis = "Google's Gemini API pricing page, standard prices for input and output. No long-context price is listed. The price through 2026-12-31; from 2027-01-01 the page lists $1.50 and $7.50."
+reviewed = 2026-10-07
+
+[[price]]
+id = "gemini-3.1-pro-preview"
+calibration = "open-weight-hosts"
+input_usd_per_mtok = 2
+output_usd_per_mtok = 12
+label = "C"
+sources = ["google-pricing"]
+basis = "Google's Gemini API pricing page, standard prices for input and output. Above 200,000 prompt tokens the whole call is charged at the tier's prices."
+reviewed = 2026-10-07
+[[price.tier]]
+above_prompt_tokens = 200000
+input_usd_per_mtok = 4
+output_usd_per_mtok = 18
+
+[[price]]
+id = "gemini-2.5-pro"
+calibration = "open-weight-hosts"
+input_usd_per_mtok = 1.25
+output_usd_per_mtok = 10
+label = "C"
+sources = ["google-pricing"]
+basis = "Google's Gemini API pricing page, standard prices for input and output. Above 200,000 prompt tokens the whole call is charged at the tier's prices."
+reviewed = 2026-10-07
+[[price.tier]]
+above_prompt_tokens = 200000
+input_usd_per_mtok = 2.5
+output_usd_per_mtok = 15

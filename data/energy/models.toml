@@ -1,0 +1,496 @@
+# Models by name as the logs record it. A pattern is an exact name or a
+# prefix ending in `*`; the longest matching pattern wins. A model that
+# matches none uses the frontier set and is reported as unmatched.
+#
+# `weights` is open, closed or unknown, recorded per model, not per
+# provider. A model that names a `price` gets b_in and b_out from it
+# (prices.toml); the other parameters come from its parameter set.
+
+[[model]]
+id = "claude"
+pattern = "claude-*"
+parameter_set = "frontier"
+weights = "closed"
+label = "C"
+sources = ["anthropic-models"]
+basis = "Anthropic serves its Claude models through its API and cloud platforms and publishes no weights."
+reviewed = 2026-10-06
+
+[[model]]
+id = "gpt"
+pattern = "gpt-*"
+parameter_set = "frontier"
+weights = "closed"
+label = "C"
+sources = ["openai-models"]
+basis = "OpenAI serves its GPT models through its API; it publishes weights only for gpt-oss."
+reviewed = 2026-10-06
+
+[[model]]
+id = "gpt-oss"
+pattern = "gpt-oss*"
+parameter_set = "frontier"
+weights = "open"
+label = "C"
+sources = ["hf-gpt-oss"]
+basis = "OpenAI publishes the gpt-oss weights."
+reviewed = 2026-10-06
+
+[[model]]
+id = "codex"
+pattern = "codex-*"
+parameter_set = "frontier"
+weights = "closed"
+label = "C"
+sources = ["openai-models"]
+basis = "OpenAI's Codex models are served through its API, without published weights."
+reviewed = 2026-10-06
+
+[[model]]
+id = "kimi-k3"
+pattern = "moonshotai/Kimi-K3"
+parameter_set = "kimi-k3"
+weights = "open"
+label = "C"
+sources = ["hf-kimi-k3"]
+basis = "Moonshot AI publishes the Kimi K3 weights."
+reviewed = 2026-10-06
+
+[[model]]
+id = "kimi-k2-6"
+pattern = "moonshotai/Kimi-K2.6"
+parameter_set = "frontier"
+weights = "open"
+label = "C"
+sources = ["hf-kimi-k2-6"]
+basis = "Moonshot AI publishes the Kimi K2.6 weights."
+reviewed = 2026-10-06
+
+[[model]]
+id = "kimi-k2-6-alias"
+pattern = "kimi-k2.6*"
+parameter_set = "frontier"
+weights = "open"
+label = "C"
+sources = ["hf-kimi-k2-6"]
+basis = "Kimi K2.6 under a proxy or provider alias; Moonshot AI publishes its weights."
+reviewed = 2026-10-06
+
+[[model]]
+id = "deepseek-v4-pro"
+pattern = "deepseek-ai/DeepSeek-V4-Pro"
+parameter_set = "deepseek-v4-pro"
+weights = "open"
+label = "C"
+sources = ["hf-deepseek-v4-pro"]
+basis = "DeepSeek publishes the DeepSeek V4 Pro weights."
+reviewed = 2026-10-06
+
+[[model]]
+id = "deepseek-v4-pro-alias"
+pattern = "deepseek-v4-pro"
+parameter_set = "deepseek-v4-pro"
+weights = "open"
+label = "C"
+sources = ["hf-deepseek-v4-pro"]
+basis = "DeepSeek V4 Pro under a proxy or provider alias; DeepSeek publishes its weights."
+reviewed = 2026-10-06
+
+[[model]]
+id = "glm-5-2"
+pattern = "glm-5.2"
+parameter_set = "frontier"
+weights = "open"
+label = "C"
+sources = ["hf-glm-5-2"]
+basis = "Z.ai publishes the GLM 5.2 weights."
+reviewed = 2026-10-06
+
+[[model]]
+id = "gemini"
+pattern = "gemini-*"
+parameter_set = "frontier"
+weights = "closed"
+label = "C"
+sources = ["google-models"]
+basis = "Google serves its Gemini models through its APIs and publishes no weights."
+reviewed = 2026-10-07
+
+[[model]]
+id = "claude-fable-5-1"
+pattern = "claude-fable-5-1"
+parameter_set = "frontier"
+price = "claude-fable-5-1"
+weights = "closed"
+label = "C"
+sources = ["anthropic-models"]
+basis = "Anthropic publishes no weights for this model; its weight terms come from its list price."
+reviewed = 2026-10-08
+
+[[model]]
+id = "claude-opus-5-5"
+pattern = "claude-opus-5-5"
+parameter_set = "frontier"
+price = "claude-opus-5-5"
+weights = "closed"
+label = "C"
+sources = ["anthropic-models"]
+basis = "Anthropic publishes no weights for this model; its weight terms come from its list price."
+reviewed = 2026-10-08
+
+[[model]]
+id = "claude-opus-5"
+pattern = "claude-opus-5"
+parameter_set = "frontier"
+price = "claude-opus-5"
+weights = "closed"
+label = "C"
+sources = ["anthropic-models"]
+basis = "Anthropic publishes no weights for this model; its weight terms come from its list price."
+reviewed = 2026-10-08
+
+[[model]]
+id = "claude-sonnet-5-5"
+pattern = "claude-sonnet-5-5"
+parameter_set = "frontier"
+price = "claude-sonnet-5-5"
+weights = "closed"
+label = "C"
+sources = ["anthropic-models"]
+basis = "Anthropic publishes no weights for this model; its weight terms come from its list price."
+reviewed = 2026-10-08
+
+[[model]]
+id = "claude-sonnet-5"
+pattern = "claude-sonnet-5"
+parameter_set = "frontier"
+price = "claude-sonnet-5"
+weights = "closed"
+label = "C"
+sources = ["anthropic-models"]
+basis = "Anthropic publishes no weights for this model; its weight terms come from its list price."
+reviewed = 2026-10-08
+
+[[model]]
+id = "claude-haiku-5-5"
+pattern = "claude-haiku-5-5"
+parameter_set = "frontier"
+price = "claude-haiku-5-5"
+weights = "closed"
+label = "C"
+sources = ["anthropic-models"]
+basis = "Anthropic publishes no weights for this model; its weight terms come from its list price."
+reviewed = 2026-10-08
+
+[[model]]
+id = "claude-haiku-4-5"
+pattern = "claude-haiku-4-5*"
+parameter_set = "frontier"
+price = "claude-haiku-4-5-20251001"
+weights = "closed"
+label = "C"
+sources = ["anthropic-models"]
+basis = "Anthropic publishes no weights for this model; its weight terms come from its list price."
+reviewed = 2026-10-08
+
+[[model]]
+id = "gpt-6-astra"
+pattern = "gpt-6-astra"
+parameter_set = "frontier"
+price = "gpt-6-astra"
+weights = "closed"
+label = "C"
+sources = ["openai-models"]
+basis = "OpenAI publishes no weights for this model; its weight terms come from its list price."
+reviewed = 2026-10-08
+
+[[model]]
+id = "gpt-6.1-sol"
+pattern = "gpt-6.1-sol"
+parameter_set = "frontier"
+price = "gpt-6.1-sol"
+weights = "closed"
+label = "C"
+sources = ["openai-models"]
+basis = "OpenAI publishes no weights for this model; its weight terms come from its list price."
+reviewed = 2026-10-08
+
+[[model]]
+id = "gpt-6-sol"
+pattern = "gpt-6-sol"
+parameter_set = "frontier"
+price = "gpt-6-sol"
+weights = "closed"
+label = "C"
+sources = ["openai-models"]
+basis = "OpenAI publishes no weights for this model; its weight terms come from its list price."
+reviewed = 2026-10-08
+
+[[model]]
+id = "gpt-6-luna"
+pattern = "gpt-6-luna"
+parameter_set = "frontier"
+price = "gpt-6-luna"
+weights = "closed"
+label = "C"
+sources = ["openai-models"]
+basis = "OpenAI publishes no weights for this model; its weight terms come from its list price."
+reviewed = 2026-10-08
+
+[[model]]
+id = "gpt-5.6-sol"
+pattern = "gpt-5.6-sol"
+parameter_set = "frontier"
+price = "gpt-5.6-sol"
+weights = "closed"
+label = "C"
+sources = ["openai-models"]
+basis = "OpenAI publishes no weights for this model; its weight terms come from its list price."
+reviewed = 2026-10-08
+
+[[model]]
+id = "gpt-5.6-terra"
+pattern = "gpt-5.6-terra"
+parameter_set = "frontier"
+price = "gpt-5.6-terra"
+weights = "closed"
+label = "C"
+sources = ["openai-models"]
+basis = "OpenAI publishes no weights for this model; its weight terms come from its list price."
+reviewed = 2026-10-08
+
+[[model]]
+id = "gpt-5.6-luna"
+pattern = "gpt-5.6-luna"
+parameter_set = "frontier"
+price = "gpt-5.6-luna"
+weights = "closed"
+label = "C"
+sources = ["openai-models"]
+basis = "OpenAI publishes no weights for this model; its weight terms come from its list price."
+reviewed = 2026-10-08
+
+[[model]]
+id = "gpt-5.5"
+pattern = "gpt-5.5"
+parameter_set = "frontier"
+price = "gpt-5.5"
+weights = "closed"
+label = "C"
+sources = ["openai-models"]
+basis = "OpenAI publishes no weights for this model; its weight terms come from its list price."
+reviewed = 2026-10-08
+
+[[model]]
+id = "gpt-5.3-codex"
+pattern = "gpt-5.3-codex"
+parameter_set = "frontier"
+price = "gpt-5.3-codex"
+weights = "closed"
+label = "C"
+sources = ["openai-models"]
+basis = "OpenAI publishes no weights for this model; its weight terms come from its list price."
+reviewed = 2026-10-08
+
+[[model]]
+id = "gemini-3.8-flash"
+pattern = "gemini-3.8-flash"
+parameter_set = "frontier"
+price = "gemini-3.8-flash"
+weights = "closed"
+label = "C"
+sources = ["google-models"]
+basis = "Google publishes no weights for this model; its weight terms come from its list price."
+reviewed = 2026-10-08
+
+[[model]]
+id = "gemini-3.1-pro-preview"
+pattern = "gemini-3.1-pro-preview"
+parameter_set = "frontier"
+price = "gemini-3.1-pro-preview"
+weights = "closed"
+label = "C"
+sources = ["google-models"]
+basis = "Google publishes no weights for this model; its weight terms come from its list price."
+reviewed = 2026-10-08
+
+[[model]]
+id = "gemini-2.5-pro"
+pattern = "gemini-2.5-pro"
+parameter_set = "frontier"
+price = "gemini-2.5-pro"
+weights = "closed"
+label = "C"
+sources = ["google-models"]
+basis = "Google publishes no weights for this model; its weight terms come from its list price."
+reviewed = 2026-10-08
+
+[[model]]
+id = "deepseek-v4.1-flash"
+pattern = "deepseek-ai/DeepSeek-V4.1-Flash"
+parameter_set = "deepseek-v4.1-flash"
+weights = "open"
+label = "C"
+sources = ["card-deepseek-v4-1-flash"]
+basis = "DeepSeek publishes the DeepSeek V4.1 Flash weights."
+reviewed = 2026-10-08
+
+[[model]]
+id = "deepseek-v4.1-flash-api"
+pattern = "deepseek-flash"
+parameter_set = "deepseek-v4.1-flash"
+weights = "open"
+label = "C"
+sources = ["deepseek-pricing", "card-deepseek-v4-1-flash"]
+basis = "DeepSeek's API name for DeepSeek V4.1 Flash; DeepSeek publishes its weights."
+reviewed = 2026-10-08
+
+[[model]]
+id = "glm-5.3"
+pattern = "zai-org/GLM-5.3"
+parameter_set = "glm-5.3"
+weights = "open"
+label = "C"
+sources = ["config-glm-5-3"]
+basis = "Z.ai publishes the GLM 5.3 weights."
+reviewed = 2026-10-08
+
+[[model]]
+id = "glm-5.3-api"
+pattern = "glm-5.3"
+parameter_set = "glm-5.3"
+weights = "open"
+label = "C"
+sources = ["zai-pricing", "config-glm-5-3"]
+basis = "Z.ai's API name for GLM 5.3; Z.ai publishes its weights."
+reviewed = 2026-10-08
+
+[[model]]
+id = "glm-5.3-mistral"
+pattern = "zai-glm-5-3"
+parameter_set = "glm-5.3"
+weights = "open"
+label = "C"
+sources = ["mistral-models", "config-glm-5-3"]
+basis = "GLM 5.3 as Mistral's API names it; Z.ai publishes its weights."
+reviewed = 2026-10-08
+
+[[model]]
+id = "kimi-k3-moonshot"
+pattern = "kimi-k3"
+parameter_set = "kimi-k3"
+weights = "open"
+label = "C"
+sources = ["kimi-pricing", "hf-kimi-k3"]
+basis = "Moonshot AI's API name for Kimi K3; Moonshot AI publishes its weights."
+reviewed = 2026-10-08
+
+[[model]]
+id = "gpt-oss-120b"
+pattern = "gpt-oss-120b"
+parameter_set = "gpt-oss-120b"
+weights = "open"
+label = "C"
+sources = ["hf-gpt-oss"]
+basis = "OpenAI publishes the gpt-oss-120b weights."
+reviewed = 2026-10-08
+
+[[model]]
+id = "gpt-oss-120b-prefixed"
+pattern = "openai/gpt-oss-120b"
+parameter_set = "gpt-oss-120b"
+weights = "open"
+label = "C"
+sources = ["groq-models", "hf-gpt-oss"]
+basis = "gpt-oss-120b as Groq and OpenRouter name it; OpenAI publishes its weights."
+reviewed = 2026-10-08
+
+[[model]]
+id = "qwen3.5-397b-a17b"
+pattern = "Qwen/Qwen3.5-397B-A17B"
+parameter_set = "qwen3.5-397b-a17b"
+weights = "open"
+label = "C"
+sources = ["card-qwen3-5-397b-a17b"]
+basis = "Qwen publishes the Qwen3.5-397B-A17B weights."
+reviewed = 2026-10-08
+
+[[model]]
+id = "qwen3.8-2.4t-a95b"
+pattern = "Qwen/Qwen3.8-2.4T-A95B"
+parameter_set = "qwen3.8-2.4t-a95b"
+weights = "open"
+label = "C"
+sources = ["card-qwen3-8-2-4t-a95b"]
+basis = "Qwen publishes the Qwen3.8-2.4T-A95B weights."
+reviewed = 2026-10-08
+
+[[model]]
+id = "llama-3.3-70b-instruct"
+pattern = "meta-llama/Llama-3.3-70B-Instruct"
+parameter_set = "llama-3.3-70b-instruct"
+weights = "open"
+label = "C"
+sources = ["config-llama-3-3-70b-instruct"]
+basis = "Meta publishes the Llama 3.3 70B Instruct weights."
+reviewed = 2026-10-08
+
+[[model]]
+id = "llama-3.3-70b-instruct-foundry"
+pattern = "Llama-3.3-70B-Instruct"
+parameter_set = "llama-3.3-70b-instruct"
+weights = "open"
+label = "C"
+sources = ["foundry-models", "config-llama-3-3-70b-instruct"]
+basis = "Llama 3.3 70B Instruct as Microsoft Foundry names it; Meta publishes its weights."
+reviewed = 2026-10-08
+
+[[model]]
+id = "llama-3.3-70b-instruct-groq"
+pattern = "llama-3.3-70b-versatile"
+parameter_set = "llama-3.3-70b-instruct"
+weights = "open"
+label = "C"
+sources = ["groq-models", "config-llama-3-3-70b-instruct"]
+basis = "Llama 3.3 70B as Groq names it; Meta publishes its weights."
+reviewed = 2026-10-08
+
+[[model]]
+id = "minimax-m3"
+pattern = "MiniMaxAI/MiniMax-M3"
+parameter_set = "minimax-m3"
+weights = "open"
+label = "C"
+sources = ["card-minimax-m3"]
+basis = "MiniMax publishes the MiniMax M3 weights."
+reviewed = 2026-10-08
+
+[[model]]
+id = "minimax-m3-api"
+pattern = "MiniMax-M3"
+parameter_set = "minimax-m3"
+weights = "open"
+label = "C"
+sources = ["minimax-models", "card-minimax-m3"]
+basis = "MiniMax's API name for MiniMax M3; MiniMax publishes its weights."
+reviewed = 2026-10-08
+
+[[model]]
+id = "mimo-v2.6-flash"
+pattern = "XiaomiMiMo/MiMo-V2.6-Flash-RL"
+parameter_set = "mimo-v2.6-flash"
+weights = "open"
+label = "C"
+sources = ["card-mimo-v2-6-flash"]
+basis = "Xiaomi publishes the MiMo V2.6 Flash weights."
+reviewed = 2026-10-08
+
+[[model]]
+id = "mimo-v2.6-flash-openrouter"
+pattern = "xiaomi/mimo-v2.6-flash"
+parameter_set = "mimo-v2.6-flash"
+weights = "open"
+label = "C"
+sources = ["openrouter-xiaomi-mimo-v2-6-flash", "card-mimo-v2-6-flash"]
+basis = "MiMo V2.6 Flash as OpenRouter names it; Xiaomi publishes its weights."
+reviewed = 2026-10-08

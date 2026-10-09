@@ -1,0 +1,2 @@
+{"type":"session","version":3,"id":"0b7e0000-0000-4000-8000-00000000000c","timestamp":"2026-09-30T11:00:00.000Z","cwd":"/work/alpha"}
+{"type":"message","id":"c0000001","parentId":null,"timestamp":"2026-09-30T11:00:01.000Z","message":{"role":"user","content":[{"type":"text","text":"Synthetic prompt."}],"timestamp":1790766001000}}

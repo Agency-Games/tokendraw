@@ -1,0 +1,78 @@
+---
+source: tests/cli.rs
+expression: stdout(&output)
+---
+tokendraw report, all calls
+
+Usage         calls   sessions   cache read   new input   output
+  anthropic       5          2       2.20 k      1.86 k      111
+  litellm         1          1       2.40 k         500       60
+  nebius          3          1       2.58 k      1.26 k      345
+  openai          7          3       41.5 k      29.5 k      940
+
+  total          16          7       48.7 k      33.2 k   1.46 k
+
+claude-code: 1 call without a line with the final usage. Too few comparable
+calls for an estimate: 1 call, counted as logged.
+
+Coverage        status   location
+  claude-code   read     <fixtures>/claude-code/projects (1 unreadable line)
+  codex         read     <fixtures>/codex/sessions (1 unreadable line)
+  pi            read     <fixtures>/pi/sessions (1 unreadable line)
+
+Power usage effectiveness (PUE)   central   plausible        envelope
+  anthropic                         1.115   1.09 to 1.14     1.09 to 1.56
+  litellm (unknown)                  1.56   1.09 to 1.56     1.09 to 1.56
+  nebius                             1.56   1.09 to 1.56     1.09 to 1.56
+  openai                             1.17   1.17             1.09 to 1.56
+
+Electricity, Wh                   central   plausible        envelope
+  anthropic                         0.330   0.093 to 2.0     0.060 to 9.3
+  litellm (unknown)                 0.119   0.037 to 0.28    0.018 to 0.75
+  nebius                            0.393   0.19 to 0.73     0.19 to 1.0
+  openai                             8.06   2.4 to 46        1.4 to 210
+
+  total                              8.90   2.7 to 49        1.6 to 220
+  of which data centre overhead      1.39   0.37 to 7.2      0.14 to 80
+
+Grid intensity, kg CO2e per kWh   central   plausible        envelope
+  anthropic                         0.401   0.27 to 0.64     0.028 to 0.67
+  litellm (unknown)                 0.376   0.057 to 0.64    0.021 to 1.3
+  nebius                           0.0572   0.057            0.028 to 0.67
+  openai                            0.378   0.31 to 0.53     0.028 to 0.67
+
+Emissions, g CO2e                 central   plausible        envelope
+  anthropic                         0.132   0.025 to 1.3     0.0017 to 6.3
+  litellm (unknown)                0.0448   0.0021 to 0.18   0.00039 to 0.98
+  nebius                           0.0225   0.011 to 0.042   0.0052 to 0.69
+  openai                             3.05   0.74 to 24       0.038 to 140
+
+  total                              3.24   0.78 to 26       0.045 to 150
+
+Projects, g CO2e   calls   central   plausible    envelope
+  unresolved          16      3.24   0.78 to 26   0.045 to 150
+
+16 calls in 2 directories belong to no project. Run `tokendraw projects` to
+list them with the labels that would assign them.
+
+Where the energy goes (central)
+  rereading the context               4%
+  calls above 200,000 cached tokens   0%
+  claude-code / codex / pi            4% / 91% / 6%
+  interactive / subagent / headless   84% / 1% / 15%
+
+Data sources
+  data version                2026-10-09, shipped sha256 92735cdc2a25, no
+                              overrides
+  energy per call             parameter sets frontier,
+                              frontier@claude-opus-5-5,
+                              frontier@gpt-6-astra, frontier@gpt-6-luna,
+                              frontier@gpt-6-sol, kimi-k3: tool default
+  power usage effectiveness   anthropic, litellm (unknown), nebius, openai:
+                              tool default
+  provider sites              anthropic, litellm (unknown), nebius, openai:
+                              tool default
+  grid intensity              Ember US Electricity Data (emissions intensity
+                              by state); Ember Yearly Electricity Data
+                              (emissions intensity by country); lifecycle;
+                              data years 2022 to 2025: independent research

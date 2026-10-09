@@ -1,0 +1,52 @@
+---
+source: tests/cli.rs
+expression: stdout(&output)
+---
+claude-code, all calls
+  calls               0
+  sessions            0
+  uncached input      0
+  cache write         0
+  cache read          0
+  output              0
+  of which reasoning  not recorded
+  earliest call       none
+  latest call         none
+claude-code logs read so far
+  files               0
+  unreadable lines    0
+  files without usage 0
+
+codex, all calls
+  calls               34
+  sessions            3
+  uncached input      207,500
+  cache write         0
+  cache read          22,500
+  output              1,810
+  of which reasoning  not recorded
+  no usage record     2 compactions
+  estimated input     50,000 uncached and 150,000 cache read for 2 compactions, an estimate
+  estimated output    60 tokens for 1 compaction, an estimate
+  no output estimate  1 compaction without enough comparable compactions
+  earliest call       2026-07-01T10:00:01Z
+  latest call         2026-07-01T10:00:03Z
+codex logs read so far
+  files               3
+  unreadable lines    0
+  files without usage 0
+
+pi, all calls
+  calls               0
+  sessions            0
+  uncached input      0
+  cache write         0
+  cache read          0
+  output              0
+  of which reasoning  not recorded
+  earliest call       none
+  latest call         none
+pi logs read so far
+  files               0
+  unreadable lines    0
+  files without usage 0

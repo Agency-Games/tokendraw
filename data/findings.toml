@@ -1,0 +1,16 @@
+# The parameters of the report's findings and of the breakdown of the
+# energy that uses them.
+
+[sources.anthropic-context-windows]
+title = "Context windows (context window sizes by model)"
+url = "https://platform.claude.com/docs/en/build-with-claude/context-windows"
+publisher = "Anthropic"
+accessed = 2026-10-09
+
+[[finding]]
+id = "long-context"
+cached_tokens = 200000
+label = "D"
+sources = ["anthropic-context-windows"]
+basis = "Tool default for the cache-read tokens above which a call counts as long-context. 200,000 tokens is the context window of Claude models without the 1M-token window, such as Claude Sonnet 4.5 and Claude Haiku 4.5."
+reviewed = 2026-10-09

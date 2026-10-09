@@ -1,0 +1,6 @@
+---
+source: tests/cli.rs
+expression: removed
+---
+removed project, topic from session nowhere of example-command
+1 call in the ledger belongs to the session

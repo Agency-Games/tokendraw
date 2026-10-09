@@ -1,0 +1,35 @@
+---
+source: tests/cli.rs
+expression: stdout(&output)
+---
+tokendraw report, all calls
+
+Usage      calls   sessions   cache read   new input   output
+  openai      34          3       22.5 k       208 k   1.81 k
+
+  total       34          3       22.5 k       208 k   1.81 k
+
+codex: 2 compactions without a usage record. Energy and emissions add an
+estimated 200 k input tokens for 2 compactions and 60 output tokens for 1
+compaction, which the usage table leaves out. Too few comparable compactions
+for an output estimate: 1 compaction.
+
+Coverage        status      location
+  codex         read        ~/logs/codex/sessions
+  claude-code   not found   ~/logs/claude/projects
+  pi            not found   ~/logs/pi/sessions
+
+Emissions, g CO2e   central   plausible   envelope
+  openai               40.8   11 to 290   0.48 to 1,700
+
+  total                40.8   11 to 290   0.48 to 1,700
+
+Projects, g CO2e   calls   central   plausible   envelope
+  unresolved          34      40.8   11 to 290   0.48 to 1,700
+
+34 calls in 1 directory belong to no project. Run `tokendraw projects` to
+list them with the labels that would assign them.
+
+Where the energy goes (central)
+  rereading the context               19%
+  calls above 200,000 cached tokens   0%

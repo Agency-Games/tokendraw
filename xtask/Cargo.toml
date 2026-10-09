@@ -1,0 +1,29 @@
+[package]
+name = "xtask"
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.97"
+description = "Development tasks for tokendraw, such as extracting the grid data from Ember's files and calibrating list prices"
+license = "MIT"
+publish = false
+
+[dependencies]
+# Context for the errors the command prints
+anyhow = "1"
+# Command-line parsing, help and usage errors
+clap = { version = "4.6.7", features = ["derive"] }
+# Reading Ember's CSV files
+csv = "1"
+# Validating the accessed date
+jiff = { version = "0.2.37", default-features = false, features = ["std"] }
+# Reading the price calibration's inputs and writing its record
+serde = { version = "1", features = ["derive"] }
+# Reading OpenRouter's endpoint files
+serde_json = "1"
+# The SHA-256 of each input file, recorded with its source
+sha2 = "0.11.0"
+# Reading and writing the data files, and checking that generated files are valid TOML
+toml = { version = "1", default-features = false, features = ["display", "parse", "serde", "std"] }
+
+[lints]
+workspace = true

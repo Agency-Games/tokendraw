@@ -1,0 +1,44 @@
+name: Setup report
+description: Send what tokendraw does not read or recognise on your machine
+title: "Setup report: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Run this in a terminal and paste its output below:
+
+        ```sh
+        tokendraw report --json --redact
+        ```
+
+        `--redact` replaces paths, project names and text from your data
+        overrides. The output still holds the ids of clients, models,
+        providers and data records, client and tokendraw versions, counts
+        and figures. Issues are public: read it before you post it.
+  - type: textarea
+    id: report
+    attributes:
+      label: Output of tokendraw report --json --redact
+      render: json
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system and version
+      placeholder: macOS 26.1, Windows 11 24H2, Ubuntu 26.04
+    validations:
+      required: true
+  - type: input
+    id: install
+    attributes:
+      label: How you installed tokendraw
+    validations:
+      required: true
+  - type: textarea
+    id: missing
+    attributes:
+      label: What is missing or wrong
+      description: >-
+        Agents, models or providers you use that the report does not show,
+        or shows without data, and anything else that looks wrong.

@@ -1,0 +1,10 @@
+---
+source: tests/cli.rs
+expression: "projects.shown(&[\"label\", \"list\"])?"
+---
+Directory labels
+  ~/repo-*         project=~/repo
+
+Session labels
+  example-command   nowhere   project=~/repo
+  example-command   nowhere   topic=t

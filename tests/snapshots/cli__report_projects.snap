@@ -1,0 +1,31 @@
+---
+source: tests/cli.rs
+expression: "projects.shown(&[\"report\"])?"
+---
+tokendraw report, all calls
+
+Usage             calls   sessions   cache read   new input   output
+  example-proxy       5          4       1.00 k      1.50 k      250
+
+  total               5          4       1.00 k      1.50 k      250
+
+Coverage            status      location
+  example-command   read        command
+  claude-code       not found   ~/no-logs/projects
+  codex             not found   ~/no-logs/sessions
+  pi                not found   ~/no-logs/sessions
+
+Emissions, g CO2e           central   plausible        envelope
+  example-proxy (unknown)     0.138   0.0065 to 0.55   0.0012 to 3.0
+
+  total                       0.138   0.0065 to 0.55   0.0012 to 3.0
+
+Projects, g CO2e   calls   central   plausible        envelope
+  ~/repo               5     0.138   0.0065 to 0.55   0.0012 to 3.0
+
+Where the energy goes (central)
+  rereading the context               1%
+  calls above 200,000 cached tokens   0%
+
+No data record for model example-medium, provider example-proxy; a data
+override can add one, and `--verbose` shows what was used instead.

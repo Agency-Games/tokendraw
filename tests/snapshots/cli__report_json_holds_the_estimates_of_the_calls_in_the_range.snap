@@ -1,0 +1,534 @@
+---
+source: tests/cli.rs
+expression: without_platform(&stdout(&output))?
+---
+{
+  "schema_version": 1,
+  "tokendraw": {
+    "version": "<version>",
+    "os": "<os>",
+    "arch": "<arch>"
+  },
+  "data_version": {
+    "id": "2026-10-09",
+    "shipped_sha256": "92735cdc2a25ef5c4b1eb84a946a202da15aecbc65701a22726d55142d3bf9a5",
+    "overrides": []
+  },
+  "period": {
+    "start": "2026-09-30T00:00:00Z",
+    "end": "2026-10-01T00:00:00Z"
+  },
+  "project": null,
+  "directory": null,
+  "sources": [
+    {
+      "client": "claude-code",
+      "status": "read",
+      "location": "<fixtures>/claude-code/projects",
+      "reason": null,
+      "calls": 4,
+      "sessions": 1,
+      "tokens": {
+        "cache_read": 1000,
+        "new_input": 1813,
+        "output": 86,
+        "uncached_input": 13,
+        "cache_write": 1800,
+        "reasoning": 10
+      },
+      "activity_quality": "P",
+      "final_usage": {
+        "missing": 1,
+        "missing_logged_output": 4,
+        "estimated_missing_output": 0,
+        "missing_without_estimate": 1,
+        "unknown": 0
+      },
+      "unrecorded": {
+        "calls": 0,
+        "estimated_uncached_input": 0,
+        "estimated_cache_read": 0,
+        "estimated_output": 0,
+        "without_input_estimate": 0,
+        "without_output_estimate": 0
+      },
+      "earliest_call": "2026-09-30T10:00:02.1Z",
+      "latest_call": "2026-09-30T10:05:03Z",
+      "client_versions": [
+        {
+          "version": "2.1.0",
+          "calls": 4
+        }
+      ],
+      "unreadable_lines": 1
+    },
+    {
+      "client": "codex",
+      "status": "read",
+      "location": "<fixtures>/codex/sessions",
+      "reason": null,
+      "calls": 6,
+      "sessions": 3,
+      "tokens": {
+        "cache_read": 41472,
+        "new_input": 24528,
+        "output": 880,
+        "uncached_input": 24528,
+        "cache_write": 0,
+        "reasoning": 260
+      },
+      "activity_quality": "P",
+      "final_usage": {
+        "missing": 0,
+        "missing_logged_output": 0,
+        "estimated_missing_output": 0,
+        "missing_without_estimate": 0,
+        "unknown": 0
+      },
+      "unrecorded": {
+        "calls": 0,
+        "estimated_uncached_input": 0,
+        "estimated_cache_read": 0,
+        "estimated_output": 0,
+        "without_input_estimate": 0,
+        "without_output_estimate": 0
+      },
+      "earliest_call": "2026-09-30T10:00:05.1Z",
+      "latest_call": "2026-09-30T12:00:06Z",
+      "client_versions": [
+        {
+          "version": "0.200.0",
+          "calls": 6
+        }
+      ],
+      "unreadable_lines": 1
+    },
+    {
+      "client": "pi",
+      "status": "read",
+      "location": "<fixtures>/pi/sessions",
+      "reason": null,
+      "calls": 3,
+      "sessions": 2,
+      "tokens": {
+        "cache_read": 3680,
+        "new_input": 1750,
+        "output": 400,
+        "uncached_input": 1650,
+        "cache_write": 100,
+        "reasoning": null
+      },
+      "activity_quality": "P",
+      "final_usage": {
+        "missing": 0,
+        "missing_logged_output": 0,
+        "estimated_missing_output": 0,
+        "missing_without_estimate": 0,
+        "unknown": 0
+      },
+      "unrecorded": {
+        "calls": 0,
+        "estimated_uncached_input": 0,
+        "estimated_cache_read": 0,
+        "estimated_output": 0,
+        "without_input_estimate": 0,
+        "without_output_estimate": 0
+      },
+      "earliest_call": "2026-09-30T09:00:05.1Z",
+      "latest_call": "2026-09-30T10:00:07Z",
+      "client_versions": [
+        {
+          "version": null,
+          "calls": 3
+        }
+      ],
+      "unreadable_lines": 1
+    }
+  ],
+  "providers": [
+    {
+      "provider": "anthropic",
+      "calls": 4,
+      "sessions": 1,
+      "tokens": {
+        "cache_read": 1000,
+        "new_input": 1813,
+        "output": 86,
+        "uncached_input": 13,
+        "cache_write": 1800,
+        "reasoning": 10
+      },
+      "activity_quality": "P"
+    },
+    {
+      "provider": "litellm",
+      "calls": 1,
+      "sessions": 1,
+      "tokens": {
+        "cache_read": 2400,
+        "new_input": 500,
+        "output": 60,
+        "uncached_input": 400,
+        "cache_write": 100,
+        "reasoning": null
+      },
+      "activity_quality": "P"
+    },
+    {
+      "provider": "nebius",
+      "calls": 2,
+      "sessions": 1,
+      "tokens": {
+        "cache_read": 1280,
+        "new_input": 1250,
+        "output": 340,
+        "uncached_input": 1250,
+        "cache_write": 0,
+        "reasoning": null
+      },
+      "activity_quality": "P"
+    },
+    {
+      "provider": "openai",
+      "calls": 6,
+      "sessions": 3,
+      "tokens": {
+        "cache_read": 41472,
+        "new_input": 24528,
+        "output": 880,
+        "uncached_input": 24528,
+        "cache_write": 0,
+        "reasoning": 260
+      },
+      "activity_quality": "P"
+    }
+  ],
+  "observed_totals": {
+    "calls": 13,
+    "sessions": 6,
+    "tokens": {
+      "cache_read": 46152,
+      "new_input": 28091,
+      "output": 1366,
+      "uncached_input": 26191,
+      "cache_write": 1900,
+      "reasoning": 270
+    },
+    "activity_quality": "P"
+  },
+  "estimates": [
+    {
+      "layer": "L1",
+      "quantity": "energy",
+      "unit": "Wh",
+      "basis": "energy model per call, parameter sets frontier, frontier@claude-opus-5-5, frontier@gpt-6-astra, frontier@gpt-6-luna, frontier@gpt-6-sol, kimi-k3: node energy times idle times the provider's PUE; cache residency R not included",
+      "activity_quality": "P",
+      "factor_quality": "D",
+      "envelope_low": 1.561228501883278,
+      "plausible_low": 2.561796158559046,
+      "central": 8.429202679104975,
+      "plausible_high": 46.03308879675772,
+      "envelope_high": 210.77675553792474
+    },
+    {
+      "layer": "L1",
+      "quantity": "energy_facility",
+      "unit": "Wh",
+      "basis": "IT energy times (PUE - 1); anthropic: anthropic, 1.09/1.09/1.115/1.14/1.56; litellm: unknown, 1.09/1.09/1.56/1.56/1.56; nebius: nebius, 1.09/1.09/1.56/1.56/1.56; openai: openai, 1.09/1.17/1.17/1.17/1.56",
+      "activity_quality": "P",
+      "factor_quality": "D",
+      "envelope_low": 0.12890877538485793,
+      "plausible_low": 0.3527230696751097,
+      "central": 1.3199872125596928,
+      "plausible_high": 6.861033046792437,
+      "envelope_high": 75.6634507059217
+    },
+    {
+      "layer": "L1",
+      "quantity": "emissions",
+      "unit": "g",
+      "basis": "location-based, region unknown; anthropic: anthropic default, g/kWh 27.756/267.563/400.65175/642.875/674.293; litellm: unknown default, g/kWh 21.429/57.242/376.224778/642.875/1306.15; nebius: nebius default, g/kWh 27.756/57.242/57.242/57.242/674.293; openai: openai default, g/kWh 27.756/311.362/378.013/529.942/674.293; grid: Ember US Electricity Data (emissions intensity by state), Ember Yearly Electricity Data (emissions intensity by country), lifecycle, data years 2022 to 2025",
+      "activity_quality": "P",
+      "factor_quality": "D",
+      "envelope_low": 0.04321839883485477,
+      "plausible_low": 0.7372589972927576,
+      "central": 3.0685971642935868,
+      "plausible_high": 24.295828759182037,
+      "envelope_high": 142.59722377898842
+    }
+  ],
+  "sums": [],
+  "l1_groups": [
+    {
+      "provider": "anthropic",
+      "record": "anthropic",
+      "calls": 4,
+      "energy_wh": {
+        "envelope_low": 0.057352759735621456,
+        "plausible_low": 0.08854282615554551,
+        "central": 0.3148946298808718,
+        "plausible_high": 1.8636476768290544,
+        "envelope_high": 8.914981846909807
+      },
+      "energy_facility_wh": {
+        "envelope_low": 0.004735548968996271,
+        "plausible_low": 0.007310875554127617,
+        "central": 0.03247792146753386,
+        "plausible_high": 0.22886901294391884,
+        "envelope_high": 3.2002498937624955
+      },
+      "emissions_g": {
+        "envelope_low": 0.001591883199221909,
+        "plausible_low": 0.023690784194656225,
+        "central": 0.12616308452737357,
+        "plausible_high": 1.1980925002414784,
+        "envelope_high": 6.0113098544983545
+      },
+      "energy_quality": "D",
+      "emissions_quality": "D",
+      "grid_g_per_kwh": {
+        "envelope_low": 27.756,
+        "plausible_low": 267.563,
+        "central": 400.65175,
+        "plausible_high": 642.875,
+        "envelope_high": 674.293
+      },
+      "grid_quality": "D",
+      "sites_quality": "D",
+      "pue": {
+        "envelope_low": 1.09,
+        "plausible_low": 1.09,
+        "central": 1.115,
+        "plausible_high": 1.14,
+        "envelope_high": 1.56
+      },
+      "pue_label": "D"
+    },
+    {
+      "provider": "litellm",
+      "record": "unknown",
+      "calls": 1,
+      "energy_wh": {
+        "envelope_low": 0.01818546916666667,
+        "plausible_low": 0.0372848125,
+        "central": 0.11916680533333335,
+        "plausible_high": 0.281332935,
+        "envelope_high": 0.74689836
+      },
+      "energy_facility_wh": {
+        "envelope_low": 0.0015015525000000012,
+        "plausible_low": 0.0030785625000000027,
+        "central": 0.042777827555555564,
+        "plausible_high": 0.10099131000000001,
+        "envelope_high": 0.26811736
+      },
+      "emissions_g": {
+        "envelope_low": 0.00038969641877250005,
+        "plausible_low": 0.0021342572371250003,
+        "central": 0.04483350485502104,
+        "plausible_high": 0.180861910588125,
+        "envelope_high": 0.975561292914
+      },
+      "energy_quality": "D",
+      "emissions_quality": "D",
+      "grid_g_per_kwh": {
+        "envelope_low": 21.429,
+        "plausible_low": 57.242,
+        "central": 376.2247777777778,
+        "plausible_high": 642.875,
+        "envelope_high": 1306.15
+      },
+      "grid_quality": "D",
+      "sites_quality": "D",
+      "pue": {
+        "envelope_low": 1.09,
+        "plausible_low": 1.09,
+        "central": 1.56,
+        "plausible_high": 1.56,
+        "envelope_high": 1.56
+      },
+      "pue_label": "D"
+    },
+    {
+      "provider": "nebius",
+      "record": "nebius",
+      "calls": 2,
+      "energy_wh": {
+        "envelope_low": 0.1850860791485025,
+        "plausible_low": 0.1850860791485025,
+        "central": 0.3886472035055823,
+        "plausible_high": 0.7219747818595922,
+        "envelope_high": 1.016112655950537
+      },
+      "energy_facility_wh": {
+        "envelope_low": 0.015282336810426825,
+        "plausible_low": 0.015282336810426825,
+        "central": 0.13951438074559366,
+        "plausible_high": 0.25917043451369975,
+        "envelope_high": 0.36475838931557736
+      },
+      "emissions_g": {
+        "envelope_low": 0.0051372492128458356,
+        "plausible_low": 0.01059469734261858,
+        "central": 0.02224694322306654,
+        "plausible_high": 0.04132728046320677,
+        "envelope_high": 0.6851576511188554
+      },
+      "energy_quality": "D",
+      "emissions_quality": "D",
+      "grid_g_per_kwh": {
+        "envelope_low": 27.756,
+        "plausible_low": 57.242,
+        "central": 57.242,
+        "plausible_high": 57.242,
+        "envelope_high": 674.293
+      },
+      "grid_quality": "D",
+      "sites_quality": "D",
+      "pue": {
+        "envelope_low": 1.09,
+        "plausible_low": 1.09,
+        "central": 1.56,
+        "plausible_high": 1.56,
+        "envelope_high": 1.56
+      },
+      "pue_label": "D"
+    },
+    {
+      "provider": "openai",
+      "record": "openai",
+      "calls": 6,
+      "energy_wh": {
+        "envelope_low": 1.3006041938324875,
+        "plausible_low": 2.2508824407549985,
+        "central": 7.606494040385186,
+        "plausible_high": 43.16613340306907,
+        "envelope_high": 200.09876267506442
+      },
+      "energy_facility_wh": {
+        "envelope_low": 0.10738933710543483,
+        "plausible_low": 0.3270512948105552,
+        "central": 1.1052170827910097,
+        "plausible_high": 6.272002289334818,
+        "envelope_high": 71.83032506284364
+      },
+      "emissions_g": {
+        "envelope_low": 0.03609957000401452,
+        "plausible_low": 0.7008392585183578,
+        "central": 2.8753536316881254,
+        "plausible_high": 22.875547067889226,
+        "envelope_high": 134.92519498045723
+      },
+      "energy_quality": "D",
+      "emissions_quality": "D",
+      "grid_g_per_kwh": {
+        "envelope_low": 27.756,
+        "plausible_low": 311.362,
+        "central": 378.01300000000003,
+        "plausible_high": 529.942,
+        "envelope_high": 674.293
+      },
+      "grid_quality": "D",
+      "sites_quality": "D",
+      "pue": {
+        "envelope_low": 1.09,
+        "plausible_low": 1.17,
+        "central": 1.17,
+        "plausible_high": 1.17,
+        "envelope_high": 1.56
+      },
+      "pue_label": "D"
+    }
+  ],
+  "parameter_sets": [
+    {
+      "id": "frontier",
+      "quality": "D"
+    },
+    {
+      "id": "frontier@claude-opus-5-5",
+      "quality": "D"
+    },
+    {
+      "id": "frontier@gpt-6-astra",
+      "quality": "D"
+    },
+    {
+      "id": "frontier@gpt-6-luna",
+      "quality": "D"
+    },
+    {
+      "id": "frontier@gpt-6-sol",
+      "quality": "D"
+    },
+    {
+      "id": "kimi-k3",
+      "quality": "D"
+    }
+  ],
+  "grid": {
+    "sources": [
+      "Ember US Electricity Data (emissions intensity by state)",
+      "Ember Yearly Electricity Data (emissions intensity by country)"
+    ],
+    "qualities": [
+      "I"
+    ],
+    "basis": "lifecycle",
+    "earliest_year": 2022,
+    "latest_year": 2025
+  },
+  "unmatched": {
+    "models": [],
+    "providers": [
+      {
+        "name": "litellm",
+        "calls": 1
+      }
+    ]
+  },
+  "projects": [],
+  "unresolved": {
+    "calls": 13,
+    "directories": 2,
+    "calls_without_directory": 0,
+    "emissions_g": {
+      "envelope_low": 0.04321839883485477,
+      "plausible_low": 0.7372589972927576,
+      "central": 3.0685971642935868,
+      "plausible_high": 24.295828759182037,
+      "envelope_high": 142.59722377898842
+    }
+  },
+  "breakdown": [
+    {
+      "name": "context_terms",
+      "share_of_central": 0.037189892273800054,
+      "signal": "model terms a_p, a_d, c0"
+    },
+    {
+      "name": "calls_above_cached_tokens",
+      "share_of_central": 0.0,
+      "threshold_cached_tokens": 200000,
+      "signal": "cache_read tokens per call"
+    },
+    {
+      "name": "client",
+      "shares_of_central": {
+        "claude-code": 0.03735758195273432,
+        "codex": 0.9023978103220618,
+        "pi": 0.060244607725203736
+      },
+      "signal": "client of each call"
+    },
+    {
+      "name": "role",
+      "shares_of_central": {
+        "headless": 0.10181683923618533,
+        "interactive": 0.8832993835599563,
+        "subagent": 0.014883777203858159
+      },
+      "signal": "role of each call"
+    }
+  ]
+}

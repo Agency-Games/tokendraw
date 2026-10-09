@@ -1,0 +1,114 @@
+# Data overrides for docs/validation.md: the list prices of the models
+# the disclosures may have used, and Google's PUE, which its figure
+# includes.
+
+[sources.google-gemini-measurement]
+title = "Measuring the environmental impact of delivering AI at Google Scale"
+url = "https://arxiv.org/abs/2508.15734"
+publisher = "Google"
+published = "2025-08-21"
+accessed = 2026-10-09
+sha256 = "348b58c832076258e1792a710fab3f0ac60f02001857532a7136771b52b30339"
+
+[sources.openai-gpt-4o]
+title = "OpenAI API models: GPT-4o"
+url = "https://developers.openai.com/api/docs/models/gpt-4o.md"
+publisher = "OpenAI"
+accessed = 2026-10-09
+sha256 = "f3c708a3ba44098a5086c550dabed6f0eeb262d51c97261a97b5315f93dc08c9"
+
+[sources.google-pricing-2026-10-09]
+title = "Gemini Developer API pricing"
+url = "https://ai.google.dev/gemini-api/docs/pricing"
+publisher = "Google"
+accessed = 2026-10-09
+sha256 = "17edea86979c962ac8f7f5ee941ed97f7ff2400db9381d17e3dc6017666ef8af"
+
+[sources.mistral-price-2024-09]
+title = "AI in abundance (Mistral Large price of September 2024)"
+url = "https://mistral.ai/news/september-24-release"
+publisher = "Mistral AI"
+published = "2024-09-17"
+accessed = 2026-10-09
+sha256 = "fe1a75e0248ad180850d532f7a75c5adfa8d717e0dba202dc48f0954c0a4a773"
+
+[[provider]]
+id = "google"
+sites = ["ember:USA"]
+label = "C"
+sources = ["google-gemini-measurement"]
+basis = "The comparison is in energy, so the sites do not enter it."
+reviewed = 2026-10-09
+
+[provider.pue]
+envelope_low = 1.09
+plausible_low = 1.09
+central = 1.09
+plausible_high = 1.09
+envelope_high = 1.09
+label = "C"
+sources = ["google-gemini-measurement"]
+basis = "Google's fleet PUE, which the measured 0.24 Wh includes."
+
+[[price]]
+id = "gpt-4o"
+calibration = "open-weight-hosts"
+input_usd_per_mtok = 2.5
+output_usd_per_mtok = 10
+label = "C"
+sources = ["openai-gpt-4o"]
+basis = "OpenAI's list price for gpt-4o, input and output."
+reviewed = 2026-10-09
+
+[[price]]
+id = "gemini-2.5-flash"
+calibration = "open-weight-hosts"
+input_usd_per_mtok = 0.3
+output_usd_per_mtok = 2.5
+label = "C"
+sources = ["google-pricing-2026-10-09"]
+basis = "Google's paid-tier list price for gemini-2.5-flash text input and output, thinking included."
+reviewed = 2026-10-09
+
+[[price]]
+id = "mistral-large-2"
+calibration = "open-weight-hosts"
+input_usd_per_mtok = 2
+output_usd_per_mtok = 6
+label = "C"
+sources = ["mistral-price-2024-09"]
+basis = "Mistral Large's list price from September 2024."
+reviewed = 2026-10-09
+
+[[model]]
+id = "gpt-4o"
+pattern = "gpt-4o"
+parameter_set = "frontier"
+price = "gpt-4o"
+weights = "closed"
+label = "C"
+sources = ["openai-gpt-4o"]
+basis = "OpenAI publishes no weights for this model; its weight terms come from its list price."
+reviewed = 2026-10-09
+
+[[model]]
+id = "gemini-2.5-flash"
+pattern = "gemini-2.5-flash"
+parameter_set = "frontier"
+price = "gemini-2.5-flash"
+weights = "closed"
+label = "C"
+sources = ["google-pricing-2026-10-09"]
+basis = "Google publishes no weights for this model; its weight terms come from its list price."
+reviewed = 2026-10-09
+
+[[model]]
+id = "mistral-large-2411"
+pattern = "mistral-large-2411"
+parameter_set = "frontier"
+price = "mistral-large-2"
+weights = "open"
+label = "C"
+sources = ["mistral-price-2024-09"]
+basis = "Mistral Large 2 by the name of its November 2024 version, with its weight terms from its list price to test the price route."
+reviewed = 2026-10-09

@@ -1,0 +1,6 @@
+---
+source: tests/cli.rs
+expression: labelled
+---
+labelled session nowhere of example-command: project=~/repo, topic=t
+1 call in the ledger belongs to the session

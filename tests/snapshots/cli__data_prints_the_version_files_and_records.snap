@@ -1,0 +1,286 @@
+---
+source: tests/cli.rs
+expression: without_stale(&stdout(&output))
+---
+data 2026-10-09, shipped sha256 92735cdc2a25ef5c4b1eb84a946a202da15aecbc65701a22726d55142d3bf9a5
+shipped files, sha256
+  data/data.toml                      1428ee15005eac968e8520a24162a7c60d50c6059403f6eccd30323d747be0bb
+  data/energy/parameter-sets.toml     8de8bfe37d283ca05fc24d27b28c8054ab639229e3a923c1758b810145791b1e
+  data/energy/open-weight-sets.toml   dc18082bfa82337e6e458aded3e34044fcdc228274c7b653562acd6a6ce27114
+  data/energy/price-calibration.toml  69997ab193b66181169339288d7eb8a9d4658a558e18cbdfa014cb9229edcac8
+  data/energy/prices.toml             868e3f440043cea2a8d9dc18ca0a0704799ab0c6b6b5d0ccf0f1634a2f508cab
+  data/energy/models.toml             5e9076cc6ee525db8c1f0a05586788ba0858360c58dd461c7e4a1e4044af1850
+  data/providers.toml                 123172caeb298e206de64399538fb5ebf7f1bda154880d299da0983cef1a709c
+  data/grid/ember.toml                3ddbe09b98b603d46a2354c71b6fb5983a7de374bfa1c0a61d6032656ebaf398
+  data/discovery.toml                 d6e01b132e02c0ac5e8628f05a1cddae7b8e769ca55ccc5da19d50fbe07a2f06
+  data/findings.toml                  00b03f6a104f6afb729a053be1088740cfa387c78dc0cddd6a91fea4b5f266e9
+overrides: none
+stale: <depends on the date>
+
+values: envelope low / plausible low / central / plausible high / envelope high, label
+
+parameter set deepseek-v4-pro, reviewed 2026-10-08
+  DeepSeek V4 Pro (deepseek-ai/DeepSeek-V4-Pro) from its published configuration: 61 layers: 30 Compressed Sparse Attention layers (compression ratio 4, lightning indexer top-k 1,024) and 31 Heavily Compressed Attention layers (ratio 128, dense over the compressed entries), each with a 128-token sliding branch; 128 query heads over one shared 512-wide key-value vector, stored in FP8 with BF16 rotary dimensions (448 + 64 x 2 = 576 bytes per entry); FP4 indexer, 64 heads x 128. The multi-token prediction layer and hyper-connections are not counted.
+  a_p, uJ per pair    0.04710399999999999 / 0.04710399999999999 / 0.0989184 / 0.15073280000000003 / 0.15073280000000003  D
+  a_d, uJ per pair    0.10374399999999999 / 0.10374399999999999 / 0.1746624 / 0.2743808 / 0.2743808  D
+  b_in, J per token   0.15734723931329733 / 0.15734723931329733 / 0.20859136472008655 / 0.32075440904579466 / 0.32075440904579466  D
+  b_out, J per token  0.25667156363762167 / 0.25667156363762167 / 0.33771298634170815 / 0.5194030576944433 / 0.5194030576944433  D
+  c0, mJ per token    0.0004459500000000001 / 0.0004459500000000001 / 0.0008919000000000002 / 0.00133785 / 0.00133785  D
+  idle                1 / 1 / 1.12 / 1.35 / 1.9  D
+
+parameter set deepseek-v4.1-flash, reviewed 2026-10-08
+  DeepSeek V4.1 Flash (deepseek-ai/DeepSeek-V4.1-Flash) from its published configuration: 40 layers: layers 0 and 1 sliding only (window 128); 18 encoder layers with compression ratio 2 and 20 decoder layers uncompressed, all with top-k 512 and the 128-token sliding branch; 64 query heads over one shared 512-wide key-value vector; global KV cache 890 bytes per token over the model, FP4 with E4M3 scales (taken as 890 / 38 = 23.4 bytes per entry per layer); indexer 32 heads x 128 at FP4 in the 8 index-source layers. Not modelled: the Reuse and Reindex modes, the encoder-decoder prefill shortcut and Engram memory, which overstates prefill attention.
+  a_p, uJ per pair    0.0066560000000000005 / 0.0066560000000000005 / 0.0139776 / 0.0212992 / 0.0212992  D
+  a_d, uJ per pair    0.062400000000000004 / 0.062400000000000004 / 0.09359999999999999 / 0.14975999999999998 / 0.14975999999999998  D
+  b_in, J per token   0.02647547760086487 / 0.02647547760086487 / 0.03570661106992433 / 0.054883690484929734 / 0.054883690484929734  D
+  b_out, J per token  0.08377565848216217 / 0.08377565848216217 / 0.11019309755641081 / 0.16947828507952434 / 0.16947828507952434  D
+  c0, mJ per token    0.00017025999999999999 / 0.00017025999999999999 / 0.00034051999999999997 / 0.0005107800000000001 / 0.0005107800000000001  D
+  idle                1 / 1 / 1.12 / 1.35 / 1.9  D
+
+parameter set frontier, reviewed 2026-10-07
+  A closed frontier model served on 2024 to 2026 data-centre accelerators, for models without a set of their own
+  a_p, uJ per pair    0.5 / 2.5 / 4 / 8 / 12  D
+  a_d, uJ per pair    2 / 10 / 20 / 45 / 80  D
+  b_in, J per token   0.1 / 0.2 / 0.4 / 0.8 / 1.5  D
+  b_out, J per token  0.15 / 0.3 / 0.6 / 1 / 2  D
+  c0, mJ per token    0.02 / 0.03 / 0.3 / 1 / 3  D
+  idle                1 / 1 / 1.12 / 1.35 / 1.9  D
+
+parameter set glm-5.3, reviewed 2026-10-08
+  GLM 5.3 (zai-org/GLM-5.3) from its published configuration: 78 multi-head latent attention layers, 64 heads, latent 512, rotary 64, key and value widths 256; sparse attention with top-k 2,048 in every layer; indexer 32 heads x 128 computed in 21 layers and shared by the others, at FP8 as in DeepSeek-V3.2 (not stated for GLM). KV format not documented: BF16.
+  a_p, uJ per pair    0.043008 / 0.043008 / 0.0903168 / 0.1376256 / 0.1376256  D
+  a_d, uJ per pair    0.4032 / 0.4032 / 0.6048 / 0.96768 / 0.96768  D
+  b_in, J per token   0.13637694285664867 / 0.13637694285664867 / 0.18618866108004326 / 0.2861018387628973 / 0.2861018387628973  D
+  b_out, J per token  0.23454457401081083 / 0.23454457401081083 / 0.3104286988540541 / 0.4801306533016217 / 0.4801306533016217  D
+  c0, mJ per token    0.008985600000000002 / 0.008985600000000002 / 0.017971200000000003 / 0.026956800000000003 / 0.026956800000000003  D
+  idle                1 / 1 / 1.12 / 1.35 / 1.9  D
+
+parameter set gpt-oss-120b, reviewed 2026-10-08
+  gpt-oss-120b (openai/gpt-oss-120b) from its published configuration: 36 layers alternating sliding (window 128) and full attention; 64 query heads, 8 key-value heads, head width 64. KV format not documented: BF16.
+  a_p, uJ per pair    0.147456 / 0.147456 / 0.30965760000000003 / 0.4718592 / 0.4718592  D
+  a_d, uJ per pair    5.5296 / 5.5296 / 8.2944 / 13.27104 / 13.27104  D
+  b_in, J per token   0.015870225719351354 / 0.015870225719351354 / 0.020646392929556757 / 0.031763100680302706 / 0.031763100680302706  D
+  b_out, J per token  0.02689697798918919 / 0.02689697798918919 / 0.03510762914594595 / 0.05407707149837838 / 0.05407707149837838  D
+  c0, mJ per token    0.0073728000000000005 / 0.0073728000000000005 / 0.014745600000000001 / 0.0221184 / 0.0221184  D
+  idle                1 / 1 / 1.12 / 1.35 / 1.9  D
+
+parameter set kimi-k3, reviewed 2026-10-08
+  Kimi K3 (moonshotai/Kimi-K3) from its published configuration: 24 gated multi-head latent attention layers (96 heads, latent 512, rotary 64, key width 192, value width 128) and 69 Kimi Delta Attention layers (96 heads x 128 x 128 state). KV format not documented: BF16; the state's precision is not stated: FP32, as Qwen's Gated DeltaNet.
+  a_p, uJ per pair    0.73728 / 0.73728 / 1.548288 / 2.3592960000000005 / 2.3592960000000005  D
+  a_d, uJ per pair    4.1472 / 4.1472 / 6.2208 / 9.953280000000001 / 9.953280000000001  D
+  b_in, J per token   0.3237622883632433 / 0.3237622883632433 / 0.42130621096821624 / 0.6481474308704865 / 0.6481474308704865  D
+  b_out, J per token  0.5991706236540542 / 0.5991706236540542 / 0.7919451246702703 / 1.2243878751481083 / 1.2243878751481083  D
+  c0, mJ per token    0.304754688 / 0.304754688 / 0.6397083648 / 0.9746620416 / 0.9746620416  D
+  idle                1 / 1 / 1.12 / 1.35 / 1.9  D
+
+parameter set llama-3.3-70b-instruct, reviewed 2026-10-08
+  Llama 3.3 70B Instruct (meta-llama/Llama-3.3-70B-Instruct) from its published configuration: 80 full grouped-query attention layers, 64 query heads, 8 key-value heads, head width 128; dense. KV in BF16.
+  a_p, uJ per pair    1.3107199999999999 / 1.3107199999999999 / 2.752512 / 4.194304 / 4.194304  D
+  a_d, uJ per pair    49.152 / 49.152 / 73.728 / 117.9648 / 117.9648  D
+  b_in, J per token   0.2192894594594595 / 0.2192894594594595 / 0.28507629729729733 / 0.438578918918919 / 0.438578918918919  D
+  b_out, J per token  0.36230432432432436 / 0.36230432432432436 / 0.4709956216216217 / 0.7246086486486487 / 0.7246086486486487  D
+  c0, mJ per token    0.032768000000000005 / 0.032768000000000005 / 0.06553600000000001 / 0.09830400000000002 / 0.09830400000000002  D
+  idle                1 / 1 / 1.12 / 1.35 / 1.9  D
+
+parameter set mimo-v2.6-flash, reviewed 2026-10-08
+  MiMo V2.6 Flash (XiaomiMiMo/MiMo-V2.6-Flash-RL) from its published configuration: 9 global layers (64 query heads, 4 key-value heads, key width 192, value width 128) and 39 sliding layers (window 128, 64 query heads, 8 key-value heads, same widths). KV format not documented: BF16.
+  a_p, uJ per pair    0.18432 / 0.18432 / 0.38707199999999997 / 0.589824 / 0.589824  D
+  a_d, uJ per pair    3.456 / 3.456 / 5.184 / 8.2944 / 8.2944  D
+  b_in, J per token   0.04672385778162162 / 0.04672385778162162 / 0.060822804044108114 / 0.09357039895524324 / 0.09357039895524324  D
+  b_out, J per token  0.08086088302702703 / 0.08086088302702703 / 0.10588591913513513 / 0.16325530845405406 / 0.16325530845405406  D
+  c0, mJ per token    0.022272000000000004 / 0.022272000000000004 / 0.04454400000000001 / 0.066816 / 0.066816  D
+  idle                1 / 1 / 1.12 / 1.35 / 1.9  D
+
+parameter set minimax-m3, reviewed 2026-10-08
+  MiniMax M3 (MiniMaxAI/MiniMax-M3) from its published configuration: 60 grouped-query attention layers, 64 query heads, 4 key-value heads, head width 128; layers 3 to 59 use MiniMax Sparse Attention, 16 blocks of 128 tokens plus the local block (taken as top-k 2,048 and a 128-token window), with an index branch of 4 heads x 128 (precision not stated: BF16) scoring every token. KV format not documented: BF16.
+  a_p, uJ per pair    0.07833599999999999 / 0.07833599999999999 / 0.1645056 / 0.25067520000000004 / 0.25067520000000004  D
+  a_d, uJ per pair    3.1104 / 3.1104 / 4.6655999999999995 / 7.4649600000000005 / 7.4649600000000005  D
+  b_in, J per token   0.07351862677448649 / 0.07351862677448649 / 0.09719992703723243 / 0.14947582189457298 / 0.14947582189457298  D
+  b_out, J per token  0.15621073850810813 / 0.15621073850810813 / 0.21069448614054057 / 0.32766252917621624 / 0.32766252917621624  D
+  c0, mJ per token    0.012288000000000002 / 0.012288000000000002 / 0.024576000000000004 / 0.03686400000000001 / 0.03686400000000001  D
+  idle                1 / 1 / 1.12 / 1.35 / 1.9  D
+
+parameter set qwen3.5-397b-a17b, reviewed 2026-10-08
+  Qwen3.5-397B-A17B (Qwen/Qwen3.5-397B-A17B) from its published configuration: 15 gated full-attention layers (32 query heads, 2 key-value heads, head width 256) and 45 Gated DeltaNet layers (64 value heads x 128 x 128 state, FP32 per mamba_ssm_dtype). KV format not documented: BF16.
+  a_p, uJ per pair    0.24576 / 0.24576 / 0.516096 / 0.786432 / 0.786432  D
+  a_d, uJ per pair    4.608 / 4.608 / 6.912 / 11.0592 / 11.0592  D
+  b_in, J per token   0.05293220967783784 / 0.05293220967783784 / 0.06888737005318919 / 0.10597766556367567 / 0.10597766556367567  D
+  b_out, J per token  0.11560884929729731 / 0.11560884929729731 / 0.1559538144864865 / 0.2425423193945946 / 0.2425423193945946  D
+  c0, mJ per token    0.0030720000000000005 / 0.0030720000000000005 / 0.006144000000000001 / 0.009216000000000002 / 0.009216000000000002  D
+  idle                1 / 1 / 1.12 / 1.35 / 1.9  D
+
+parameter set qwen3.8-2.4t-a95b, reviewed 2026-10-08
+  Qwen3.8-2.4T-A95B (Qwen/Qwen3.8-2.4T-A95B) from its published configuration: 23 gated full-attention layers (64 query heads, 4 key-value heads, head width 256) and 69 Gated DeltaNet layers (128 value heads x 128 x 128 state); the state's precision is not stated: FP32, as Qwen3.5. KV format not documented: BF16.
+  a_p, uJ per pair    0.7536639999999999 / 0.7536639999999999 / 1.5826943999999998 / 2.4117248 / 2.4117248  D
+  a_d, uJ per pair    14.1312 / 14.1312 / 21.1968 / 33.914880000000004 / 33.914880000000004  D
+  b_in, J per token   0.2955596772462703 / 0.2955596772462703 / 0.3844591060009514 / 0.5914666428637406 / 0.5914666428637406  D
+  b_out, J per token  0.5746599306378379 / 0.5746599306378379 / 0.7644223283891892 / 1.1840486983956757 / 1.1840486983956757  D
+  c0, mJ per token    0.009420800000000002 / 0.009420800000000002 / 0.018841600000000003 / 0.0282624 / 0.0282624  D
+  idle                1 / 1 / 1.12 / 1.35 / 1.9  D
+
+price calibration open-weight-hosts, reviewed 2026-10-08
+  Weight energy per USD that hosts of open-weight models sell, from their prices on OpenRouter
+  Wh per USD          11.652957305131219 / 17.867867867867872 / 30.525206057120954 / 80.58058058058059 / 200.30447113780446  D
+  markup              1 / 1 / 1.825 / 3.33 / 3.33  D
+
+prices: input / output USD per million tokens, label; above a prompt of N tokens
+  claude-fable-5-1            10 / 50  C
+  claude-haiku-4-5-20251001   1 / 5  C
+  claude-haiku-5-5            0.1 / 0.5  C; above 100,000: 0.5 / 2.5
+  claude-opus-5               5 / 25  C
+  claude-opus-5-5             4 / 20  C
+  claude-sonnet-5             2 / 10  C
+  claude-sonnet-5-5           2 / 10  C
+  gemini-2.5-pro              1.25 / 10  C; above 200,000: 2.5 / 15
+  gemini-3.1-pro-preview      2 / 12  C; above 200,000: 4 / 18
+  gemini-3.8-flash            0.75 / 3.75  C
+  gpt-5.3-codex               1.75 / 14  C
+  gpt-5.5                     5 / 30  C; above 272,000: 10 / 45
+  gpt-5.6-luna                0.2 / 1.2  C; above 272,000: 0.4 / 1.8
+  gpt-5.6-sol                 4 / 20  C; above 272,000: 8 / 30
+  gpt-5.6-terra               2 / 12  C; above 272,000: 4 / 18
+  gpt-6-astra                 10 / 50  C; above 272,000: 20 / 75
+  gpt-6-luna                  0.1 / 0.5  C; above 272,000: 0.2 / 0.75
+  gpt-6-sol                   2 / 10  C; above 272,000: 4 / 15
+  gpt-6.1-sol                 2 / 10  C; above 272,000: 4 / 15
+
+parameter sets from prices: b_in / b_out central, J per token; the other values as their base set
+  frontier@claude-fable-5-1                   1.15 / 1.91  D
+  frontier@claude-haiku-4-5-20251001          0.115 / 0.191  D
+  frontier@claude-haiku-5-5                   0.0115 / 0.0191  D
+  frontier@claude-haiku-5-5>100000            0.0577 / 0.0953  D
+  frontier@claude-opus-5                      0.577 / 0.953  D
+  frontier@claude-opus-5-5                    0.462 / 0.763  D
+  frontier@claude-sonnet-5                    0.231 / 0.381  D
+  frontier@claude-sonnet-5-5                  0.231 / 0.381  D
+  frontier@gemini-2.5-pro                     0.206 / 0.340  D
+  frontier@gemini-2.5-pro>200000              0.412 / 0.511  D
+  frontier@gemini-3.1-pro-preview             0.264 / 0.436  D
+  frontier@gemini-3.1-pro-preview>200000      0.528 / 0.654  D
+  frontier@gemini-3.8-flash                   0.0866 / 0.143  D
+  frontier@gpt-5.3-codex                      0.289 / 0.477  D
+  frontier@gpt-5.5                            0.659 / 1.09  D
+  frontier@gpt-5.5>272000                     1.32 / 1.63  D
+  frontier@gpt-5.6-luna                       0.0264 / 0.0436  D
+  frontier@gpt-5.6-luna>272000                0.0528 / 0.0654  D
+  frontier@gpt-5.6-sol                        0.462 / 0.763  D
+  frontier@gpt-5.6-sol>272000                 0.923 / 1.14  D
+  frontier@gpt-5.6-terra                      0.264 / 0.436  D
+  frontier@gpt-5.6-terra>272000               0.528 / 0.654  D
+  frontier@gpt-6-astra                        1.15 / 1.91  D
+  frontier@gpt-6-astra>272000                 2.31 / 2.86  D
+  frontier@gpt-6-luna                         0.0115 / 0.0191  D
+  frontier@gpt-6-luna>272000                  0.0231 / 0.0286  D
+  frontier@gpt-6-sol                          0.231 / 0.381  D
+  frontier@gpt-6-sol>272000                   0.462 / 0.572  D
+  frontier@gpt-6.1-sol                        0.231 / 0.381  D
+  frontier@gpt-6.1-sol>272000                 0.462 / 0.572  D
+
+models: pattern, parameter set, price, weights, label
+  claude-*                           frontier                -                          closed  C
+  claude-fable-5-1                   frontier                claude-fable-5-1           closed  C
+  claude-haiku-4-5*                  frontier                claude-haiku-4-5-20251001  closed  C
+  claude-haiku-5-5                   frontier                claude-haiku-5-5           closed  C
+  claude-opus-5                      frontier                claude-opus-5              closed  C
+  claude-opus-5-5                    frontier                claude-opus-5-5            closed  C
+  claude-sonnet-5                    frontier                claude-sonnet-5            closed  C
+  claude-sonnet-5-5                  frontier                claude-sonnet-5-5          closed  C
+  codex-*                            frontier                -                          closed  C
+  deepseek-ai/DeepSeek-V4-Pro        deepseek-v4-pro         -                          open    C
+  deepseek-v4-pro                    deepseek-v4-pro         -                          open    C
+  deepseek-ai/DeepSeek-V4.1-Flash    deepseek-v4.1-flash     -                          open    C
+  deepseek-flash                     deepseek-v4.1-flash     -                          open    C
+  gemini-*                           frontier                -                          closed  C
+  gemini-2.5-pro                     frontier                gemini-2.5-pro             closed  C
+  gemini-3.1-pro-preview             frontier                gemini-3.1-pro-preview     closed  C
+  gemini-3.8-flash                   frontier                gemini-3.8-flash           closed  C
+  glm-5.2                            frontier                -                          open    C
+  zai-org/GLM-5.3                    glm-5.3                 -                          open    C
+  glm-5.3                            glm-5.3                 -                          open    C
+  zai-glm-5-3                        glm-5.3                 -                          open    C
+  gpt-*                              frontier                -                          closed  C
+  gpt-5.3-codex                      frontier                gpt-5.3-codex              closed  C
+  gpt-5.5                            frontier                gpt-5.5                    closed  C
+  gpt-5.6-luna                       frontier                gpt-5.6-luna               closed  C
+  gpt-5.6-sol                        frontier                gpt-5.6-sol                closed  C
+  gpt-5.6-terra                      frontier                gpt-5.6-terra              closed  C
+  gpt-6-astra                        frontier                gpt-6-astra                closed  C
+  gpt-6-luna                         frontier                gpt-6-luna                 closed  C
+  gpt-6-sol                          frontier                gpt-6-sol                  closed  C
+  gpt-6.1-sol                        frontier                gpt-6.1-sol                closed  C
+  gpt-oss*                           frontier                -                          open    C
+  gpt-oss-120b                       gpt-oss-120b            -                          open    C
+  openai/gpt-oss-120b                gpt-oss-120b            -                          open    C
+  moonshotai/Kimi-K2.6               frontier                -                          open    C
+  kimi-k2.6*                         frontier                -                          open    C
+  moonshotai/Kimi-K3                 kimi-k3                 -                          open    C
+  kimi-k3                            kimi-k3                 -                          open    C
+  meta-llama/Llama-3.3-70B-Instruct  llama-3.3-70b-instruct  -                          open    C
+  Llama-3.3-70B-Instruct             llama-3.3-70b-instruct  -                          open    C
+  llama-3.3-70b-versatile            llama-3.3-70b-instruct  -                          open    C
+  XiaomiMiMo/MiMo-V2.6-Flash-RL      mimo-v2.6-flash         -                          open    C
+  xiaomi/mimo-v2.6-flash             mimo-v2.6-flash         -                          open    C
+  MiniMaxAI/MiniMax-M3               minimax-m3              -                          open    C
+  MiniMax-M3                         minimax-m3              -                          open    C
+  Qwen/Qwen3.5-397B-A17B             qwen3.5-397b-a17b       -                          open    C
+  Qwen/Qwen3.8-2.4T-A95B             qwen3.8-2.4t-a95b       -                          open    C
+
+providers: grid g CO2e per kWh, PUE
+  anthropic  grid 27.8 / 267.6 / 400.7 / 642.9 / 674.3  D
+             PUE  1.09 / 1.09 / 1.115 / 1.14 / 1.56  D
+             sites ember:US-IN, ember:US-IA, ember:US-TX, ember:US-NY
+  moonshot   grid 27.8 / 528.3 / 528.3 / 528.3 / 674.3  D
+             PUE  1.09 / 1.09 / 1.56 / 1.56 / 1.56  D
+             sites ember:CHN
+  nebius     grid 27.8 / 57.2 / 57.2 / 57.2 / 674.3  D
+             PUE  1.09 / 1.09 / 1.56 / 1.56 / 1.56  D
+             sites ember:FIN
+  openai     grid 27.8 / 311.4 / 378.0 / 529.9 / 674.3  D
+             PUE  1.09 / 1.17 / 1.17 / 1.17 / 1.56  D
+             sites ember:US-VA, ember:US-IA, ember:US-TX, ember:US-AZ, ember:US-WI
+  unknown    grid 21.4 / 57.2 / 376.2 / 642.9 / 1306.2  D
+             PUE  1.09 / 1.09 / 1.56 / 1.56 / 1.56  D
+             sites ember:CHN, ember:FIN, ember:US-AZ, ember:US-IA, ember:US-IN, ember:US-NY, ember:US-TX, ember:US-VA, ember:US-WI
+
+locations of clients without an adapter, first existing path per OS: label, os, path
+  amp          I  linux, macos, windows  ~/.local/share/amp/threads
+  antigravity  I  linux, macos, windows  $GEMINI_CLI_HOME/.gemini/antigravity-cli/conversations
+                  linux, macos, windows  ~/.gemini/antigravity-cli/conversations
+                  linux, macos, windows  ~/.gemini/antigravity/conversations
+  augment      I  linux, macos, windows  ~/.augment/sessions
+  cline        C  linux                  ~/.config/Code/User/globalStorage/saoudrizwan.claude-dev/tasks
+                  macos                  ~/Library/Application Support/Code/User/globalStorage/saoudrizwan.claude-dev/tasks
+                  windows                %APPDATA%/Code/User/globalStorage/saoudrizwan.claude-dev/tasks
+  copilot-cli  C  linux, macos, windows  $COPILOT_HOME/session-store.db
+                  linux, macos, windows  ~/.copilot/session-store.db
+  devin-cli    I  linux, windows         ~/.local/share/devin/cli/sessions.db
+                  macos                  ~/Library/Application Support/Devin/User/acp-events
+  gemini-cli   C  linux, macos, windows  $GEMINI_CLI_HOME/.gemini/tmp
+                  linux, macos, windows  ~/.gemini/tmp
+  goose        C  linux, macos           ~/.local/share/goose/sessions/sessions.db
+                  windows                %APPDATA%/Block/goose/data/sessions/sessions.db
+  junie-cli    C  linux, macos, windows  $JUNIE_HOME/sessions
+                  linux, macos, windows  ~/.junie/sessions
+  kilo-code    C  linux, macos, windows  $KILO_DB
+                  linux, macos, windows  $XDG_DATA_HOME/kilo/kilo.db
+                  linux, macos, windows  ~/.local/share/kilo/kilo.db
+  kimi-cli     C  linux, macos, windows  $KIMI_SHARE_DIR/sessions
+                  linux, macos, windows  ~/.kimi/sessions
+  opencode     C  linux, macos, windows  $OPENCODE_DB
+                  linux, macos, windows  $XDG_DATA_HOME/opencode/opencode.db
+                  linux, macos, windows  ~/.local/share/opencode/opencode.db
+                  windows                %APPDATA%/opencode/opencode.db
+  openhands    C  linux, macos, windows  $OPENHANDS_CONVERSATIONS_DIR
+                  linux, macos, windows  ~/.openhands/conversations
+                  linux, macos, windows  ~/.openhands/agent-canvas/dev_conversations
+  qwen-code    C  linux, macos, windows  $QWEN_RUNTIME_DIR/projects
+                  linux, macos, windows  $QWEN_HOME/projects
+                  linux, macos, windows  ~/.qwen/projects
+  roo-code     C  linux                  ~/.config/Code/User/globalStorage/rooveterinaryinc.roo-cline/tasks
+                  macos                  ~/Library/Application Support/Code/User/globalStorage/rooveterinaryinc.roo-cline/tasks
+                  windows                %APPDATA%/Code/User/globalStorage/rooveterinaryinc.roo-cline/tasks
+
+findings: parameters, label
+  long-context   cached_tokens 200,000   D
+
+geographies: 260; `tokendraw data --json` lists them with every source

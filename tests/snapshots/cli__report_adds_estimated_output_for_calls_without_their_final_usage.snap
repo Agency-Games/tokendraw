@@ -1,0 +1,34 @@
+---
+source: tests/cli.rs
+expression: stdout(&output)
+---
+tokendraw report, all calls
+
+Usage         calls   sessions   cache read   new input   output
+  anthropic      31          1       31.0 k         341   3.31 k
+
+  total          31          1       31.0 k         341   3.31 k
+
+claude-code: 1 call without a line with the final usage. Energy and
+emissions add an estimated 100 output tokens for 1 call, which the usage
+table leaves out.
+
+Coverage        status      location
+  claude-code   read        ~/logs/claude/projects
+  codex         not found   ~/logs/codex/sessions
+  pi            not found   ~/logs/pi/sessions
+
+Emissions, g CO2e   central   plausible      envelope
+  anthropic           0.394   0.075 to 3.7   0.0049 to 19
+
+  total               0.394   0.075 to 3.7   0.0049 to 19
+
+Projects, g CO2e   calls   central   plausible      envelope
+  unresolved          31     0.394   0.075 to 3.7   0.0049 to 19
+
+31 calls in 1 directory belong to no project. Run `tokendraw projects` to
+list them with the labels that would assign them.
+
+Where the energy goes (central)
+  rereading the context               3%
+  calls above 200,000 cached tokens   0%

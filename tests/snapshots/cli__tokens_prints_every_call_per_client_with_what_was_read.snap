@@ -1,0 +1,50 @@
+---
+source: tests/cli.rs
+expression: stdout(&output)
+---
+claude-code, all calls
+  calls               5
+  sessions            2
+  uncached input      14
+  cache write         1,850
+  cache read          2,200
+  output              111
+  of which reasoning  15 in the 4 calls that record it
+  without final usage 1 call, 4 output tokens logged
+  without estimate    1 call with too few comparable calls
+  earliest call       2026-09-30T10:00:02.1Z
+  latest call         2026-10-01T00:00:00Z
+claude-code logs read so far
+  files               4
+  unreadable lines    1
+  files without usage 1
+
+codex, all calls
+  calls               7
+  sessions            3
+  uncached input      29,528
+  cache write         0
+  cache read          41,472
+  output              940
+  of which reasoning  280 in the 7 calls that record it
+  earliest call       2026-09-30T10:00:05.1Z
+  latest call         2026-10-01T00:00:01Z
+codex logs read so far
+  files               4
+  unreadable lines    1
+  files without usage 1
+
+pi, all calls
+  calls               4
+  sessions            2
+  uncached input      1,660
+  cache write         100
+  cache read          4,980
+  output              405
+  of which reasoning  not recorded
+  earliest call       2026-09-30T09:00:05.1Z
+  latest call         2026-10-01T00:00:00Z
+pi logs read so far
+  files               3
+  unreadable lines    1
+  files without usage 1

@@ -1,0 +1,40 @@
+---
+source: tests/cli.rs
+expression: "marked.report(&[\"--redact\"])?"
+---
+tokendraw report, all calls
+
+Usage         calls   sessions   cache read   new input   output
+  anthropic       6          5       5.25 k      1.65 k   1.07 k
+
+  total           6          5       5.25 k      1.65 k   1.07 k
+
+Coverage          status            location
+  claude-code     read              ~/.claude/projects
+  codex           read              $CODEX_HOME/sessions
+  example-agent   read              redacted (1 unreadable line)
+  pi              not found         ~/.pi/agent/sessions
+  opencode        found, not read   $XDG_DATA_HOME/opencode/opencode.db (no adapter)
+  own-agent       found, not read   redacted (no adapter)
+
+Emissions, g CO2e   central   plausible       envelope
+  anthropic           0.187   0.067 to 0.80   0.037 to 2.6
+
+  total               0.187   0.067 to 0.80   0.037 to 2.6
+
+Projects, g CO2e   calls   central   plausible         envelope
+  project 1            2    0.0902   0.026 to 0.52     0.017 to 1.8
+  project 2            1    0.0156   0.0045 to 0.090   0.0029 to 0.31
+  unresolved           3    0.0810   0.036 to 0.19     0.018 to 0.51
+
+3 calls in 2 directories belong to no project. Run `tokendraw projects` to
+list them with the labels that would assign them.
+
+Where the energy goes (central)
+  rereading the context               2%
+  calls above 200,000 cached tokens   0%
+  claude-code / example-agent         57% / 43%
+
+No data record for model example-large, model example-small; a data override
+can add one, and `--verbose` shows what was used instead.
+Data overrides in effect: override 1.

@@ -1,0 +1,33 @@
+[workspace]
+members = ["cargo:."]
+
+# `dist` generates .github/workflows/release.yml from this file.
+[dist]
+cargo-dist-version = "0.33.0"
+# release.yml carries hand edits that pass zizmor, so dist does not
+# regenerate or check it.
+allow-dirty = ["ci"]
+ci = "github"
+hosting = "github"
+# The npm package downloads the archive for its platform from the GitHub
+# release, so every target's archive is hosted there.
+installers = ["npm"]
+targets = [
+    "aarch64-apple-darwin",
+    "aarch64-unknown-linux-musl",
+    "x86_64-apple-darwin",
+    "x86_64-pc-windows-msvc",
+    "x86_64-unknown-linux-musl",
+]
+github-attestations = true
+# A pre-release such as v0.1.0-rc.1 goes to npm under the `next` tag and to
+# crates.io, where `cargo install` skips it unless its version is named.
+publish-prereleases = true
+publish-jobs = ["./publish-npm", "./publish-crates"]
+github-custom-job-permissions = { "publish-npm" = { contents = "read", id-token = "write" }, "publish-crates" = { contents = "read", id-token = "write" } }
+
+[dist.github-action-commits]
+"actions/checkout" = "3d3c42e5aac5ba805825da76410c181273ba90b1" # v7.0.1
+"actions/upload-artifact" = "cf430e030ddbb5b0abf93d22962f4752f3646cd9" # v7.0.2
+"actions/download-artifact" = "9000827ccba6bdab643e8b6fd33ac0654aef8333" # v8.0.2
+"actions/attest" = "1e69f48acb82d1966a394da916b4c1698aa569d6" # v4.2.2

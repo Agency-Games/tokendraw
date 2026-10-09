@@ -1,0 +1,3 @@
+# Text files keep LF on every platform: the data files are hashed into the
+# data version, and the tests and xtask read files byte for byte.
+* text=auto eol=lf

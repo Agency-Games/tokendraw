@@ -1,0 +1,2 @@
+{"type":"user","timestamp":"2026-09-15T09:00:00.000Z","sessionId":"0b6d2c1e-0000-4000-8000-000000000003","cwd":"/work/beta","entrypoint":"cli","message":{"role":"user","content":"Hello."}}
+{"type":"system","subtype":"informational","timestamp":"2026-09-15T09:00:01.000Z","sessionId":"0b6d2c1e-0000-4000-8000-000000000003","content":"Session ended."}
