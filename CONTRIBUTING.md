@@ -46,6 +46,7 @@ with `cargo insta review` (`cargo install --locked cargo-insta`).
 
 ## Pull requests
 
-Pull requests are squash-merged, so each becomes one commit; the subject is
-a plain sentence in the imperative, such as "Read forked Codex sessions".
-Maintainers write `CHANGELOG.md` for each release.
+A maintainer lands each pull request as one commit on `main`, with you as
+its author and a subject that is a plain sentence in the imperative, such
+as "Read forked Codex sessions", and closes the pull request with a link to
+that commit. Maintainers write `CHANGELOG.md` for each release.
