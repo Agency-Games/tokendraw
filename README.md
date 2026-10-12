@@ -108,6 +108,13 @@ Tokendraw reads your session logs on your machine. It makes no network
 requests and sends no telemetry; a command adapter you add runs your
 command, which may.
 
+It keeps what it counts in a ledger, the file `tokendraw/ledger.sqlite`
+in your system's state directory (see [The
+ledger](docs/counting.md#the-ledger)): call and session identifiers, the
+paths of working directories and log files, the definitions of the
+adapters you add and your labels, never the content of a conversation. The ledger keeps them after your agents delete their logs.
+Delete the file to remove them; the next run reads the logs that remain.
+
 ## Building from source
 
 With Rust 1.97 or later (`rustup update` updates an older one):
