@@ -66,8 +66,8 @@ pub fn write(out: &mut impl Write, report: &Report, verbose: bool) -> io::Result
             writeln!(out)?;
         }
         write_rows(out, &BAND_ALIGNS, &widths, table)?;
-        write_cases(out)?;
     }
+    write_cases(out)?;
     write_projects(out, report)?;
     write_breakdown(out, report)?;
     if verbose {
@@ -163,7 +163,8 @@ fn write_projects(out: &mut impl Write, report: &Report) -> io::Result<()> {
     )
 }
 
-/// Follows every band table, so its columns do not read as a mean and its
+/// Follows the block of band tables that share their columns and the
+/// projects table, so their columns do not read as a mean and its
 /// confidence intervals.
 fn write_cases(out: &mut impl Write) -> io::Result<()> {
     writeln!(out)?;

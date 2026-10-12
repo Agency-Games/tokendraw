@@ -9,8 +9,8 @@ and tokendraw follows Semantic Versioning (https://semver.org/).
 ### Changed
 
 - The report's columns `central`, `plausible` and `envelope` are now
-  `base case`, `low to high case` and `bounds`, with a line under each
-  table saying they are cases, not confidence intervals.
+  `base case`, `low to high case` and `bounds`, with a line under the
+  tables saying they are cases, not confidence intervals.
 - Breaking: `report --json` has schema version 2, and `data --json`,
   which had none, has `schema_version` 2. The fields
   `envelope_low`, `plausible_low`, `central`, `plausible_high` and
