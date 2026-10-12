@@ -1,6 +1,6 @@
 [package]
 name = "tokendraw"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 rust-version = "1.97"
 description = "Estimate the energy usage and emissions of LLM coding agent use"
