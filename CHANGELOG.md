@@ -33,6 +33,9 @@ and tokendraw follows Semantic Versioning (https://semver.org/).
   in a user adapter or data override that names it.
 - A provider without a record includes Singapore in its base case grid
   intensity, which moves from 376 to 388 g CO2e per kWh.
+- `tokendraw data` prints values to four significant figures, so values
+  computed from model configurations and prices no longer show digits
+  such as `0.04710399999999999`. `data --json` keeps them exact.
 
 ## [0.1.0] - 2026-10-09
 

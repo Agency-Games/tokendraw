@@ -617,12 +617,26 @@ fn factor_values(factor: &Factor) -> String {
     format!("{}  {:?}", five(&factor.five()), factor.label)
 }
 
-/// Five values as the data states them.
+/// Five values to four significant figures without trailing zeros. A value
+/// entered by hand has at most four, so it prints as the data states it.
 fn five(values: &Five<f64>) -> String {
     format!(
         "{} / {} / {} / {} / {}",
-        values.lower_bound, values.low_case, values.base_case, values.high_case, values.upper_bound
+        figures(values.lower_bound),
+        figures(values.low_case),
+        figures(values.base_case),
+        figures(values.high_case),
+        figures(values.upper_bound)
     )
+}
+
+fn figures(value: f64) -> String {
+    let text = report::significant(value, 4);
+    if text.contains('.') {
+        text.trim_end_matches('0').trim_end_matches('.').to_owned()
+    } else {
+        text
+    }
 }
 
 /// Five computed grid intensities, to one decimal place like Ember's.
@@ -820,7 +834,7 @@ fn count(value: u64) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{count, unselected};
+    use super::{count, figures, unselected};
     use crate::projects::Elsewhere;
 
     #[test]
@@ -853,6 +867,19 @@ mod tests {
             unselected("/w", &elsewhere(&five[..4], 2)),
             "/w is no project: of the calls made there, 14 are attributed to /a, /b, /c and 1 other project and 2 belong to no project. Run `tokendraw report --project /a`, or `tokendraw projects` to assign the rest."
         );
+    }
+
+    #[test]
+    fn data_values_have_four_figures_without_trailing_zeros() {
+        assert_eq!(figures(0.047_103_999_999_999_99), "0.0471");
+        assert_eq!(figures(0.150_732_800_000_000_03), "0.1507");
+        assert_eq!(figures(200.304_471_137_804_46), "200.3");
+        assert_eq!(figures(0.000_445_950_000_000_000_1), "0.000446");
+        assert_eq!(figures(0.5), "0.5");
+        assert_eq!(figures(1.115), "1.115");
+        assert_eq!(figures(1.0), "1");
+        assert_eq!(figures(80.0), "80");
+        assert_eq!(figures(0.0), "0");
     }
 
     #[test]
