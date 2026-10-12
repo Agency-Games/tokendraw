@@ -106,9 +106,7 @@ conversations. Read it before you post it: issues are public.
 
 Tokendraw reads your session logs on your machine. It makes no network
 requests and sends no telemetry; a command adapter you add runs your
-command, which may. Installed with npm, it downloads its
-binary from this repository's GitHub release once, when it is installed or
-first run.
+command, which may.
 
 ## Building from source
 

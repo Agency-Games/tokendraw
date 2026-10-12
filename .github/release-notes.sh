@@ -1,25 +1,24 @@
 #!/bin/sh
-# Prints the release notes from stdin with dist's npm section, which
-# installs into the current project, replaced by the install commands of
-# the README:
+# Prints the release notes from stdin with the install commands of the
+# README before dist's download section:
 #
 #   .github/release-notes.sh VERSION <notes
 set -eu
 awk -v version="$1" '
-/^### Install prebuilt binaries into your npm project$/ {
+/^## Download tokendraw / {
+    print "## Install tokendraw " version
+    print ""
     print "```sh"
     print "npm install -g tokendraw@" version
     print "cargo install --locked tokendraw --version " version
     print "```"
-    skip = 1
+    print ""
     found = 1
-    next
 }
-skip && /^```$/ { skip = 0; next }
-!skip
+{ print }
 END {
     if (!found) {
-        print "release-notes.sh: the notes have no npm install section" > "/dev/stderr"
+        print "release-notes.sh: the notes have no download section" > "/dev/stderr"
         exit 1
     }
 }

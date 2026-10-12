@@ -22,6 +22,9 @@ and tokendraw follows Semantic Versioning (https://semver.org/).
 - Breaking: data files use the same new keys, and `envelope_sites` is
   `bounds_sites`. Rename them in your data overrides; a file with the old
   keys is refused.
+- The npm package installs the binary for your platform as an optional
+  dependency, without an install script, so npm 12 installs it without a
+  warning and nothing is downloaded when it first runs.
 
 ## [0.1.0] - 2026-10-09
 

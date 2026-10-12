@@ -1,6 +1,8 @@
 //! Development tasks for tokendraw. Run as `cargo xtask <task>`.
 
 mod ember;
+#[cfg(test)]
+mod npm_platforms;
 mod open_weight_sets;
 mod price_calibration;
 #[cfg(test)]

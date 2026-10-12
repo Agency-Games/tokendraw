@@ -12,6 +12,10 @@ cargo clippy --workspace --all-targets --locked -- -D warnings
 cargo test --workspace --locked
 ```
 
+A change to the npm packages in `npm/` is checked with Node.js and npm
+after the tests: `node npm/test-install.js target/debug/tokendraw`
+installs them from a local registry and runs tokendraw.
+
 Report and JSON output is tested with [insta](https://insta.rs/) snapshots.
 When a change alters output on purpose, review and accept the new snapshots
 with `cargo insta review` (`cargo install --locked cargo-insta`).

@@ -9,9 +9,6 @@ cargo-dist-version = "0.33.0"
 allow-dirty = ["ci"]
 ci = "github"
 hosting = "github"
-# The npm package downloads the archive for its platform from the GitHub
-# release, so every target's archive is hosted there.
-installers = ["npm"]
 targets = [
     "aarch64-apple-darwin",
     "aarch64-unknown-linux-musl",

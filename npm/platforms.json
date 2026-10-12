@@ -1,0 +1,7 @@
+{
+  "aarch64-apple-darwin": { "package": "tokendraw-darwin-arm64", "os": "darwin", "cpu": ["arm64"] },
+  "aarch64-unknown-linux-musl": { "package": "tokendraw-linux-arm64", "os": "linux", "cpu": ["arm64"] },
+  "x86_64-apple-darwin": { "package": "tokendraw-darwin-x64", "os": "darwin", "cpu": ["x64"] },
+  "x86_64-pc-windows-msvc": { "package": "tokendraw-win32-x64", "os": "win32", "cpu": ["x64", "arm64"] },
+  "x86_64-unknown-linux-musl": { "package": "tokendraw-linux-x64", "os": "linux", "cpu": ["x64"] }
+}

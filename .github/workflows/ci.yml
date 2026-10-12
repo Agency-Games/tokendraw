@@ -48,6 +48,10 @@ jobs:
       # Lints run on every system because platform-specific code is compiled only there.
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
       - run: cargo test --workspace --locked
+      - name: Install the npm packages from a local registry
+        run: node npm/test-install.js "target/debug/tokendraw$EXE"
+        env:
+          EXE: ${{ runner.os == 'Windows' && '.exe' || '' }}
 
   rust-version:
     runs-on: ubuntu-latest
