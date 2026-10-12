@@ -11,7 +11,7 @@ expression: without_platform(&stdout(&output))?
   },
   "data_version": {
     "id": "2026-10-12",
-    "shipped_sha256": "e50df3cf0b2e68ef793bd5c5386bce6041b699330a7424c487086b94d9165f59",
+    "shipped_sha256": "c20379ed27ddeb8afedb2fdd6650f280b6c765ed7beb5172c22f40613800ea13",
     "overrides": []
   },
   "period": {
@@ -247,12 +247,12 @@ expression: without_platform(&stdout(&output))?
       "layer": "L1",
       "quantity": "emissions",
       "unit": "g",
-      "basis": "location-based, region unknown; anthropic: anthropic default, g/kWh 27.756/267.563/400.65175/642.875/674.293; litellm: unknown default, g/kWh 21.429/57.242/376.224778/642.875/1306.15; nebius: nebius default, g/kWh 27.756/57.242/57.242/57.242/674.293; openai: openai default, g/kWh 27.756/311.362/378.013/529.942/674.293; grid: Ember US Electricity Data (emissions intensity by state), Ember Yearly Electricity Data (emissions intensity by country), lifecycle, data years 2022 to 2025",
+      "basis": "location-based, region unknown; anthropic: anthropic default, g/kWh 27.756/267.563/400.65175/642.875/674.293; litellm: unknown default, g/kWh 21.429/57.242/388.307/642.875/1306.15; nebius: nebius default, g/kWh 27.756/57.242/57.242/57.242/674.293; openai: openai default, g/kWh 27.756/311.362/378.013/529.942/674.293; grid: Ember US Electricity Data (emissions intensity by state), Ember Yearly Electricity Data (emissions intensity by country), lifecycle, data years 2022 to 2025",
       "activity_quality": "P",
       "factor_quality": "D",
       "lower_bound": 0.04321839883485477,
       "low_case": 0.7372589972927576,
-      "base_case": 3.0685971642935868,
+      "base_case": 3.0700369641171363,
       "high_case": 24.295828759182037,
       "upper_bound": 142.59722377898842
     }
@@ -325,7 +325,7 @@ expression: without_platform(&stdout(&output))?
       "emissions_g": {
         "lower_bound": 0.00038969641877250005,
         "low_case": 0.0021342572371250003,
-        "base_case": 0.04483350485502104,
+        "base_case": 0.04627330467857067,
         "high_case": 0.180861910588125,
         "upper_bound": 0.975561292914
       },
@@ -334,7 +334,7 @@ expression: without_platform(&stdout(&output))?
       "grid_g_per_kwh": {
         "lower_bound": 21.429,
         "low_case": 57.242,
-        "base_case": 376.2247777777778,
+        "base_case": 388.307,
         "high_case": 642.875,
         "upper_bound": 1306.15
       },
@@ -495,7 +495,7 @@ expression: without_platform(&stdout(&output))?
     "emissions_g": {
       "lower_bound": 0.04321839883485477,
       "low_case": 0.7372589972927576,
-      "base_case": 3.0685971642935868,
+      "base_case": 3.0700369641171363,
       "high_case": 24.295828759182037,
       "upper_bound": 142.59722377898842
     }

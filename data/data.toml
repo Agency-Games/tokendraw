@@ -191,6 +191,19 @@ url = "https://platform.moonshot.cn/"
 publisher = "Moonshot AI"
 accessed = 2026-10-06
 
+[sources.kimi-platform-privacy]
+title = "Kimi OpenPlatform Privacy Policy, last updated 2025-04-30: servers situated in Singapore"
+url = "https://platform.kimi.ai/docs/agreement/userprivacy"
+publisher = "Moonshot AI"
+published = "2025-04-30"
+accessed = 2026-10-12
+
+[sources.pi-moonshotai]
+title = "pi 0.80.2 model list of the provider moonshotai, base URL https://api.moonshot.ai/v1; moonshotai-cn.models.ts beside it names moonshotai-cn, https://api.moonshot.cn/v1"
+url = "https://github.com/earendil-works/pi/blob/v0.80.2/packages/ai/src/providers/moonshotai.models.ts"
+publisher = "earendil-works, on GitHub"
+accessed = 2026-10-12
+
 [sources.anthropic-pricing]
 title = "Claude API pricing"
 url = "https://platform.claude.com/docs/en/about-claude/pricing"

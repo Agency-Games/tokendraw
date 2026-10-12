@@ -118,12 +118,12 @@ Mistral, emissions in g CO2e:
 
 | Input tokens | Parameter set | Lower bound | Low case | Base case | High case | Upper bound | 1.14 g CO2e is |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 100 | `frontier` | 0.000456 | 0.00245 | 0.0516 | 0.183 | 1.03 | above the upper bound |
-| 1000 | `frontier` | 0.00105 | 0.00565 | 0.119 | 0.461 | 2.52 | between high case and upper bound |
-| 10000 | `frontier` | 0.00709 | 0.0396 | 0.826 | 3.38 | 18.0 | base case to high case |
-| 100 | `frontier@mistral-large-2` | 0.000172 | 0.000718 | 0.0233 | 0.229 | 1.63 | between high case and upper bound |
-| 1000 | `frontier@mistral-large-2` | 0.000380 | 0.00163 | 0.0521 | 0.506 | 3.57 | between high case and upper bound |
-| 10000 | `frontier@mistral-large-2` | 0.00260 | 0.0126 | 0.372 | 3.40 | 23.6 | base case to high case |
+| 100 | `frontier` | 0.000456 | 0.00245 | 0.0532 | 0.183 | 1.03 | above the upper bound |
+| 1000 | `frontier` | 0.00105 | 0.00565 | 0.123 | 0.461 | 2.52 | between high case and upper bound |
+| 10000 | `frontier` | 0.00709 | 0.0396 | 0.852 | 3.38 | 18.0 | base case to high case |
+| 100 | `frontier@mistral-large-2` | 0.000172 | 0.000718 | 0.0241 | 0.229 | 1.63 | between high case and upper bound |
+| 1000 | `frontier@mistral-large-2` | 0.000380 | 0.00163 | 0.0538 | 0.506 | 3.57 | between high case and upper bound |
+| 10000 | `frontier@mistral-large-2` | 0.00260 | 0.0126 | 0.384 | 3.40 | 23.6 | base case to high case |
 
 At 100 input tokens Mistral's figure is above the `frontier` upper
 bound, and up to 1,000 input tokens it is above every high case. Possible

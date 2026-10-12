@@ -553,7 +553,7 @@ basis = "No data centre"
         "{text}"
     );
     assert!(
-        text.contains("  ollama     grid 41.2 / 41.2 / 41.2 / 41.2 / 41.2  M"),
+        text.contains("  ollama         grid 41.2 / 41.2 / 41.2 / 41.2 / 41.2  M"),
         "{text}"
     );
     Ok(())
@@ -926,6 +926,101 @@ fn report_computes_hand_worked_values_with_overridden_data() -> TestResult {
     assert_eq!(estimates[0]["factor_quality"], "M");
     assert_eq!(estimates[2]["factor_quality"], "C");
 
+    Ok(())
+}
+
+/// pi records Moonshot AI's API as `moonshotai` (api.moonshot.ai) and
+/// `moonshotai-cn` (api.moonshot.cn); each matches its own provider record.
+#[test]
+fn pi_moonshot_calls_match_their_provider_records() -> TestResult {
+    let state = TempDir::new()?;
+    let logs = state.path().join("logs");
+    let sessions = logs.join("pi/sessions/--work-alpha--");
+    std::fs::create_dir_all(&sessions)?;
+    let call = |id: &str, provider: &str| {
+        serde_json::json!({
+            "type": "message",
+            "id": id,
+            "parentId": null,
+            "timestamp": "2026-09-30T09:00:05.000Z",
+            "message": {
+                "role": "assistant",
+                "content": [{"type": "text", "text": "Synthetic reply."}],
+                "api": "openai-completions",
+                "provider": provider,
+                "model": "kimi-k3",
+                "usage": {"input": 1000, "output": 100, "cacheRead": 0, "cacheWrite": 0, "totalTokens": 1100},
+                "stopReason": "stop",
+                "timestamp": 1_790_758_805_000_u64,
+                "responseId": format!("resp-{id}"),
+            },
+        })
+        .to_string()
+    };
+    let header = serde_json::json!({
+        "type": "session",
+        "version": 3,
+        "id": "0b7e0000-0000-4000-8000-0000000000d1",
+        "timestamp": "2026-09-30T09:00:00.000Z",
+        "cwd": "/work/alpha",
+    });
+    std::fs::write(
+        sessions.join("2026-09-30T09-00-00-000Z_0b7e0000-0000-4000-8000-0000000000d1.jsonl"),
+        [
+            header.to_string(),
+            call("m1", "moonshotai"),
+            call("m2", "moonshotai-cn"),
+        ]
+        .join("\n")
+            + "\n",
+    )?;
+    let output = tokendraw_with_state(
+        state.path(),
+        &[
+            "report",
+            "--json",
+            "--since",
+            "2026-09-30",
+            "--until",
+            "2026-10-01",
+        ],
+    )
+    .env("CLAUDE_CONFIG_DIR", logs.join("claude"))
+    .env("CODEX_HOME", logs.join("codex"))
+    .env("PI_CODING_AGENT_DIR", logs.join("pi"))
+    .output()?;
+    assert_eq!(output.status.code(), Some(0), "{output:?}");
+    let json: serde_json::Value = serde_json::from_slice(&output.stdout)?;
+    assert_eq!(json["observed_totals"]["calls"], 2);
+    assert_eq!(
+        json["unmatched"]["providers"],
+        serde_json::json!([]),
+        "{json}"
+    );
+    let groups: Vec<(&str, &str, f64)> = json["l1_groups"]
+        .as_array()
+        .map(|groups| {
+            groups
+                .iter()
+                .map(|group| {
+                    (
+                        group["provider"].as_str().unwrap_or_default(),
+                        group["record"].as_str().unwrap_or_default(),
+                        group["grid_g_per_kwh"]["base_case"]
+                            .as_f64()
+                            .unwrap_or_default(),
+                    )
+                })
+                .collect()
+        })
+        .unwrap_or_default();
+    assert_eq!(
+        groups,
+        [
+            ("moonshotai", "moonshotai", 497.047),
+            ("moonshotai-cn", "moonshotai-cn", 528.278)
+        ]
+    );
     Ok(())
 }
 

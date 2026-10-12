@@ -2,15 +2,15 @@
 source: tests/cli.rs
 expression: without_stale(&stdout(&output))
 ---
-data 2026-10-12, shipped sha256 e50df3cf0b2e68ef793bd5c5386bce6041b699330a7424c487086b94d9165f59
+data 2026-10-12, shipped sha256 c20379ed27ddeb8afedb2fdd6650f280b6c765ed7beb5172c22f40613800ea13
 shipped files, sha256
-  data/data.toml                      aea68875dbdc90adef46e7a5f9e833660e60c45497f9f9d6b96fa4af4e8b739d
+  data/data.toml                      b15545a6fbdf3c83b3b0743bb2d29dfbd4e78cd1e60af32a513e72222aa1c1c2
   data/energy/parameter-sets.toml     a6d8f75c866880cfe1266283a1449ce01df46c327cf17acfd3dd27b6d93c516c
   data/energy/open-weight-sets.toml   16c4d397ad6d42cfb2ec2e8255742918c239d717f8e6f03cf385cca66e218f96
   data/energy/price-calibration.toml  f495d1dcb6e900679b8cb067191271db5372116ae86921c883b6545889b45400
   data/energy/prices.toml             868e3f440043cea2a8d9dc18ca0a0704799ab0c6b6b5d0ccf0f1634a2f508cab
   data/energy/models.toml             5e9076cc6ee525db8c1f0a05586788ba0858360c58dd461c7e4a1e4044af1850
-  data/providers.toml                 0520a9522a3d765bde5f87759544751d779a61dadd4e1cdf61a27dae3427a41c
+  data/providers.toml                 9c64c2a958e27f8c87f705f71815dc1c56e7f46f397864ad5bccf8b7bd90f23f
   data/grid/ember.toml                3ddbe09b98b603d46a2354c71b6fb5983a7de374bfa1c0a61d6032656ebaf398
   data/discovery.toml                 d6e01b132e02c0ac5e8628f05a1cddae7b8e769ca55ccc5da19d50fbe07a2f06
   data/findings.toml                  00b03f6a104f6afb729a053be1088740cfa387c78dc0cddd6a91fea4b5f266e9
@@ -226,21 +226,24 @@ models: pattern, parameter set, price, weights, label
   Qwen/Qwen3.8-2.4T-A95B             qwen3.8-2.4t-a95b       -                          open    C
 
 providers: grid g CO2e per kWh, PUE
-  anthropic  grid 27.8 / 267.6 / 400.7 / 642.9 / 674.3  D
-             PUE  1.09 / 1.09 / 1.115 / 1.14 / 1.56  D
-             sites ember:US-IN, ember:US-IA, ember:US-TX, ember:US-NY
-  moonshot   grid 27.8 / 528.3 / 528.3 / 528.3 / 674.3  D
-             PUE  1.09 / 1.09 / 1.56 / 1.56 / 1.56  D
-             sites ember:CHN
-  nebius     grid 27.8 / 57.2 / 57.2 / 57.2 / 674.3  D
-             PUE  1.09 / 1.09 / 1.56 / 1.56 / 1.56  D
-             sites ember:FIN
-  openai     grid 27.8 / 311.4 / 378.0 / 529.9 / 674.3  D
-             PUE  1.09 / 1.17 / 1.17 / 1.17 / 1.56  D
-             sites ember:US-VA, ember:US-IA, ember:US-TX, ember:US-AZ, ember:US-WI
-  unknown    grid 21.4 / 57.2 / 376.2 / 642.9 / 1306.2  D
-             PUE  1.09 / 1.09 / 1.56 / 1.56 / 1.56  D
-             sites ember:CHN, ember:FIN, ember:US-AZ, ember:US-IA, ember:US-IN, ember:US-NY, ember:US-TX, ember:US-VA, ember:US-WI
+  anthropic      grid 27.8 / 267.6 / 400.7 / 642.9 / 674.3  D
+                 PUE  1.09 / 1.09 / 1.115 / 1.14 / 1.56  D
+                 sites ember:US-IN, ember:US-IA, ember:US-TX, ember:US-NY
+  moonshotai     grid 27.8 / 497.0 / 497.0 / 497.0 / 674.3  D
+                 PUE  1.09 / 1.09 / 1.56 / 1.56 / 1.56  D
+                 sites ember:SGP
+  moonshotai-cn  grid 27.8 / 528.3 / 528.3 / 528.3 / 674.3  D
+                 PUE  1.09 / 1.09 / 1.56 / 1.56 / 1.56  D
+                 sites ember:CHN
+  nebius         grid 27.8 / 57.2 / 57.2 / 57.2 / 674.3  D
+                 PUE  1.09 / 1.09 / 1.56 / 1.56 / 1.56  D
+                 sites ember:FIN
+  openai         grid 27.8 / 311.4 / 378.0 / 529.9 / 674.3  D
+                 PUE  1.09 / 1.17 / 1.17 / 1.17 / 1.56  D
+                 sites ember:US-VA, ember:US-IA, ember:US-TX, ember:US-AZ, ember:US-WI
+  unknown        grid 21.4 / 57.2 / 388.3 / 642.9 / 1306.2  D
+                 PUE  1.09 / 1.09 / 1.56 / 1.56 / 1.56  D
+                 sites ember:CHN, ember:FIN, ember:SGP, ember:US-AZ, ember:US-IA, ember:US-IN, ember:US-NY, ember:US-TX, ember:US-VA, ember:US-WI
 
 locations of clients without an adapter, first existing path per OS: label, os, path
   amp          I  linux, macos, windows  ~/.local/share/amp/threads

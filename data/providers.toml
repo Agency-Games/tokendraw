@@ -76,13 +76,32 @@ sources = ["google-pue", "uptime-2024"]
 basis = "No fleet PUE found for Nebius: the industry average, 1.56 (Uptime 2024), down to the lowest published fleet PUE, Google's 1.09."
 
 [[provider]]
-id = "moonshot"
+id = "moonshotai"
+sites = ["ember:SGP"]
+bounds_sites = "listed"
+label = "D"
+sources = ["kimi-platform-privacy", "pi-moonshotai"]
+basis = "Moonshot AI's international Kimi API, api.moonshot.ai, as pi names it. Its privacy policy places Moonshot AI's servers in Singapore but does not say where inference runs, so Singapore is assumed and the bounds cover every geography a shipped provider lists."
+reviewed = 2026-10-12
+
+[provider.pue]
+lower_bound = 1.09
+low_case = 1.09
+base_case = 1.56
+high_case = 1.56
+upper_bound = 1.56
+label = "D"
+sources = ["google-pue", "uptime-2024"]
+basis = "No fleet PUE found for Moonshot AI: the industry average, 1.56 (Uptime 2024), down to the lowest published fleet PUE, Google's 1.09."
+
+[[provider]]
+id = "moonshotai-cn"
 sites = ["ember:CHN"]
 bounds_sites = "listed"
 label = "D"
-sources = ["moonshot-platform"]
-basis = "Assumed from its mainland China API domain: Moonshot AI serves Kimi from mainland China. Not verified, so the bounds cover every geography a shipped provider lists."
-reviewed = 2026-10-06
+sources = ["moonshot-platform", "pi-moonshotai"]
+basis = "Moonshot AI's mainland China Kimi API, api.moonshot.cn, as pi names it. Assumed from its mainland China API domain: Moonshot AI serves it from mainland China. Not verified, so the bounds cover every geography a shipped provider lists."
+reviewed = 2026-10-12
 
 [provider.pue]
 lower_bound = 1.09

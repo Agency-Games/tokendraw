@@ -25,6 +25,14 @@ and tokendraw follows Semantic Versioning (https://semver.org/).
 - The npm package installs the binary for your platform as an optional
   dependency, without an install script, so npm 12 installs it without a
   warning and nothing is downloaded when it first runs.
+- pi's calls to Moonshot AI's API, which pi records as `moonshotai`
+  (api.moonshot.ai) and `moonshotai-cn` (api.moonshot.cn), have their own
+  provider records instead of `unknown`: Singapore, where Moonshot AI's
+  privacy policy places its servers, and mainland China, both assumed.
+  The `moonshot` record, which no client records, is removed; rename it
+  in a user adapter or data override that names it.
+- A provider without a record includes Singapore in its base case grid
+  intensity, which moves from 376 to 388 g CO2e per kWh.
 
 ## [0.1.0] - 2026-10-09
 

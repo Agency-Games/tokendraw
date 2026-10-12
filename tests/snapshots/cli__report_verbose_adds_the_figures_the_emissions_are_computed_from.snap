@@ -37,22 +37,22 @@ Electricity, Wh                   base case   low to high case   bounds
 
 Grid intensity, kg CO2e per kWh   base case   low to high case   bounds
   anthropic                           0.401   0.27 to 0.64       0.028 to 0.67
-  litellm (unknown)                   0.376   0.057 to 0.64      0.021 to 1.3
+  litellm (unknown)                   0.388   0.057 to 0.64      0.021 to 1.3
   nebius                             0.0572   0.057              0.028 to 0.67
   openai                              0.378   0.31 to 0.53       0.028 to 0.67
 
 Emissions, g CO2e                 base case   low to high case   bounds
   anthropic                           0.132   0.025 to 1.3       0.0017 to 6.3
-  litellm (unknown)                  0.0448   0.0021 to 0.18     0.00039 to 0.98
+  litellm (unknown)                  0.0463   0.0021 to 0.18     0.00039 to 0.98
   nebius                             0.0225   0.011 to 0.042     0.0052 to 0.69
   openai                               3.05   0.74 to 24         0.038 to 140
 
-  total                                3.24   0.78 to 26         0.045 to 150
+  total                                3.25   0.78 to 26         0.045 to 150
 
 These are cases, not confidence intervals: see `tokendraw report --help`.
 
 Projects, g CO2e   calls   base case   low to high case   bounds
-  unresolved          16        3.24   0.78 to 26         0.045 to 150
+  unresolved          16        3.25   0.78 to 26         0.045 to 150
 
 These are cases, not confidence intervals: see `tokendraw report --help`.
 
@@ -66,7 +66,7 @@ Where the energy goes (base case)
   interactive / subagent / headless   84% / 1% / 15%
 
 Data sources
-  data version                2026-10-12, shipped sha256 e50df3cf0b2e, no
+  data version                2026-10-12, shipped sha256 c20379ed27dd, no
                               overrides
   energy per call             parameter sets frontier,
                               frontier@claude-opus-5-5,
