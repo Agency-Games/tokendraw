@@ -1,6 +1,6 @@
 # Parameter sets of the per-call energy model. Each parameter has five
-# values: envelope low, plausible low, central, plausible high and envelope
-# high. The envelope is what non-disclosure leaves open, the plausible band
+# values: lower bound, low case, base case, high case and upper bound.
+# The bounds are what non-disclosure leaves open, the low and high case
 # the spread across documented architectures and hardware.
 
 [[parameter_set]]
@@ -9,61 +9,61 @@ description = "A closed frontier model served on 2024 to 2026 data-centre accele
 reviewed = 2026-10-07
 
 [parameter_set.a_p_uj_per_pair]
-envelope_low = 0.5
-plausible_low = 2.5
-central = 4
-plausible_high = 8
-envelope_high = 12
+lower_bound = 0.5
+low_case = 2.5
+base_case = 4
+high_case = 8
+upper_bound = 12
 label = "D"
 sources = ["deepseek-v3-hardware", "mlenergy-v3"]
-basis = "Attention FLOPs per pair of a new token and a context token in documented models (0.15 to 8.3 million) times energy per FLOP (0.5 to 1.7 pJ). Central: full-attention mixture of experts on B200-class hardware. Low: sparse or hybrid attention. High: Llama-3.1-405B attention width on H100."
+basis = "Attention FLOPs per pair of a new token and a context token in documented models (0.15 to 8.3 million) times energy per FLOP (0.5 to 1.7 pJ). Base case: full-attention mixture of experts on B200-class hardware. Low: sparse or hybrid attention. High: Llama-3.1-405B attention width on H100."
 
 [parameter_set.a_d_uj_per_pair]
-envelope_low = 2
-plausible_low = 10
-central = 20
-plausible_high = 45
-envelope_high = 80
+lower_bound = 2
+low_case = 10
+base_case = 20
+high_case = 45
+upper_bound = 80
 label = "D"
 sources = ["deepseek-v3-hardware", "mlenergy-v3"]
 basis = "KV cache bytes per context token (8 to 516 KB) times node energy per HBM byte read (150 to 330 pJ) for each output token. Measured anchor: about 30 uJ, GPU only, for Qwen3-32B in the ML.ENERGY Leaderboard v3.0."
 
 [parameter_set.b_in_j_per_token]
-envelope_low = 0.1
-plausible_low = 0.2
-central = 0.4
-plausible_high = 0.8
-envelope_high = 1.5
+lower_bound = 0.1
+low_case = 0.2
+base_case = 0.4
+high_case = 0.8
+upper_bound = 1.5
 label = "D"
 sources = ["deepseek-fleet", "mlenergy-v3"]
-basis = "DeepSeek-V3/R1 fleet statistics: 0.23 J per cache-miss input token at 37 billion active parameters on H800, scaled to about 100 billion active parameters (central; not disclosed for closed models) and to B200, 35 percent less energy per token in the ML.ENERGY Leaderboard v3.0. Taken as energy at load, because DeepSeek scales its inference nodes to the load; had its fleet carried Google's measured reserve, 0.23 J would be 0.205 J at load."
+basis = "DeepSeek-V3/R1 fleet statistics: 0.23 J per cache-miss input token at 37 billion active parameters on H800, scaled to about 100 billion active parameters (base case; not disclosed for closed models) and to B200, 35 percent less energy per token in the ML.ENERGY Leaderboard v3.0. Taken as energy at load, because DeepSeek scales its inference nodes to the load; had its fleet carried Google's measured reserve, 0.23 J would be 0.205 J at load."
 
 [parameter_set.b_out_j_per_token]
-envelope_low = 0.15
-plausible_low = 0.3
-central = 0.6
-plausible_high = 1.0
-envelope_high = 2.0
+lower_bound = 0.15
+low_case = 0.3
+base_case = 0.6
+high_case = 1.0
+upper_bound = 2.0
 label = "D"
 sources = ["deepseek-fleet", "mlenergy-v3"]
 basis = "DeepSeek-V3/R1 fleet statistics: about 0.38 J per output token excluding attention over the context, with the same scaling as b_in, taken as energy at load like b_in; had DeepSeek's fleet carried Google's measured reserve, 0.38 J would be 0.325 J at load."
 
 [parameter_set.c0_mj_per_cached_token]
-envelope_low = 0.02
-plausible_low = 0.03
-central = 0.3
-plausible_high = 1
-envelope_high = 3
+lower_bound = 0.02
+low_case = 0.03
+base_case = 0.3
+high_case = 1
+upper_bound = 3
 label = "D"
 sources = ["deepseek-v3-hardware"]
 basis = "Reloading a cached token's KV entry from DRAM or SSD, and decompressing it where the cache is compressed, once per call."
 
 [parameter_set.idle]
-envelope_low = 1.0
-plausible_low = 1.0
-central = 1.12
-plausible_high = 1.35
-envelope_high = 1.9
+lower_bound = 1.0
+low_case = 1.0
+base_case = 1.12
+high_case = 1.35
+upper_bound = 1.9
 label = "D"
 sources = ["deepseek-fleet", "google-gemini-energy", "dynamollm", "inverse-w-law"]
-basis = "Serving energy including reserved and idle capacity, divided by the energy of the same work at load; the provider's PUE is applied separately. Low: a fleet scaled to its load, as DeepSeek's, which releases inference nodes to research and training at night. Central: Google's Gemini measurement, idle machines 10 percent against 83 percent for active machines, (83 + 10) / 83 = 1.12. High: capacity provisioned for peak load, idle servers drawing half their power at load (H100, 300 W against 600 W), at a peak of 1.7 times the average load (Azure conversation traffic, plausible high, 1 + 0.7 x 0.5) and 2.8 times (Azure coding traffic, envelope high, 1 + 1.8 x 0.5)."
+basis = "Serving energy including reserved and idle capacity, divided by the energy of the same work at load; the provider's PUE is applied separately. Low: a fleet scaled to its load, as DeepSeek's, which releases inference nodes to research and training at night. Base case: Google's Gemini measurement, idle machines 10 percent against 83 percent for active machines, (83 + 10) / 83 = 1.12. High: capacity provisioned for peak load, idle servers drawing half their power at load (H100, 300 W against 600 W), at a peak of 1.7 times the average load (Azure conversation traffic, high case, 1 + 0.7 x 0.5) and 2.8 times (Azure coding traffic, upper bound, 1 + 1.8 x 0.5)."

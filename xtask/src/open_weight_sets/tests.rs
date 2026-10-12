@@ -164,14 +164,14 @@ const CALLS: [Call; 6] = [
     },
 ];
 
-/// Node energy in J of each of `CALLS` on the central scenario, computed by
+/// Node energy in J of each of `CALLS` on the base scenario, computed by
 /// an independent implementation of the per-position integration outside
 /// this repository.
 #[expect(
     clippy::unreadable_literal,
     reason = "the values as the implementation printed them"
 )]
-const INTEGRATED_CENTRAL: [(&str, [f64; 6]); 10] = [
+const INTEGRATED_BASE_CASE: [(&str, [f64; 6]); 10] = [
     (
         "deepseek-v4-pro",
         [
@@ -288,7 +288,7 @@ const INTEGRATED_CENTRAL: [(&str, [f64; 6]); 10] = [
 fn the_integration_reproduces_an_independent_implementation() -> anyhow::Result<()> {
     let (input, weights) = shipped()?;
     let sets = compute(&input, &weights)?;
-    for (id, expected) in INTEGRATED_CENTRAL {
+    for (id, expected) in INTEGRATED_BASE_CASE {
         let index = input
             .model
             .iter()
@@ -305,8 +305,8 @@ fn the_integration_reproduces_an_independent_implementation() -> anyhow::Result<
                 model,
                 active,
                 &weights.anchor,
-                &input.hardware.central,
-                weights.hardware.central,
+                &input.hardware.base,
+                weights.hardware.base,
                 call,
             )?;
             assert!(
@@ -314,7 +314,7 @@ fn the_integration_reproduces_an_independent_implementation() -> anyhow::Result<
                 "{id}: {integrated} against {expected}"
             );
             assert!(
-                formula(&sets[index].central, call) / expected > 1.0 - 1e-9,
+                formula(&sets[index].base, call) / expected > 1.0 - 1e-9,
                 "{id}"
             );
         }
@@ -329,7 +329,7 @@ fn the_sets_bound_the_integrated_energy_from_above_and_meet_it_at_long_contexts(
     let sets = compute(&input, &weights)?;
     let scenarios = [
         (&input.hardware.low, weights.hardware.low),
-        (&input.hardware.central, weights.hardware.central),
+        (&input.hardware.base, weights.hardware.base),
         (&input.hardware.high, weights.hardware.high),
     ];
     for (set, model) in sets.iter().zip(&input.model) {
@@ -338,9 +338,7 @@ fn the_sets_bound_the_integrated_energy_from_above_and_meet_it_at_long_contexts(
             .iter()
             .find(|listed| listed.id == model.id)
             .context("active parameters")?;
-        for ((scenario, factor), values) in
-            scenarios.iter().zip([&set.low, &set.central, &set.high])
-        {
+        for ((scenario, factor), values) in scenarios.iter().zip([&set.low, &set.base, &set.high]) {
             for call in CALLS {
                 let integrated = exact(model, active, &weights.anchor, scenario, *factor, call)?;
                 let ratio = formula(values, call) / integrated;
@@ -372,12 +370,12 @@ fn full_attention_is_the_pair_formula_exactly() -> anyhow::Result<()> {
         .context("llama")?;
     // 80 layers x 2 x 64 heads x 256 FLOPs per pair at 1.05 pJ.
     let a_p = 80.0 * 2.0 * 64.0 * 256.0 * 1.05e-12 * 1e6;
-    assert!((sets[llama].central.a_p - a_p).abs() < 1e-12);
+    assert!((sets[llama].base.a_p - a_p).abs() < 1e-12);
     // 8 key-value heads x 256 x 2 bytes = 4,096 bytes per layer at 225 pJ.
     let a_d = 80.0 * 4096.0 * 225e-12 * 1e6;
-    assert!((sets[llama].central.a_d - a_d).abs() < 1e-12);
+    assert!((sets[llama].base.a_d - a_d).abs() < 1e-12);
     // 0.23 J x 70.554 / 37 x 0.65.
-    assert!((sets[llama].central.b_in - 0.23 * 70.554 / 37.0 * 0.65).abs() < 1e-12);
+    assert!((sets[llama].base.b_in - 0.23 * 70.554 / 37.0 * 0.65).abs() < 1e-12);
     Ok(())
 }
 
@@ -396,12 +394,9 @@ fn the_output_holds_a_set_per_model_with_frontier_idle_and_is_reproducible() -> 
         .filter_map(toml::Value::as_table)
         .find(|record| record["id"].as_str() == Some("kimi-k3"))
         .context("kimi-k3")?;
-    assert_eq!(kimi["idle"]["central"].as_float(), Some(1.12));
+    assert_eq!(kimi["idle"]["base_case"].as_float(), Some(1.12));
     let a_p = kimi["a_p_uj_per_pair"].as_table().context("a_p")?;
-    assert_eq!(
-        a_p["envelope_low"].as_float(),
-        a_p["plausible_low"].as_float()
-    );
+    assert_eq!(a_p["lower_bound"].as_float(), a_p["low_case"].as_float());
     assert_eq!(a_p["label"].as_str(), Some("D"));
     let sources = value["sources"].as_table().context("sources")?;
     assert!(sources.contains_key("config-kimi-k3"));

@@ -1,76 +1,76 @@
 # Where each provider serves from and the overhead of its data centres.
 #
 # A provider's id is its name as the logs record it. `sites` are grid
-# geographies, weighted equally: the central grid intensity is their mean,
-# the plausible band runs from the lowest to the highest, and the envelope
-# also covers `envelope_sites`. `envelope_sites = "all"` covers every
+# geographies, weighted equally: the base case grid intensity is their
+# mean, the low and high case are the lowest and the highest, and the
+# bounds also cover `bounds_sites`. `bounds_sites = "all"` covers every
 # geography in the grid data, for a provider that may serve from anywhere;
-# `envelope_sites = "listed"` covers every geography a provider in these
-# shipped files lists in its sites or envelope sites, for a provider whose
+# `bounds_sites = "listed"` covers every geography a provider in these
+# shipped files lists in its sites or bounds sites, for a provider whose
 # announced sites are known but which does not say where each call runs. A
 # provider the data does not name uses `unknown`, whose `sites = "named"` is
 # every site of a provider in these shipped files. A provider or geography a
-# user adds never widens another record's sites or envelope.
+# user adds never widens another record's sites or bounds sites.
 #
 # PUE (power usage effectiveness) splits a call's energy into IT and
 # facility overhead. Where a provider's hosts publish fleet PUE, the
-# central value is their mean and the plausible band their range; where
-# none does, the central value is the industry average. The envelope runs
-# from the lowest published fleet PUE to the industry average.
+# base case is their mean and the low and high case their range; where
+# none does, the base case is the industry average. The bounds run from
+# the lowest published fleet PUE to the industry average.
 
 [[provider]]
 id = "anthropic"
 sites = ["ember:US-IN", "ember:US-IA", "ember:US-TX", "ember:US-NY"]
-envelope_sites = "listed"
+bounds_sites = "listed"
 label = "D"
 sources = ["aws-rainier", "anthropic-google-tpus", "anthropic-us-infrastructure", "anthropic-data-residency"]
-basis = "Announced sites: AWS Project Rainier in Indiana, Google TPU capacity (regions not named; assumed to be Iowa, Google's us-central1), and Fluidstack sites in Texas and New York, each assumed to serve an equal share. The API's default inference_geo, global, may run in any available geography, which Anthropic does not list, so the envelope covers every geography a shipped provider lists."
+basis = "Announced sites: AWS Project Rainier in Indiana, Google TPU capacity (regions not named; assumed to be Iowa, Google's us-central1), and Fluidstack sites in Texas and New York, each assumed to serve an equal share. The API's default inference_geo, global, may run in any available geography, which Anthropic does not list, so the bounds cover every geography a shipped provider lists."
 reviewed = 2026-10-06
 
 [provider.pue]
-envelope_low = 1.09
-plausible_low = 1.09
-central = 1.115
-plausible_high = 1.14
-envelope_high = 1.56
+lower_bound = 1.09
+low_case = 1.09
+base_case = 1.115
+high_case = 1.14
+upper_bound = 1.56
 label = "D"
 sources = ["aws-pue", "google-pue", "uptime-2024"]
-basis = "Anthropic publishes no PUE. Mean of the fleet PUE of AWS (1.14, 2025) and Google (1.09, 2025), assuming their sites serve Anthropic's calls in equal shares; Fluidstack publishes none. Envelope up to the industry average, 1.56 (Uptime 2024)."
+basis = "Anthropic publishes no PUE. Mean of the fleet PUE of AWS (1.14, 2025) and Google (1.09, 2025), assuming their sites serve Anthropic's calls in equal shares; Fluidstack publishes none. Bounds up to the industry average, 1.56 (Uptime 2024)."
 
 [[provider]]
 id = "openai"
 sites = ["ember:US-VA", "ember:US-IA", "ember:US-TX", "ember:US-AZ", "ember:US-WI"]
-envelope_sites = "listed"
+bounds_sites = "listed"
 label = "D"
 sources = ["stargate", "crusoe-abilene", "microsoft-fairwater", "openai-models"]
-basis = "Announced sites: Stargate in Texas (Abilene and others), Microsoft Fairwater in Wisconsin, and Azure capacity assumed in Virginia, Iowa and Arizona, each assumed to serve an equal share. Abilene's on-site backup gas turbines are not included. Where OpenAI serves each call from is not published, so the envelope covers every geography a shipped provider lists."
+basis = "Announced sites: Stargate in Texas (Abilene and others), Microsoft Fairwater in Wisconsin, and Azure capacity assumed in Virginia, Iowa and Arizona, each assumed to serve an equal share. Abilene's on-site backup gas turbines are not included. Where OpenAI serves each call from is not published, so the bounds cover every geography a shipped provider lists."
 reviewed = 2026-10-06
 
 [provider.pue]
-envelope_low = 1.09
-plausible_low = 1.17
-central = 1.17
-plausible_high = 1.17
-envelope_high = 1.56
+lower_bound = 1.09
+low_case = 1.17
+base_case = 1.17
+high_case = 1.17
+upper_bound = 1.56
 label = "D"
 sources = ["microsoft-pue", "google-pue", "uptime-2024"]
-basis = "OpenAI publishes no PUE. Microsoft's fleet PUE, 1.17 (fiscal 2025, the sites it fully owns and controls), assumed for OpenAI's calls; Oracle and Crusoe publish none. Envelope from Google's fleet, 1.09, to the industry average, 1.56 (Uptime 2024)."
+basis = "OpenAI publishes no PUE. Microsoft's fleet PUE, 1.17 (fiscal 2025, the sites it fully owns and controls), assumed for OpenAI's calls; Oracle and Crusoe publish none. Bounds from Google's fleet, 1.09, to the industry average, 1.56 (Uptime 2024)."
 
 [[provider]]
 id = "nebius"
 sites = ["ember:FIN"]
-envelope_sites = ["ember:FRA", "ember:ESP", "ember:ISR", "ember:GBR", "ember:US-MO", "ember:US-MN", "ember:ISL"]
+bounds_sites = ["ember:FRA", "ember:ESP", "ember:ISR", "ember:GBR", "ember:US-MO", "ember:US-MN", "ember:ISL"]
 label = "D"
 sources = ["nebius-regions", "nebius-endpoints"]
-basis = "The default Token Factory endpoint is eu-north1, Finland. How calls to shared models are routed is not documented, so the envelope covers every Nebius region: France, Spain, Israel, the United Kingdom, Kansas City (Missouri), Minnesota and Iceland."
+basis = "The default Token Factory endpoint is eu-north1, Finland. How calls to shared models are routed is not documented, so the bounds cover every Nebius region: France, Spain, Israel, the United Kingdom, Kansas City (Missouri), Minnesota and Iceland."
 reviewed = 2026-10-06
 
 [provider.pue]
-envelope_low = 1.09
-plausible_low = 1.09
-central = 1.56
-plausible_high = 1.56
-envelope_high = 1.56
+lower_bound = 1.09
+low_case = 1.09
+base_case = 1.56
+high_case = 1.56
+upper_bound = 1.56
 label = "D"
 sources = ["google-pue", "uptime-2024"]
 basis = "No fleet PUE found for Nebius: the industry average, 1.56 (Uptime 2024), down to the lowest published fleet PUE, Google's 1.09."
@@ -78,18 +78,18 @@ basis = "No fleet PUE found for Nebius: the industry average, 1.56 (Uptime 2024)
 [[provider]]
 id = "moonshot"
 sites = ["ember:CHN"]
-envelope_sites = "listed"
+bounds_sites = "listed"
 label = "D"
 sources = ["moonshot-platform"]
-basis = "Assumed from its mainland China API domain: Moonshot AI serves Kimi from mainland China. Not verified, so the envelope covers every geography a shipped provider lists."
+basis = "Assumed from its mainland China API domain: Moonshot AI serves Kimi from mainland China. Not verified, so the bounds cover every geography a shipped provider lists."
 reviewed = 2026-10-06
 
 [provider.pue]
-envelope_low = 1.09
-plausible_low = 1.09
-central = 1.56
-plausible_high = 1.56
-envelope_high = 1.56
+lower_bound = 1.09
+low_case = 1.09
+base_case = 1.56
+high_case = 1.56
+upper_bound = 1.56
 label = "D"
 sources = ["google-pue", "uptime-2024"]
 basis = "No fleet PUE found for Moonshot AI: the industry average, 1.56 (Uptime 2024), down to the lowest published fleet PUE, Google's 1.09."
@@ -97,18 +97,18 @@ basis = "No fleet PUE found for Moonshot AI: the industry average, 1.56 (Uptime 
 [[provider]]
 id = "unknown"
 sites = "named"
-envelope_sites = "all"
+bounds_sites = "all"
 label = "D"
 sources = ["uptime-2024"]
-basis = "A call could run anywhere a provider serves from: the shipped providers' sites for the central value and the plausible band, every geography for the envelope."
+basis = "A call could run anywhere a provider serves from: the shipped providers' sites for the base case and the low and high case, every geography for the bounds."
 reviewed = 2026-10-06
 
 [provider.pue]
-envelope_low = 1.09
-plausible_low = 1.09
-central = 1.56
-plausible_high = 1.56
-envelope_high = 1.56
+lower_bound = 1.09
+low_case = 1.09
+base_case = 1.56
+high_case = 1.56
+upper_bound = 1.56
 label = "D"
 sources = ["google-pue", "uptime-2024"]
 basis = "Provider unknown: the industry average, 1.56 (Uptime 2024), down to the lowest published fleet PUE, Google's 1.09."

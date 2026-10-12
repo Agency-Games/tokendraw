@@ -321,7 +321,7 @@ fn check_five(origin: &Origin, what: &str, five: &Five<f64>, minimum: f64) -> Re
         return Err(invalid(
             origin,
             format!(
-                "{what} has its values out of order; envelope_low <= plausible_low <= central <= plausible_high <= envelope_high"
+                "{what} has its values out of order; lower_bound <= low_case <= base_case <= high_case <= upper_bound"
             ),
         ));
     }

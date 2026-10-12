@@ -25,8 +25,8 @@ const MASS_UNITS: [(f64, &str); 3] = [(1.0, "g"), (1e3, "kg"), (1e6, "t")];
 
 const GRAMS_PER_KILOGRAM: f64 = 1e3;
 
-/// The columns of a band table: a name, the central value, the plausible
-/// band and the envelope.
+/// The columns of a band table: a name, the base case, the low to high
+/// case and the bounds.
 const BAND_ALIGNS: [Align; 4] = [Align::Left, Align::Right, Align::Left, Align::Left];
 
 const SOURCE_NAMES: usize = 28;
@@ -66,6 +66,7 @@ pub fn write(out: &mut impl Write, report: &Report, verbose: bool) -> io::Result
             writeln!(out)?;
         }
         write_rows(out, &BAND_ALIGNS, &widths, table)?;
+        write_cases(out)?;
     }
     write_projects(out, report)?;
     write_breakdown(out, report)?;
@@ -92,13 +93,13 @@ fn write_projects(out: &mut impl Write, report: &Report) -> io::Result<()> {
         return Ok(());
     }
     let total = find(report, "L1", "emissions");
-    let (scale, unit) = unit(total.map(|total| total.values.central), &MASS_UNITS);
+    let (scale, unit) = unit(total.map(|total| total.values.base_case), &MASS_UNITS);
     let mut rows = vec![cells([
         &format!("Projects, {unit} CO2e"),
         "calls",
-        "central",
-        "plausible",
-        "envelope",
+        "base case",
+        "low to high case",
+        "bounds",
     ])];
     let mut row = |name: String, calls: u64, five: &Five<f64>| {
         let mut row = vec![format!("{INDENT}{name}"), count(calls)];
@@ -128,6 +129,7 @@ fn write_projects(out: &mut impl Write, report: &Report) -> io::Result<()> {
         Align::Left,
     ];
     write_named_table(out, &aligns, &rows)?;
+    write_cases(out)?;
     if unresolved.calls == 0 {
         return Ok(());
     }
@@ -161,6 +163,16 @@ fn write_projects(out: &mut impl Write, report: &Report) -> io::Result<()> {
     )
 }
 
+/// Follows every band table, so its columns do not read as a mean and its
+/// confidence intervals.
+fn write_cases(out: &mut impl Write) -> io::Result<()> {
+    writeln!(out)?;
+    write_wrapped(
+        out,
+        "These are cases, not confidence intervals: see `tokendraw report --help`.",
+    )
+}
+
 /// The roles in the order they are shown; others follow by id.
 const ROLES: [&str; 3] = ["interactive", "subagent", "headless"];
 
@@ -171,19 +183,19 @@ fn write_breakdown(out: &mut impl Write, report: &Report) -> io::Result<()> {
     let Some(parts) = &report.breakdown else {
         return Ok(());
     };
-    let mut rows = vec![vec!["Where the energy goes (central)".to_owned()]];
+    let mut rows = vec![vec!["Where the energy goes (base case)".to_owned()]];
     for part in parts {
         let (name, share) = match part {
             Part::Share {
                 name: "context_terms",
-                share_of_central,
+                share_of_base_case,
                 ..
             } => (
                 "rereading the context".to_owned(),
-                percent(*share_of_central),
+                percent(*share_of_base_case),
             ),
             Part::Share {
-                share_of_central,
+                share_of_base_case,
                 threshold_cached_tokens,
                 ..
             } => (
@@ -191,14 +203,14 @@ fn write_breakdown(out: &mut impl Write, report: &Report) -> io::Result<()> {
                     "calls above {} cached tokens",
                     count(threshold_cached_tokens.unwrap_or_default())
                 ),
-                percent(*share_of_central),
+                percent(*share_of_base_case),
             ),
             Part::Split {
                 name,
-                shares_of_central,
+                shares_of_base_case,
                 ..
             } => {
-                let mut shown: Vec<(&String, f64)> = shares_of_central
+                let mut shown: Vec<(&String, f64)> = shares_of_base_case
                     .iter()
                     .filter(|(_, share)| **share > 0.0)
                     .map(|(id, share)| (id, *share))
@@ -665,7 +677,7 @@ fn total_row(estimate: Option<&Estimate>, name: &str, scale: f64) -> Option<Vec<
 }
 
 fn band_heading(name: &str) -> Vec<String> {
-    cells([name, "central", "plausible", "envelope"])
+    cells([name, "base case", "low to high case", "bounds"])
 }
 
 fn provider_name(group: &Group) -> String {
@@ -683,9 +695,9 @@ fn pue(report: &Report) -> Vec<Vec<String>> {
         let pue = &group.pue;
         rows.push(vec![
             provider_name(group),
-            pue.central.to_string(),
-            shown(pue.plausible_low, pue.plausible_high),
-            shown(pue.envelope_low, pue.envelope_high),
+            pue.base_case.to_string(),
+            shown(pue.low_case, pue.high_case),
+            shown(pue.lower_bound, pue.upper_bound),
         ]);
     }
     rows
@@ -693,7 +705,7 @@ fn pue(report: &Report) -> Vec<Vec<String>> {
 
 fn electricity(report: &Report) -> Vec<Vec<String>> {
     let total = find(report, "L1", "energy");
-    let (scale, unit) = unit(total.map(|total| total.values.central), &ENERGY_UNITS);
+    let (scale, unit) = unit(total.map(|total| total.values.base_case), &ENERGY_UNITS);
     let mut rows = vec![band_heading(&format!("Electricity, {unit}"))];
     rows.extend(
         report
@@ -719,9 +731,9 @@ fn grid(report: &Report) -> Vec<Vec<String>> {
         let grid = &group.grid_g_per_kwh;
         rows.push(vec![
             provider_name(group),
-            kg(grid.central, 3),
-            range(&bound(grid.plausible_low), &bound(grid.plausible_high)),
-            range(&bound(grid.envelope_low), &bound(grid.envelope_high)),
+            kg(grid.base_case, 3),
+            range(&bound(grid.low_case), &bound(grid.high_case)),
+            range(&bound(grid.lower_bound), &bound(grid.upper_bound)),
         ]);
     }
     rows
@@ -729,7 +741,7 @@ fn grid(report: &Report) -> Vec<Vec<String>> {
 
 fn emissions(report: &Report) -> Vec<Vec<String>> {
     let total = find(report, "L1", "emissions");
-    let (scale, unit) = unit(total.map(|total| total.values.central), &MASS_UNITS);
+    let (scale, unit) = unit(total.map(|total| total.values.base_case), &MASS_UNITS);
     let mut rows = vec![band_heading(&format!("Emissions, {unit} CO2e"))];
     rows.extend(
         report
@@ -905,12 +917,9 @@ fn unmatched_models(report: &Report) -> Option<String> {
 fn band_cells(five: &Five<f64>, scale: f64) -> Vec<String> {
     let shown = |value: f64, digits| significant(value / scale, digits);
     vec![
-        shown(five.central, 3),
-        range(
-            &shown(five.plausible_low, 2),
-            &shown(five.plausible_high, 2),
-        ),
-        range(&shown(five.envelope_low, 2), &shown(five.envelope_high, 2)),
+        shown(five.base_case, 3),
+        range(&shown(five.low_case, 2), &shown(five.high_case, 2)),
+        range(&shown(five.lower_bound, 2), &shown(five.upper_bound, 2)),
     ]
 }
 
@@ -1014,7 +1023,7 @@ mod tests {
     }
 
     #[test]
-    fn central_values_have_three_figures_and_bounds_two() {
+    fn base_case_values_have_three_figures_and_ranges_two() {
         assert_eq!(significant(239.406, 3), "239");
         assert_eq!(significant(28.883, 3), "28.9");
         assert_eq!(significant(113.887, 2), "110");
@@ -1027,7 +1036,7 @@ mod tests {
     }
 
     #[test]
-    fn units_scale_so_the_central_value_is_at_least_one() {
+    fn units_scale_so_the_base_case_is_at_least_one() {
         assert_eq!(unit(Some(239_406.0), &ENERGY_UNITS).1, "kWh");
         assert_eq!(unit(Some(999.0), &ENERGY_UNITS).1, "Wh");
         assert_eq!(unit(Some(0.5), &ENERGY_UNITS).1, "Wh");

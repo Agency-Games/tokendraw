@@ -84,9 +84,9 @@ fn run_open_weight_sets(reviewed: Date) -> anyhow::Result<()> {
     fs::write(&out, text).with_context(|| format!("cannot write {}", out.display()))?;
     eprintln!("wrote {} parameter sets to {}", sets.len(), out.display());
     for set in &sets {
-        let v = &set.central;
+        let v = &set.base;
         eprintln!(
-            "  {}: central a_p {:.4} uJ, a_d {:.4} uJ, b_in {:.4} J, b_out {:.4} J, c0 {:.4} mJ",
+            "  {}: base a_p {:.4} uJ, a_d {:.4} uJ, b_in {:.4} J, b_out {:.4} J, c0 {:.4} mJ",
             set.id, v.a_p, v.a_d, v.b_in, v.b_out, v.c0
         );
     }
@@ -115,15 +115,9 @@ fn run_price_calibration(paths: &[PathBuf], accessed: Date) -> anyhow::Result<()
     let text = price_calibration::render(&input, &calibration, &files, accessed)?;
     let out = workspace.join("../data/energy/price-calibration.toml");
     fs::write(&out, text).with_context(|| format!("cannot write {}", out.display()))?;
-    let [
-        envelope_low,
-        plausible_low,
-        central,
-        plausible_high,
-        envelope_high,
-    ] = calibration.five;
+    let [lower_bound, low_case, base_case, high_case, upper_bound] = calibration.five;
     eprintln!(
-        "wrote {}: {} host and model cells, {} endpoints left out; Wh per USD {envelope_low:.4} / {plausible_low:.4} / {central:.4} / {plausible_high:.4} / {envelope_high:.4}",
+        "wrote {}: {} host and model cells, {} endpoints left out; Wh per USD {lower_bound:.4} / {low_case:.4} / {base_case:.4} / {high_case:.4} / {upper_bound:.4}",
         out.display(),
         calibration.cells,
         calibration.skipped,

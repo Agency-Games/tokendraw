@@ -38,11 +38,11 @@ fn usage(client: &str, provider: &str, model: &str, sums: [f64; 6]) -> Usage {
 fn kwh(values: &Five<WattHours>) -> [f64; 5] {
     let values = values.map(|value| value.0 / 1000.0);
     [
-        values.envelope_low,
-        values.plausible_low,
-        values.central,
-        values.plausible_high,
-        values.envelope_high,
+        values.lower_bound,
+        values.low_case,
+        values.base_case,
+        values.high_case,
+        values.upper_bound,
     ]
 }
 
@@ -77,8 +77,8 @@ fn assert_near(actual: [f64; 5], expected: [f64; 5], tolerance: f64) {
 // J, `b_out` 6.8948 kWh per J, `c0` 2.5359 kWh per mJ; for Codex: 6.2480,
 // 1.2728, 57.820, 8.7797 and 2.5041.
 //
-// Claude Code's node subtotal is then, from envelope low to envelope high,
-// 15.13 / 58.28 / 106.58 / 222.95 / 381.14 kWh (central: 4 x 10.574 + 20 x
+// Claude Code's node subtotal is then, from lower bound to upper bound,
+// 15.13 / 58.28 / 106.58 / 222.95 / 381.14 kWh (base case: 4 x 10.574 + 20 x
 // 2.0285 + 0.4 x 47.050 + 0.6 x 6.8948 + 0.3 x 2.5359); times `idle` (1.0 /
 // 1.0 / 1.12 / 1.35 / 1.9) 15.13 / 58.28 / 119.38 / 300.98 / 724.18; times
 // Anthropic's PUE (1.09 / 1.09 / 1.115 / 1.14 / 1.56) the energy below.
@@ -182,7 +182,7 @@ fn a_hand_worked_month_gives_its_energy_facility_and_emissions() -> Result<(), E
 }
 
 // One call with `L` = 100,000, `n_new` = 1,000 and `n_out` = 500 on the
-// central frontier parameters at Anthropic:
+// base case frontier parameters at Anthropic:
 //
 // - prefill pairs 1,000 x (100,000 + 1,000 / 2) = 100,500,000, times 4 uJ
 //   = 402 J;
@@ -206,21 +206,21 @@ fn one_call_worked_by_hand() -> Result<(), Error> {
     );
     let estimate = l1(&data, &[call]);
     let near = |actual: f64, expected: f64| (actual - expected).abs() < 1e-8;
-    assert!(near(estimate.energy.central.0, 2_678.051_6 / 3600.0));
-    assert!(near(estimate.facility.central.0, 276.211_6 / 3600.0));
+    assert!(near(estimate.energy.base_case.0, 2_678.051_6 / 3600.0));
+    assert!(near(estimate.facility.base_case.0, 276.211_6 / 3600.0));
     assert!(near(
-        estimate.emissions.central.0,
+        estimate.emissions.base_case.0,
         2_678.051_6 / 3600.0 / 1000.0 * 400.651_75
     ));
-    assert!(near(estimate.groups[0].it.central.0, 2_401.84 / 3600.0));
+    assert!(near(estimate.groups[0].it.base_case.0, 2_401.84 / 3600.0));
     Ok(())
 }
 
 // The call above has context terms of 402 + 1,012.5 + 30 = 1,444.5 J of
 // node energy, times 1.12 and 1.115: 1,803.8916 J of its 2,678.0516 J.
 #[test]
-fn the_breakdown_splits_the_central_energy_by_terms_threshold_client_and_role() -> Result<(), Error>
-{
+fn the_breakdown_splits_the_base_case_energy_by_terms_threshold_client_and_role()
+-> Result<(), Error> {
     let data = data::load(None)?;
     let mut long = usage(
         "claude-code",
@@ -238,7 +238,7 @@ fn the_breakdown_splits_the_central_energy_by_terms_threshold_client_and_role() 
     short.role = "subagent".to_owned();
     let short_alone = l1(&data, std::slice::from_ref(&short));
     let estimate = l1(&data, &[long, short]);
-    let (total, long_energy) = (estimate.energy.central.0, 2_678.051_6 / 3600.0);
+    let (total, long_energy) = (estimate.energy.base_case.0, 2_678.051_6 / 3600.0);
     let near = |actual: f64, expected: f64| (actual - expected).abs() < 1e-8;
     let parts = &estimate.breakdown;
     assert!(near(parts.cached_above.0, long_energy));

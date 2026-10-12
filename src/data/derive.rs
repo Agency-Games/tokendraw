@@ -3,7 +3,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use super::check::check;
 use super::load::{Merged, Origin, Records, Version, invalid, records};
 use super::records::{
-    EnvelopeSites, Factor, Five, Geography, ParameterSet, Price, PriceCalibration, PriceTier,
+    BoundsSites, Factor, Five, Geography, ParameterSet, Price, PriceCalibration, PriceTier,
     Provider, Sites,
 };
 use super::{Data, Error, ResolvedProvider};
@@ -32,8 +32,8 @@ impl ShippedSites {
         let listed = shipped
             .providers
             .values()
-            .filter_map(|(provider, _)| match &provider.envelope_sites {
-                EnvelopeSites::List(sites) => Some(sites.iter().cloned()),
+            .filter_map(|(provider, _)| match &provider.bounds_sites {
+                BoundsSites::List(sites) => Some(sites.iter().cloned()),
                 _ => None,
             })
             .flatten()
@@ -75,16 +75,16 @@ pub(super) fn resolve(
             Sites::List(sites) => sites.clone(),
             Sites::Named => shipped_sites.named.clone(),
         };
-        let envelope_ids = match &provider.envelope_sites {
-            EnvelopeSites::None => Vec::new(),
-            EnvelopeSites::List(sites) => sites.clone(),
-            EnvelopeSites::Listed => shipped_sites.listed.clone(),
-            EnvelopeSites::All => shipped_sites.all.clone(),
+        let bounds_ids = match &provider.bounds_sites {
+            BoundsSites::None => Vec::new(),
+            BoundsSites::List(sites) => sites.clone(),
+            BoundsSites::Listed => shipped_sites.listed.clone(),
+            BoundsSites::All => shipped_sites.all.clone(),
         };
         let grid = grid(
             &provider,
             &site_ids,
-            &envelope_ids,
+            &bounds_ids,
             &origins[origin],
             &geographies,
         )?;
@@ -93,7 +93,7 @@ pub(super) fn resolve(
             ResolvedProvider {
                 provider,
                 site_ids,
-                envelope_ids,
+                bounds_ids,
                 grid,
             },
         );
@@ -176,11 +176,11 @@ fn priced_set(
         (chat_in * price.input_usd_per_mtok + chat_out * price.output_usd_per_mtok) / 1e6;
     let markup = calibration.markup.five();
     let reversed = Five {
-        envelope_low: markup.envelope_high,
-        plausible_low: markup.plausible_high,
-        central: markup.central,
-        plausible_high: markup.plausible_low,
-        envelope_high: markup.envelope_low,
+        lower_bound: markup.upper_bound,
+        low_case: markup.high_case,
+        base_case: markup.base_case,
+        high_case: markup.low_case,
+        upper_bound: markup.lower_bound,
     };
     let joules = calibration
         .wh_per_usd
@@ -219,11 +219,11 @@ fn priced_set(
     let factor = |anchor_j: f64, scale: f64| {
         let values = joules.map(|joules| joules * anchor_j / anchor * scale);
         Factor {
-            envelope_low: values.envelope_low,
-            plausible_low: values.plausible_low,
-            central: values.central,
-            plausible_high: values.plausible_high,
-            envelope_high: values.envelope_high,
+            lower_bound: values.lower_bound,
+            low_case: values.low_case,
+            base_case: values.base_case,
+            high_case: values.high_case,
+            upper_bound: values.upper_bound,
             label,
             sources: sources.clone(),
             basis: basis.clone(),
@@ -269,7 +269,7 @@ fn priced_basis(price: &Price, calibration: &PriceCalibration) -> String {
 fn grid(
     provider: &Provider,
     site_ids: &[String],
-    envelope_ids: &[String],
+    bounds_ids: &[String],
     origin: &Origin,
     geographies: &Records<Geography>,
 ) -> Result<Five<GramsCo2ePerKwh>, Error> {
@@ -292,7 +292,7 @@ fn grid(
         .iter()
         .map(intensity)
         .collect::<Result<Vec<_>, _>>()?;
-    let envelope = envelope_ids
+    let bounds = bounds_ids
         .iter()
         .map(intensity)
         .collect::<Result<Vec<_>, _>>()?;
@@ -302,12 +302,12 @@ fn grid(
         clippy::cast_precision_loss,
         reason = "a provider has a handful of sites"
     )]
-    let central = sites.iter().sum::<f64>() / sites.len() as f64;
+    let base_case = sites.iter().sum::<f64>() / sites.len() as f64;
     Ok(Five {
-        envelope_low: GramsCo2ePerKwh(lowest(&sites).min(lowest(&envelope))),
-        plausible_low: GramsCo2ePerKwh(lowest(&sites)),
-        central: GramsCo2ePerKwh(central),
-        plausible_high: GramsCo2ePerKwh(highest(&sites)),
-        envelope_high: GramsCo2ePerKwh(highest(&sites).max(highest(&envelope))),
+        lower_bound: GramsCo2ePerKwh(lowest(&sites).min(lowest(&bounds))),
+        low_case: GramsCo2ePerKwh(lowest(&sites)),
+        base_case: GramsCo2ePerKwh(base_case),
+        high_case: GramsCo2ePerKwh(highest(&sites)),
+        upper_bound: GramsCo2ePerKwh(highest(&sites).max(highest(&bounds))),
     })
 }

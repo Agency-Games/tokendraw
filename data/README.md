@@ -48,11 +48,11 @@ basis = "One workstation in Paris"
 reviewed = 2026-10-01
 
 [provider.pue]
-envelope_low = 1
-plausible_low = 1
-central = 1
-plausible_high = 1
-envelope_high = 1
+lower_bound = 1
+low_case = 1
+base_case = 1
+high_case = 1
+upper_bound = 1
 label = "M"
 sources = ["my-setup"]
 basis = "No data centre, so no facility overhead"
@@ -74,10 +74,12 @@ sources, a review date (`reviewed`) and, where a value is derived, its
 figures are a cross-check only and never enter an estimate. A report
 labels each estimate with the weakest label among the records it uses.
 
-A parameter or a PUE has five values, lowest first: `envelope_low`,
-`plausible_low`, `central`, `plausible_high`, `envelope_high`. The
-envelope is what non-disclosure leaves open; the plausible band is the
-spread across documented designs and hardware.
+A parameter or a PUE has five values, lowest first: `lower_bound`,
+`low_case`, `base_case`, `high_case`, `upper_bound`. The bounds are what
+non-disclosure leaves open; the low and high case are the spread across
+documented designs and hardware. A report computes each case with every
+value at the same point, so its figures are cases, not confidence
+intervals.
 
 A source (`[sources.<id>]`) has a `title`, `publisher` and `accessed`
 date, and where they exist a `url`, a `published` date (a year, month or
@@ -94,8 +96,8 @@ uses the `frontier` parameter set and is reported as unmatched.
 
 A provider's `id` is its name as the logs record it; a provider that no
 record names uses `unknown`. Its grid intensity is computed from its
-`sites`: the central value is their mean, the plausible band runs from the
-lowest to the highest, and the envelope also covers `envelope_sites`,
+`sites`: the base case is their mean, the low and high case are the
+lowest and the highest, and the bounds also cover `bounds_sites`,
 which is a list, `"listed"` (every geography a shipped provider lists) or
 `"all"` (every geography in the shipped grid data). `unknown`'s `sites =
 "named"` is every shipped provider's sites. These come from the shipped
@@ -132,8 +134,8 @@ to `b_in` and `b_out` at the cap, so below the cap the set counts slightly
 more than the model does. The weight terms scale the `frontier` anchor by
 the model's active parameters, `c0` reloads the key-value bytes a cached
 token holds, and `idle` is `frontier`'s. Since the design is published and
-only the serving hardware is not, the central value is a B200 node, and
-the plausible band and the envelope both run from a GB200-class node with
+only the serving hardware is not, the base case is a B200 node, and
+the low and high case and the bounds all run from a GB200-class node with
 FP8 attention to an H100 node.
 
 ## Prices

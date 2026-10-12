@@ -28,18 +28,13 @@ reviewed = 2026-10-06
 "#;
 
 fn factor(values: &str) -> String {
-    let [
-        envelope_low,
-        plausible_low,
-        central,
-        plausible_high,
-        envelope_high,
-    ] = values.split(' ').collect::<Vec<_>>()[..]
+    let [lower_bound, low_case, base_case, high_case, upper_bound] =
+        values.split(' ').collect::<Vec<_>>()[..]
     else {
         panic!("five values expected");
     };
     format!(
-        "envelope_low = {envelope_low}\nplausible_low = {plausible_low}\ncentral = {central}\nplausible_high = {plausible_high}\nenvelope_high = {envelope_high}\nlabel = \"D\"\nsources = [\"study\"]\nbasis = \"b\"\n"
+        "lower_bound = {lower_bound}\nlow_case = {low_case}\nbase_case = {base_case}\nhigh_case = {high_case}\nupper_bound = {upper_bound}\nlabel = \"D\"\nsources = [\"study\"]\nbasis = \"b\"\n"
     )
 }
 
@@ -65,9 +60,9 @@ fn model(id: &str, pattern: &str) -> String {
     )
 }
 
-fn provider(id: &str, sites: &str, envelope: &str, pue: &str) -> String {
+fn provider(id: &str, sites: &str, bounds: &str, pue: &str) -> String {
     format!(
-        "[[provider]]\nid = \"{id}\"\nsites = {sites}\nenvelope_sites = {envelope}\nlabel = \"D\"\nsources = [\"study\"]\nbasis = \"b\"\nreviewed = 2026-10-06\n[provider.pue]\n{}",
+        "[[provider]]\nid = \"{id}\"\nsites = {sites}\nbounds_sites = {bounds}\nlabel = \"D\"\nsources = [\"study\"]\nbasis = \"b\"\nreviewed = 2026-10-06\n[provider.pue]\n{}",
         factor(pue)
     )
 }
@@ -275,19 +270,19 @@ fn the_shipped_sha256_is_the_hash_of_the_file_listing_and_changes_with_any_file(
 }
 
 #[test]
-fn a_provider_grid_is_the_mean_and_range_of_its_sites_and_envelope() -> Result<(), Error> {
+fn a_provider_grid_is_the_mean_and_range_of_its_sites_and_bounds_sites() -> Result<(), Error> {
     let data = Shipped::new().load(&[])?;
     let alpha = &data.providers["alpha"].grid;
-    assert_eq!(alpha.central.0, 200.0);
-    assert_eq!(alpha.plausible_low.0, 100.0);
-    assert_eq!(alpha.plausible_high.0, 300.0);
-    assert_eq!(alpha.envelope_low.0, 20.0);
-    assert_eq!(alpha.envelope_high.0, 300.0);
+    assert_eq!(alpha.base_case.0, 200.0);
+    assert_eq!(alpha.low_case.0, 100.0);
+    assert_eq!(alpha.high_case.0, 300.0);
+    assert_eq!(alpha.lower_bound.0, 20.0);
+    assert_eq!(alpha.upper_bound.0, 300.0);
     Ok(())
 }
 
 #[test]
-fn a_one_site_provider_without_envelope_sites_has_five_equal_values() -> Result<(), Error> {
+fn a_one_site_provider_without_bounds_sites_has_five_equal_values() -> Result<(), Error> {
     let data = Shipped::new().load(&[(
         "self-hosted.toml",
         &provider("ollama", r#"["g:c"]"#, "[]", "1.2 1.2 1.2 1.2 1.2"),
@@ -298,31 +293,31 @@ fn a_one_site_provider_without_envelope_sites_has_five_equal_values() -> Result<
 }
 
 #[test]
-fn unknown_takes_every_named_site_and_every_geography_for_its_envelope() -> Result<(), Error> {
+fn unknown_takes_every_named_site_and_every_geography_for_its_bounds() -> Result<(), Error> {
     let data = Shipped::new().load(&[])?;
     let unknown = &data.providers["unknown"];
     assert_eq!(unknown.site_ids, ["g:a", "g:b", "g:d"]);
-    assert_eq!(unknown.grid.central.0, 300.0);
-    assert_eq!(unknown.grid.plausible_low.0, 100.0);
-    assert_eq!(unknown.grid.plausible_high.0, 500.0);
-    assert_eq!(unknown.grid.envelope_low.0, 20.0);
+    assert_eq!(unknown.grid.base_case.0, 300.0);
+    assert_eq!(unknown.grid.low_case.0, 100.0);
+    assert_eq!(unknown.grid.high_case.0, 500.0);
+    assert_eq!(unknown.grid.lower_bound.0, 20.0);
     assert_eq!(
-        unknown.grid.envelope_high.0, 900.0,
+        unknown.grid.upper_bound.0, 900.0,
         "g:e is outside every shipped provider's lists"
     );
     Ok(())
 }
 
 #[test]
-fn a_listed_envelope_covers_every_geography_a_named_provider_lists() -> Result<(), Error> {
+fn listed_bounds_sites_cover_every_geography_a_named_provider_lists() -> Result<(), Error> {
     let data = Shipped::new().load(&[(
         "gamma.toml",
         &provider("gamma", r#"["g:b"]"#, r#""listed""#, "1.1 1.1 1.2 1.3 1.5"),
     )])?;
     let grid = data.providers["gamma"].grid;
-    assert_eq!(grid.envelope_low.0, 20.0, "g:c is alpha's envelope site");
+    assert_eq!(grid.lower_bound.0, 20.0, "g:c is alpha's bounds site");
     assert_eq!(
-        grid.envelope_high.0, 500.0,
+        grid.upper_bound.0, 500.0,
         "g:d is beta's site; g:e no one lists"
     );
     Ok(())
@@ -334,16 +329,16 @@ fn a_users_own_provider_and_geography_change_no_other_provider() -> Result<(), E
         + &provider("home", r#"["g:far"]"#, "[]", "1.1 1.1 1.2 1.3 1.5");
     let gamma = provider("gamma", r#"["g:b"]"#, r#""listed""#, "1.1 1.1 1.2 1.3 1.5");
     let data = Shipped::new().load(&[("gamma.toml", &gamma), ("home.toml", &home)])?;
-    assert_eq!(data.providers["home"].grid.central.0, 2000.0);
+    assert_eq!(data.providers["home"].grid.base_case.0, 2000.0);
     assert_eq!(
-        data.providers["gamma"].grid.envelope_high.0, 500.0,
+        data.providers["gamma"].grid.upper_bound.0, 500.0,
         "listed is the shipped providers' geographies"
     );
     let unknown = &data.providers["unknown"];
     assert_eq!(unknown.site_ids, ["g:a", "g:b", "g:d"]);
-    assert_eq!(unknown.grid.central.0, 300.0);
+    assert_eq!(unknown.grid.base_case.0, 300.0);
     assert_eq!(
-        unknown.grid.envelope_high.0, 900.0,
+        unknown.grid.upper_bound.0, 900.0,
         "all is the shipped grid data"
     );
     Ok(())
@@ -401,7 +396,7 @@ fn an_override_replaces_a_record_whole_and_adds_new_ones() -> Result<(), Error> 
     let data = Shipped::new().load(&[("mine.toml", &text)])?;
     assert_eq!(data.geographies["g:a"].g_co2e_per_kwh.0, 50.0);
     assert_eq!(
-        data.providers["alpha"].grid.central.0, 175.0,
+        data.providers["alpha"].grid.base_case.0, 175.0,
         "the replaced geography reaches the provider"
     );
     let records = &data.version.overrides[0].records;
@@ -582,8 +577,8 @@ fn a_negative_or_non_finite_value_is_refused() {
     let text = parameter_set("frontier", "1.1 1.1 1.2 1.3 inf");
     assert!(problem(Shipped::new().load(&[("a.toml", &text)])).contains("has the value inf"));
     let text = parameter_set("frontier", "1.1 1.1 1.2 1.3 1.5").replacen(
-        "envelope_low = 1\n",
-        "envelope_low = -1\n",
+        "lower_bound = 1\n",
+        "lower_bound = -1\n",
         1,
     );
     assert!(problem(Shipped::new().load(&[("a.toml", &text)])).contains("has the value -1"));
@@ -671,8 +666,8 @@ fn export_writes_the_shipped_files_byte_for_byte_and_never_overwrites()
 }
 
 /// The shipped providers' grid intensities worked by hand from their sites
-/// and the grid data, in grams of `CO2e` per kWh: envelope low, plausible
-/// low, central, plausible high, envelope high.
+/// and the grid data, in grams of `CO2e` per kWh: lower bound, low case,
+/// base case, high case, upper bound.
 #[test]
 fn the_shipped_provider_grids_match_the_hand_worked_figures() -> Result<(), Error> {
     let data = load(None)?;
@@ -765,24 +760,21 @@ fn a_priced_model_gets_weight_terms_from_its_list_price() -> Result<(), Error> {
     let set = found.record;
     assert_eq!(set.id, "frontier@p");
     // The reference call costs (1000 x 4 + 500 x 20) / 1e6 = 0.014 USD, so
-    // central 0.014 x 30 / 2 x 3600 = 756 J, of which 0.23 / (1000 x 0.23
+    // base case 0.014 x 30 / 2 x 3600 = 756 J, of which 0.23 / (1000 x 0.23
     // + 500 x 0.38) = 0.23 / 420 per new input token and 0.38 / 420 per
     // output token. The low values divide by the high markup, 4, and the
     // high values by the low one, 1: 126 J and 2520 J.
     let b_in = set.b_in_j_per_token.five();
     let b_out = set.b_out_j_per_token.five();
-    assert!(close(b_in.central, 756.0 * 0.23 / 420.0));
-    assert!(close(b_out.central, 756.0 * 0.38 / 420.0));
-    assert!(close(b_in.envelope_low, 126.0 * 0.23 / 420.0));
+    assert!(close(b_in.base_case, 756.0 * 0.23 / 420.0));
+    assert!(close(b_out.base_case, 756.0 * 0.38 / 420.0));
+    assert!(close(b_in.lower_bound, 126.0 * 0.23 / 420.0));
     assert!(close(
-        b_in.plausible_low,
+        b_in.low_case,
         0.014 * 20.0 / 4.0 * 3600.0 * 0.23 / 420.0
     ));
-    assert!(close(
-        b_in.plausible_high,
-        0.014 * 40.0 * 3600.0 * 0.23 / 420.0
-    ));
-    assert!(close(b_out.envelope_high, 2520.0 * 0.38 / 420.0));
+    assert!(close(b_in.high_case, 0.014 * 40.0 * 3600.0 * 0.23 / 420.0));
+    assert!(close(b_out.upper_bound, 2520.0 * 0.38 / 420.0));
     // Attention, reload and idle are the base set's.
     let frontier = &data.parameter_sets[FALLBACK_PARAMETER_SET];
     assert_eq!(set.a_p_uj_per_pair.five(), frontier.a_p_uj_per_pair.five());
@@ -812,12 +804,12 @@ fn a_price_tier_applies_above_its_threshold() -> Result<(), Error> {
     );
     // Input price 8 over 4, output 30 over 20.
     assert!(close(
-        tier.b_in_j_per_token.central,
-        base.b_in_j_per_token.central * 2.0
+        tier.b_in_j_per_token.base_case,
+        base.b_in_j_per_token.base_case * 2.0
     ));
     assert!(close(
-        tier.b_out_j_per_token.central,
-        base.b_out_j_per_token.central * 1.5
+        tier.b_out_j_per_token.base_case,
+        base.b_out_j_per_token.base_case * 1.5
     ));
     // A model without a price ignores the threshold.
     assert_eq!(data.parameter_set("claude-x", 100).record.id, "frontier");
@@ -833,7 +825,7 @@ fn an_override_of_a_price_reaches_its_derived_sets() -> Result<(), Error> {
     let set = data.parameter_set("priced-model", 100).record;
     assert_eq!(set.id, "frontier@p");
     assert!(close(
-        set.b_in_j_per_token.central,
+        set.b_in_j_per_token.base_case,
         2.0 * 756.0 * 0.23 / 420.0
     ));
     Ok(())

@@ -19,17 +19,21 @@ Coverage        status      location
   claude-code   not found   ~/logs/claude/projects
   pi            not found   ~/logs/pi/sessions
 
-Emissions, g CO2e   central   plausible   envelope
-  openai               40.8   11 to 290   0.48 to 1,700
+Emissions, g CO2e   base case   low to high case   bounds
+  openai                 40.8   11 to 290          0.48 to 1,700
 
-  total                40.8   11 to 290   0.48 to 1,700
+  total                  40.8   11 to 290          0.48 to 1,700
 
-Projects, g CO2e   calls   central   plausible   envelope
-  unresolved          34      40.8   11 to 290   0.48 to 1,700
+These are cases, not confidence intervals: see `tokendraw report --help`.
+
+Projects, g CO2e   calls   base case   low to high case   bounds
+  unresolved          34        40.8   11 to 290          0.48 to 1,700
+
+These are cases, not confidence intervals: see `tokendraw report --help`.
 
 34 calls in 1 directory belong to no project. Run `tokendraw projects` to
 list them with the labels that would assign them.
 
-Where the energy goes (central)
+Where the energy goes (base case)
   rereading the context               19%
   calls above 200,000 cached tokens   0%

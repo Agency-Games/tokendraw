@@ -33,24 +33,24 @@ anchor_in_j = 0.23
 anchor_out_j = 0.38
 
 [price_calibration.wh_per_usd]
-envelope_low = 11.652957305131219
-plausible_low = 17.867867867867872
-central = 30.525206057120954
-plausible_high = 80.58058058058059
-envelope_high = 200.30447113780446
+lower_bound = 11.652957305131219
+low_case = 17.867867867867872
+base_case = 30.525206057120954
+high_case = 80.58058058058059
+upper_bound = 200.30447113780446
 label = "D"
 sources = ["openrouter-deepseek-deepseek-v4-1-flash", "openrouter-deepseek-deepseek-v4-pro", "openrouter-deepseek-deepseek-v4-pro-0813", "openrouter-meta-llama-llama-3-3-70b-instruct", "openrouter-minimax-minimax-m3", "openrouter-moonshotai-kimi-k3", "openrouter-openai-gpt-oss-120b", "openrouter-qwen-qwen3-5-397b-a17b", "openrouter-qwen-qwen3-8-2-4t-a95b", "openrouter-xiaomi-mimo-v2-6-flash", "openrouter-z-ai-glm-5-3", "card-deepseek-v4-pro", "card-deepseek-v4-1-flash", "config-glm-5-3", "card-kimi-k3", "card-gpt-oss-120b", "card-qwen3-5-397b-a17b", "card-qwen3-8-2-4t-a95b", "config-llama-3-3-70b-instruct", "card-minimax-m3", "card-mimo-v2-6-flash", "deepseek-fleet", "mlenergy-v3"]
-basis = "Over 171 host and model cells of OpenRouter's endpoints for 10 open-weight models on 2026-10-08, the weight energy at load of a call of 1000 new input and 500 output tokens, (1000 x 0.23 J x prefill active parameters + 500 x 0.38 J x active parameters) / 37 billion times the hardware factor, divided by the call's price at the host (several endpoints of a host at their median). Envelope: 5th and 95th percentile at the low and the high hardware factor (0.5 and 1). Plausible: 25th and 75th percentile at the same factors. Central: the median at 0.65. High: H100 or H800, as DeepSeek's fleet. Central: B200, 35 percent less energy per token in the ML.ENERGY Leaderboard v3.0. Low: GB200-class with FP4 experts, an assumption below B200."
+basis = "Over 171 host and model cells of OpenRouter's endpoints for 10 open-weight models on 2026-10-08, the weight energy at load of a call of 1000 new input and 500 output tokens, (1000 x 0.23 J x prefill active parameters + 500 x 0.38 J x active parameters) / 37 billion times the hardware factor, divided by the call's price at the host (several endpoints of a host at their median). Bounds: 5th and 95th percentile at the low and the high hardware factor (0.5 and 1). Low and high case: 25th and 75th percentile at the same factors. Base case: the median at 0.65. High: H100 or H800, as DeepSeek's fleet. Base: B200, 35 percent less energy per token in the ML.ENERGY Leaderboard v3.0. Low: GB200-class with FP4 experts, an assumption below B200."
 
 [price_calibration.markup]
-envelope_low = 1.0
-plausible_low = 1.0
-central = 1.825
-plausible_high = 3.33
-envelope_high = 3.33
+lower_bound = 1.0
+low_case = 1.0
+base_case = 1.825
+high_case = 3.33
+upper_bound = 3.33
 label = "D"
 sources = ["margin-anthropic", "margin-openai"]
-basis = "How far a closed lab's list price sits above the price hosts of open-weight models charge for the same serving cost. Neither the labs nor the hosts publish it. Low: lab and hosts at the same margin. High: a lab at OpenAI's reported compute margin of 70 percent, 1 / (1 - 0.70) = 3.33 times compute cost, with hosts at cost; Anthropic's reported 40 percent gross margin gives at least 1.67. Both are leaked figures that neither company confirmed. Central: the geometric mean of 1 and 3.33."
+basis = "How far a closed lab's list price sits above the price hosts of open-weight models charge for the same serving cost. Neither the labs nor the hosts publish it. Low: lab and hosts at the same margin. High: a lab at OpenAI's reported compute margin of 70 percent, 1 / (1 - 0.70) = 3.33 times compute cost, with hosts at cost; Anthropic's reported 40 percent gross margin gives at least 1.67. Both are leaked figures that neither company confirmed. Base case: the geometric mean of 1 and 3.33."
 
 [sources.card-deepseek-v4-1-flash]
 title = "deepseek-ai/DeepSeek-V4.1-Flash model card and technical report, commit 2cba9e42aa026125f3ed06c6d98c1db82f7ca027"

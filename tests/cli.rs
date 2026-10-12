@@ -490,12 +490,13 @@ fn data_json_holds_every_record_and_source() -> TestResult {
     let output = run(state.path(), &["data", "--json"])?;
     assert_eq!(output.status.code(), Some(0), "{output:?}");
     let json: serde_json::Value = serde_json::from_slice(&output.stdout)?;
+    assert_eq!(json["schema_version"], 2);
     assert_eq!(json["version"]["files"].as_array().map(Vec::len), Some(10));
     assert_eq!(json["findings"]["long-context"]["cached_tokens"], 200_000);
     assert!(json["prices"]["claude-opus-5-5"]["input_usd_per_mtok"].is_number());
-    assert!(json["price_calibrations"]["open-weight-hosts"]["wh_per_usd"]["central"].is_number());
+    assert!(json["price_calibrations"]["open-weight-hosts"]["wh_per_usd"]["base_case"].is_number());
     assert!(
-        json["priced_sets"]["frontier@claude-haiku-5-5>100000"]["b_in_j_per_token"]["central"]
+        json["priced_sets"]["frontier@claude-haiku-5-5>100000"]["b_in_j_per_token"]["base_case"]
             .is_number()
     );
     assert_eq!(json["price_review_interval_days"], 30);
@@ -506,7 +507,7 @@ fn data_json_holds_every_record_and_source() -> TestResult {
     assert!(geographies > 200, "{geographies} geographies");
     assert_eq!(json["geographies"]["ember:FIN"]["basis"], "lifecycle");
     assert_eq!(json["providers"]["unknown"]["sites"], "named");
-    assert!(json["providers"]["unknown"]["grid"]["central"].is_number());
+    assert!(json["providers"]["unknown"]["grid"]["base_case"].is_number());
     assert!(json["sources"]["ember-yearly"]["sha256"].is_string());
     assert!(json["stale"].is_array());
     Ok(())
@@ -533,11 +534,11 @@ basis = "Our workstation in Paris"
 reviewed = 2026-10-01
 
 [provider.pue]
-envelope_low = 1
-plausible_low = 1
-central = 1
-plausible_high = 1
-envelope_high = 1
+lower_bound = 1
+low_case = 1
+base_case = 1
+high_case = 1
+upper_bound = 1
 label = "M"
 sources = ["my-meter"]
 basis = "No data centre"
@@ -642,7 +643,7 @@ fn report_json_holds_the_estimates_of_the_calls_in_the_range() -> TestResult {
         .as_array()
         .into_iter()
         .flatten()
-        .filter_map(|part| part["shares_of_central"].as_object())
+        .filter_map(|part| part["shares_of_base_case"].as_object())
         .map(|shares| shares.values().filter_map(serde_json::Value::as_f64).sum())
         .collect();
     assert_eq!(splits.len(), 2, "{json}");
@@ -743,7 +744,7 @@ const ACCEPTANCE_RECORDS: &str = r#"{"id":"a1","timestamp":"2026-08-01T10:00:00Z
 fn acceptance_overrides(us_in_label: &str) -> String {
     let factor = |name: &str, base: f64| {
         format!(
-            "[parameter_set.{name}]\nenvelope_low = {}\nplausible_low = {base}\ncentral = {base}\nplausible_high = {}\nenvelope_high = {}\nlabel = \"M\"\nsources = [\"test-meter\"]\nbasis = \"test\"\n",
+            "[parameter_set.{name}]\nlower_bound = {}\nlow_case = {base}\nbase_case = {base}\nhigh_case = {}\nupper_bound = {}\nlabel = \"M\"\nsources = [\"test-meter\"]\nbasis = \"test\"\n",
             base * 0.5,
             base * 2.0,
             base * 4.0
@@ -752,7 +753,7 @@ fn acceptance_overrides(us_in_label: &str) -> String {
     let pue = |values: &str| {
         let values: Vec<&str> = values.split(' ').collect();
         format!(
-            "[provider.pue]\nenvelope_low = {}\nplausible_low = {}\ncentral = {}\nplausible_high = {}\nenvelope_high = {}\nlabel = \"M\"\nsources = [\"test-meter\"]\nbasis = \"test\"\n",
+            "[provider.pue]\nlower_bound = {}\nlow_case = {}\nbase_case = {}\nhigh_case = {}\nupper_bound = {}\nlabel = \"M\"\nsources = [\"test-meter\"]\nbasis = \"test\"\n",
             values[0], values[1], values[2], values[3], values[4]
         )
     };
@@ -777,7 +778,7 @@ fn acceptance_overrides(us_in_label: &str) -> String {
     ] {
         text.push_str(&factor(name, base));
     }
-    text.push_str("[parameter_set.idle]\nenvelope_low = 1\nplausible_low = 1\ncentral = 1.5\nplausible_high = 1.5\nenvelope_high = 2\nlabel = \"M\"\nsources = [\"test-meter\"]\nbasis = \"test\"\n");
+    text.push_str("[parameter_set.idle]\nlower_bound = 1\nlow_case = 1\nbase_case = 1.5\nhigh_case = 1.5\nupper_bound = 2\nlabel = \"M\"\nsources = [\"test-meter\"]\nbasis = \"test\"\n");
     text.push_str(&provider(
         "anthropic",
         r#"["ember:US-IN", "ember:US-IA"]"#,
@@ -806,11 +807,11 @@ fn words(text: &str) -> String {
 
 fn five(json: &serde_json::Value) -> Vec<f64> {
     [
-        "envelope_low",
-        "plausible_low",
-        "central",
-        "plausible_high",
-        "envelope_high",
+        "lower_bound",
+        "low_case",
+        "base_case",
+        "high_case",
+        "upper_bound",
     ]
     .iter()
     .map(|field| json[*field].as_f64().unwrap_or(f64::NAN))
@@ -853,11 +854,11 @@ fn assert_five(actual: &[f64], expected: [f64; 5]) {
 //   22.52325 / 45.0465 / 67.56975 / 135.1395 / 360.372 J; facility times
 //   0.5 = 7.50775 / 15.0155 / 22.52325 / 45.0465 / 120.124 J.
 //
-// Energy in Wh is the sum over 3,600: envelope low (1,063.425 + 872.4 +
+// Energy in Wh is the sum over 3,600: lower bound (1,063.425 + 872.4 +
 // 22.52325) / 3,600 = 0.543985625, and so on. Grid: Anthropic's sites are
 // Indiana 600 and Iowa 300 g/kWh, so 300 / 300 / 450 / 600 / 600; OpenAI
 // and unknown are Iowa alone, 300. Emissions in g are Wh / 1,000 times
-// g/kWh: central (3,190.275 x 450 + (2,617.2 + 67.56975) x 300) / 3.6 x
+// g/kWh: base case (3,190.275 x 450 + (2,617.2 + 67.56975) x 300) / 3.6 x
 // 10^6 = 2,241,054.675 / 3.6 x 10^6 = 0.62251519.
 #[test]
 fn report_computes_hand_worked_values_with_overridden_data() -> TestResult {
@@ -1220,11 +1221,11 @@ fn projects_and_unresolved_calls_add_up_to_the_total() -> TestResult {
         .find(|estimate| estimate["quantity"] == "emissions")
         .ok_or("no emissions")?;
     for value in [
-        "envelope_low",
-        "plausible_low",
-        "central",
-        "plausible_high",
-        "envelope_high",
+        "lower_bound",
+        "low_case",
+        "base_case",
+        "high_case",
+        "upper_bound",
     ] {
         let sum: f64 = rows
             .iter()
@@ -1571,11 +1572,11 @@ basis = "Served from the acme-secret office"
 reviewed = 2026-10-01
 
 [provider.pue]
-envelope_low = 1
-plausible_low = 1
-central = 1
-plausible_high = 1
-envelope_high = 1
+lower_bound = 1
+low_case = 1
+base_case = 1
+high_case = 1
+upper_bound = 1
 label = "M"
 sources = ["own-meter"]
 basis = "No data centre at acme-secret"
@@ -1787,14 +1788,14 @@ const DISCLOSURES: [Disclosure; 3] = [
 ];
 
 const BANDS: [&str; 5] = [
-    "envelope_low",
-    "plausible_low",
-    "central",
-    "plausible_high",
-    "envelope_high",
+    "lower_bound",
+    "low_case",
+    "base_case",
+    "high_case",
+    "upper_bound",
 ];
 
-/// Three significant figures, as the report prints a central value.
+/// Three significant figures, as the report prints a base case.
 fn significant(value: f64) -> String {
     if value >= 100.0 {
         return format!("{value:.0}");
@@ -1807,25 +1808,19 @@ fn significant(value: f64) -> String {
 }
 
 fn position(figure: f64, values: &[f64; 5]) -> &'static str {
-    let [
-        envelope_low,
-        plausible_low,
-        central,
-        plausible_high,
-        envelope_high,
-    ] = *values;
-    if figure < envelope_low {
-        "below the envelope"
-    } else if figure < plausible_low {
-        "below the plausible band"
-    } else if figure <= central {
-        "plausible, below central"
-    } else if figure <= plausible_high {
-        "plausible, above central"
-    } else if figure <= envelope_high {
-        "above the plausible band"
+    let [lower_bound, low_case, base_case, high_case, upper_bound] = *values;
+    if figure < lower_bound {
+        "below the lower bound"
+    } else if figure < low_case {
+        "between lower bound and low case"
+    } else if figure <= base_case {
+        "low case to base case"
+    } else if figure <= high_case {
+        "base case to high case"
+    } else if figure <= upper_bound {
+        "between high case and upper bound"
     } else {
-        "above the envelope"
+        "above the upper bound"
     }
 }
 
@@ -1873,7 +1868,7 @@ fn validation_tables_match_the_tool() -> TestResult {
     for disclosure in &DISCLOSURES {
         let mut table = vec![
             format!(
-                "| Input tokens | Parameter set | Envelope low | Plausible low | Central | Plausible high | Envelope high | {} {} is |",
+                "| Input tokens | Parameter set | Lower bound | Low case | Base case | High case | Upper bound | {} {} is |",
                 disclosure.figure, disclosure.unit
             ),
             "| --- | --- | --- | --- | --- | --- | --- | --- |".to_owned(),

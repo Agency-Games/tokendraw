@@ -41,11 +41,11 @@ basis = "The comparison is in energy, so the sites do not enter it."
 reviewed = 2026-10-09
 
 [provider.pue]
-envelope_low = 1.09
-plausible_low = 1.09
-central = 1.09
-plausible_high = 1.09
-envelope_high = 1.09
+lower_bound = 1.09
+low_case = 1.09
+base_case = 1.09
+high_case = 1.09
+upper_bound = 1.09
 label = "C"
 sources = ["google-gemini-measurement"]
 basis = "Google's fleet PUE, which the measured 0.24 Wh includes."

@@ -9,8 +9,8 @@
 //! compression without a top-k cap, lightning indexers) goes into `a_p` and
 //! `a_d`; attention capped at a window, a top-k or a fixed state costs the
 //! same per token beyond the cap and goes into `b_in` and `b_out` at the
-//! cap. Each scenario gives one value; the envelope and the plausible band
-//! are the low and the high scenario, the central value the central one.
+//! cap. Each scenario gives one value; the bounds and the low and high case
+//! are the low and the high scenario, the base case the base scenario.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write as _;
@@ -37,7 +37,7 @@ struct Hardware {
     sources: Vec<String>,
     basis: String,
     low: Scenario,
-    central: Scenario,
+    base: Scenario,
     high: Scenario,
 }
 
@@ -395,7 +395,7 @@ fn values(
 pub struct Set {
     pub id: String,
     pub low: Values,
-    pub central: Values,
+    pub base: Values,
     pub high: Values,
     parts: [Parts; 3],
 }
@@ -437,13 +437,13 @@ pub fn compute(input: &Input, weights: &price_calibration::Input) -> anyhow::Res
             let on = |scenario, factor| values(model, active, &weights.anchor, scenario, factor);
             let parts = [
                 on(&input.hardware.low, hardware.low)?,
-                on(&input.hardware.central, hardware.central)?,
+                on(&input.hardware.base, hardware.base)?,
                 on(&input.hardware.high, hardware.high)?,
             ];
             Ok(Set {
                 id: model.id.clone(),
                 low: parts[0].values,
-                central: parts[1].values,
+                base: parts[1].values,
                 high: parts[2].values,
                 parts,
             })
@@ -474,13 +474,13 @@ fn frontier_idle(parameter_sets: &str) -> anyhow::Result<Factor> {
 }
 
 fn factor(set: &Set, pick: fn(&Values) -> f64, sources: Vec<String>, basis: String) -> Factor {
-    let (low, central, high) = (pick(&set.low), pick(&set.central), pick(&set.high));
+    let (low, base_case, high) = (pick(&set.low), pick(&set.base), pick(&set.high));
     Factor {
-        envelope_low: low,
-        plausible_low: low,
-        central,
-        plausible_high: high,
-        envelope_high: high,
+        lower_bound: low,
+        low_case: low,
+        base_case,
+        high_case: high,
+        upper_bound: high,
         label: "D".to_owned(),
         sources,
         basis,
@@ -488,7 +488,7 @@ fn factor(set: &Set, pick: fn(&Values) -> f64, sources: Vec<String>, basis: Stri
 }
 
 const BANDS: &str =
-    "Envelope and plausible band: the low and the high scenario; central: the central scenario.";
+    "Bounds, low case and high case: the low and the high scenario; base case: the base scenario.";
 
 struct Common<'a> {
     hardware: &'a Hardware,
@@ -525,7 +525,7 @@ impl Common<'_> {
                 both.push(id.clone());
             }
         }
-        let central = set.parts[1];
+        let base = set.parts[1];
         let expand = if model
             .group
             .iter()
@@ -540,7 +540,7 @@ impl Common<'_> {
         };
         let scale = format!(
             "and by the hardware factor {} / {} / {}",
-            factors.low, factors.central, factors.high
+            factors.low, factors.base, factors.high
         );
         let scenarios = &self.scenarios;
         Ok(Record {
@@ -571,13 +571,13 @@ impl Common<'_> {
                 |v| v.b_in,
                 both.clone(),
                 format!(
-                    "Weights: {} J per new token at {} billion active parameters on H800 (DeepSeek's fleet), scaled to {} billion active in prefill {scale}, {:.4} J central. Attention capped at a window, a top-k selection or a fixed state, at its cap{}, {:.4} J central. {BANDS}",
+                    "Weights: {} J per new token at {} billion active parameters on H800 (DeepSeek's fleet), scaled to {} billion active in prefill {scale}, {:.4} J base case. Attention capped at a window, a top-k selection or a fixed state, at its cap{}, {:.4} J base case. {BANDS}",
                     anchor.in_j,
                     anchor.active_b,
                     active.active_prefill_b.unwrap_or(active.active_b),
-                    central.weights_in,
+                    base.weights_in,
                     expand.0,
-                    central.values.b_in - central.weights_in,
+                    base.values.b_in - base.weights_in,
                 ),
             ),
             b_out_j_per_token: factor(
@@ -585,12 +585,12 @@ impl Common<'_> {
                 |v| v.b_out,
                 both,
                 format!(
-                    "Weights: {} J per output token at {} billion active parameters on H800, scaled to {} billion active {scale}, {:.4} J central. Attention capped at a window, a top-k selection or a fixed state, at its cap, {:.4} J central. {BANDS}",
+                    "Weights: {} J per output token at {} billion active parameters on H800, scaled to {} billion active {scale}, {:.4} J base case. Attention capped at a window, a top-k selection or a fixed state, at its cap, {:.4} J base case. {BANDS}",
                     anchor.out_j,
                     anchor.active_b,
                     active.active_b,
-                    central.weights_out,
-                    central.values.b_out - central.weights_out,
+                    base.weights_out,
+                    base.values.b_out - base.weights_out,
                 ),
             ),
             c0_mj_per_cached_token: factor(
@@ -599,9 +599,9 @@ impl Common<'_> {
                 attention,
                 format!(
                     "Reloading the {:.0} bytes of key-value entries a cached token holds over all layers (compressed entries over their ratio) from host memory once per call at {} / {} / {} nJ per byte{}. {BANDS}",
-                    central.stored_bytes,
+                    base.stored_bytes,
                     hw.low.reload_nj_per_byte,
-                    hw.central.reload_nj_per_byte,
+                    hw.base.reload_nj_per_byte,
                     hw.high.reload_nj_per_byte,
                     expand.1,
                 ),
@@ -623,13 +623,13 @@ pub fn render(
         hardware: hw,
         weights,
         scenarios: format!(
-            "Scenarios: low {} ({} pJ per FLOP, {} pJ per byte), central {} ({} pJ, {} pJ), high {} ({} pJ, {} pJ). {}",
+            "Scenarios: low {} ({} pJ per FLOP, {} pJ per byte), base {} ({} pJ, {} pJ), high {} ({} pJ, {} pJ). {}",
             hw.low.description,
             hw.low.e_flop_pj,
             hw.low.e_byte_pj,
-            hw.central.description,
-            hw.central.e_flop_pj,
-            hw.central.e_byte_pj,
+            hw.base.description,
+            hw.base.e_flop_pj,
+            hw.base.e_byte_pj,
             hw.high.description,
             hw.high.e_flop_pj,
             hw.high.e_byte_pj,

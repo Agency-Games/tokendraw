@@ -3,19 +3,19 @@ source: tests/cli.rs
 expression: without_platform(&json)?
 ---
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "tokendraw": {
     "version": "<version>",
     "os": "<os>",
     "arch": "<arch>"
   },
   "data_version": {
-    "id": "2026-10-09",
-    "shipped_sha256": "92735cdc2a25ef5c4b1eb84a946a202da15aecbc65701a22726d55142d3bf9a5",
+    "id": "2026-10-12",
+    "shipped_sha256": "e50df3cf0b2e68ef793bd5c5386bce6041b699330a7424c487086b94d9165f59",
     "overrides": [
       {
         "path": "override 1",
-        "sha256": "672ed81310921fc9cf666dfdf18426f823e735c984a71a581b1b2aff3e7c65c5",
+        "sha256": "7b7d306850836eb4ad773ee34138cf6b100f1fe7789ce05e882ef3d88a8f0699",
         "records": [
           {
             "kind": "source",
@@ -272,11 +272,11 @@ expression: without_platform(&json)?
       "basis": "energy model per call, parameter sets frontier, frontier@claude-opus-5-5: node energy times idle times the provider's PUE; cache residency R not included",
       "activity_quality": "P",
       "factor_quality": "D",
-      "envelope_low": 0.09348542250909841,
-      "plausible_low": 0.1673774959954324,
-      "central": 0.46690069684408986,
-      "plausible_high": 1.9877810565878382,
-      "envelope_high": 6.535792855939271
+      "lower_bound": 0.09348542250909841,
+      "low_case": 0.1673774959954324,
+      "base_case": 0.46690069684408986,
+      "high_case": 1.9877810565878382,
+      "upper_bound": 6.535792855939271
     },
     {
       "layer": "L1",
@@ -285,11 +285,11 @@ expression: without_platform(&json)?
       "basis": "IT energy times (PUE - 1); anthropic: anthropic, 1/1/1/1/1",
       "activity_quality": "P",
       "factor_quality": "D",
-      "envelope_low": 0.0,
-      "plausible_low": 0.0,
-      "central": 0.0,
-      "plausible_high": 0.0,
-      "envelope_high": 0.0
+      "lower_bound": 0.0,
+      "low_case": 0.0,
+      "base_case": 0.0,
+      "high_case": 0.0,
+      "upper_bound": 0.0
     },
     {
       "layer": "L1",
@@ -298,11 +298,11 @@ expression: without_platform(&json)?
       "basis": "location-based, region unknown; anthropic: anthropic default, g/kWh 400/400/400/400/400; grid: redacted, redacted, data year 2026",
       "activity_quality": "P",
       "factor_quality": "D",
-      "envelope_low": 0.037394169003639365,
-      "plausible_low": 0.06695099839817295,
-      "central": 0.18676027873763595,
-      "plausible_high": 0.7951124226351353,
-      "envelope_high": 2.6143171423757083
+      "lower_bound": 0.037394169003639365,
+      "low_case": 0.06695099839817295,
+      "base_case": 0.18676027873763595,
+      "high_case": 0.7951124226351353,
+      "upper_bound": 2.6143171423757083
     }
   ],
   "sums": [],
@@ -312,43 +312,43 @@ expression: without_platform(&json)?
       "record": "anthropic",
       "calls": 6,
       "energy_wh": {
-        "envelope_low": 0.09348542250909841,
-        "plausible_low": 0.1673774959954324,
-        "central": 0.46690069684408986,
-        "plausible_high": 1.9877810565878382,
-        "envelope_high": 6.535792855939271
+        "lower_bound": 0.09348542250909841,
+        "low_case": 0.1673774959954324,
+        "base_case": 0.46690069684408986,
+        "high_case": 1.9877810565878382,
+        "upper_bound": 6.535792855939271
       },
       "energy_facility_wh": {
-        "envelope_low": 0.0,
-        "plausible_low": 0.0,
-        "central": 0.0,
-        "plausible_high": 0.0,
-        "envelope_high": 0.0
+        "lower_bound": 0.0,
+        "low_case": 0.0,
+        "base_case": 0.0,
+        "high_case": 0.0,
+        "upper_bound": 0.0
       },
       "emissions_g": {
-        "envelope_low": 0.037394169003639365,
-        "plausible_low": 0.06695099839817295,
-        "central": 0.18676027873763595,
-        "plausible_high": 0.7951124226351353,
-        "envelope_high": 2.6143171423757083
+        "lower_bound": 0.037394169003639365,
+        "low_case": 0.06695099839817295,
+        "base_case": 0.18676027873763595,
+        "high_case": 0.7951124226351353,
+        "upper_bound": 2.6143171423757083
       },
       "energy_quality": "D",
       "emissions_quality": "D",
       "grid_g_per_kwh": {
-        "envelope_low": 400.0,
-        "plausible_low": 400.0,
-        "central": 400.0,
-        "plausible_high": 400.0,
-        "envelope_high": 400.0
+        "lower_bound": 400.0,
+        "low_case": 400.0,
+        "base_case": 400.0,
+        "high_case": 400.0,
+        "upper_bound": 400.0
       },
       "grid_quality": "M",
       "sites_quality": "M",
       "pue": {
-        "envelope_low": 1.0,
-        "plausible_low": 1.0,
-        "central": 1.0,
-        "plausible_high": 1.0,
-        "envelope_high": 1.0
+        "lower_bound": 1.0,
+        "low_case": 1.0,
+        "base_case": 1.0,
+        "high_case": 1.0,
+        "upper_bound": 1.0
       },
       "pue_label": "M"
     }
@@ -398,11 +398,11 @@ expression: without_platform(&json)?
         "ancestor": 0
       },
       "emissions_g": {
-        "envelope_low": 0.016577692920103807,
-        "plausible_low": 0.026260610625640664,
-        "central": 0.09018960443999817,
-        "plausible_high": 0.5152296576576578,
-        "envelope_high": 1.795396088532977
+        "lower_bound": 0.016577692920103807,
+        "low_case": 0.026260610625640664,
+        "base_case": 0.09018960443999817,
+        "high_case": 0.5152296576576578,
+        "upper_bound": 1.795396088532977
       }
     },
     {
@@ -415,11 +415,11 @@ expression: without_platform(&json)?
         "ancestor": 0
       },
       "emissions_g": {
-        "envelope_low": 0.0028797788613133305,
-        "plausible_low": 0.004524401661421183,
-        "central": 0.01561222096430444,
-        "plausible_high": 0.0895297274774775,
-        "envelope_high": 0.31237873162050933
+        "lower_bound": 0.0028797788613133305,
+        "low_case": 0.004524401661421183,
+        "base_case": 0.01561222096430444,
+        "high_case": 0.0895297274774775,
+        "upper_bound": 0.31237873162050933
       }
     }
   ],
@@ -428,28 +428,28 @@ expression: without_platform(&json)?
     "directories": 2,
     "calls_without_directory": 0,
     "emissions_g": {
-      "envelope_low": 0.01793669722222222,
-      "plausible_low": 0.03616598611111111,
-      "central": 0.08095845333333335,
-      "plausible_high": 0.19035303750000002,
-      "envelope_high": 0.5065423222222222
+      "lower_bound": 0.01793669722222222,
+      "low_case": 0.03616598611111111,
+      "base_case": 0.08095845333333335,
+      "high_case": 0.19035303750000002,
+      "upper_bound": 0.5065423222222222
     }
   },
   "breakdown": [
     {
       "name": "context_terms",
-      "share_of_central": 0.022534699000845686,
+      "share_of_base_case": 0.022534699000845686,
       "signal": "model terms a_p, a_d, c0"
     },
     {
       "name": "calls_above_cached_tokens",
-      "share_of_central": 0.0,
+      "share_of_base_case": 0.0,
       "threshold_cached_tokens": 200000,
       "signal": "cache_read tokens per call"
     },
     {
       "name": "client",
-      "shares_of_central": {
+      "shares_of_base_case": {
         "claude-code": 0.5665113916055717,
         "example-agent": 0.43348860839442827
       },
@@ -457,7 +457,7 @@ expression: without_platform(&json)?
     },
     {
       "name": "role",
-      "shares_of_central": {
+      "shares_of_base_case": {
         "interactive": 1.0
       },
       "signal": "role of each call"

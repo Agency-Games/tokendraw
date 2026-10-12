@@ -28,51 +28,51 @@ pub enum Weights {
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
 pub struct Five<T> {
-    pub envelope_low: T,
-    pub plausible_low: T,
-    pub central: T,
-    pub plausible_high: T,
-    pub envelope_high: T,
+    pub lower_bound: T,
+    pub low_case: T,
+    pub base_case: T,
+    pub high_case: T,
+    pub upper_bound: T,
 }
 
 impl<T: Copy> Five<T> {
     pub fn same(value: T) -> Five<T> {
         Five {
-            envelope_low: value,
-            plausible_low: value,
-            central: value,
-            plausible_high: value,
-            envelope_high: value,
+            lower_bound: value,
+            low_case: value,
+            base_case: value,
+            high_case: value,
+            upper_bound: value,
         }
     }
 
     pub fn map<U>(&self, f: impl Fn(T) -> U) -> Five<U> {
         Five {
-            envelope_low: f(self.envelope_low),
-            plausible_low: f(self.plausible_low),
-            central: f(self.central),
-            plausible_high: f(self.plausible_high),
-            envelope_high: f(self.envelope_high),
+            lower_bound: f(self.lower_bound),
+            low_case: f(self.low_case),
+            base_case: f(self.base_case),
+            high_case: f(self.high_case),
+            upper_bound: f(self.upper_bound),
         }
     }
 
     pub fn zip<U: Copy, V>(&self, other: &Five<U>, f: impl Fn(T, U) -> V) -> Five<V> {
         Five {
-            envelope_low: f(self.envelope_low, other.envelope_low),
-            plausible_low: f(self.plausible_low, other.plausible_low),
-            central: f(self.central, other.central),
-            plausible_high: f(self.plausible_high, other.plausible_high),
-            envelope_high: f(self.envelope_high, other.envelope_high),
+            lower_bound: f(self.lower_bound, other.lower_bound),
+            low_case: f(self.low_case, other.low_case),
+            base_case: f(self.base_case, other.base_case),
+            high_case: f(self.high_case, other.high_case),
+            upper_bound: f(self.upper_bound, other.upper_bound),
         }
     }
 
     pub(super) fn values(&self) -> [T; 5] {
         [
-            self.envelope_low,
-            self.plausible_low,
-            self.central,
-            self.plausible_high,
-            self.envelope_high,
+            self.lower_bound,
+            self.low_case,
+            self.base_case,
+            self.high_case,
+            self.upper_bound,
         ]
     }
 }
@@ -80,11 +80,11 @@ impl<T: Copy> Five<T> {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct Factor {
-    pub envelope_low: f64,
-    pub plausible_low: f64,
-    pub central: f64,
-    pub plausible_high: f64,
-    pub envelope_high: f64,
+    pub lower_bound: f64,
+    pub low_case: f64,
+    pub base_case: f64,
+    pub high_case: f64,
+    pub upper_bound: f64,
     pub label: Label,
     pub sources: Vec<String>,
     pub basis: String,
@@ -94,11 +94,11 @@ impl Factor {
     #[must_use]
     pub fn five(&self) -> Five<f64> {
         Five {
-            envelope_low: self.envelope_low,
-            plausible_low: self.plausible_low,
-            central: self.central,
-            plausible_high: self.plausible_high,
-            envelope_high: self.envelope_high,
+            lower_bound: self.lower_bound,
+            low_case: self.low_case,
+            base_case: self.base_case,
+            high_case: self.high_case,
+            upper_bound: self.upper_bound,
         }
     }
 }
@@ -229,12 +229,12 @@ pub enum Sites {
 }
 
 #[derive(Clone, Debug, PartialEq, Default)]
-pub enum EnvelopeSites {
+pub enum BoundsSites {
     #[default]
     None,
     List(Vec<String>),
     /// Every geography that a provider the shipped data names lists in
-    /// its sites or envelope sites.
+    /// its sites or bounds sites.
     Listed,
     /// Every geography in the shipped grid data.
     All,
@@ -249,13 +249,13 @@ impl Serialize for Sites {
     }
 }
 
-impl Serialize for EnvelopeSites {
+impl Serialize for BoundsSites {
     fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         match self {
-            EnvelopeSites::None => [0_u8; 0].serialize(serializer),
-            EnvelopeSites::List(sites) => sites.serialize(serializer),
-            EnvelopeSites::Listed => serializer.serialize_str("listed"),
-            EnvelopeSites::All => serializer.serialize_str("all"),
+            BoundsSites::None => [0_u8; 0].serialize(serializer),
+            BoundsSites::List(sites) => sites.serialize(serializer),
+            BoundsSites::Listed => serializer.serialize_str("listed"),
+            BoundsSites::All => serializer.serialize_str("all"),
         }
     }
 }
@@ -267,8 +267,8 @@ pub struct Provider {
     pub id: String,
     #[serde(deserialize_with = "sites")]
     pub sites: Sites,
-    #[serde(default, deserialize_with = "envelope_sites")]
-    pub envelope_sites: EnvelopeSites,
+    #[serde(default, deserialize_with = "bounds_sites")]
+    pub bounds_sites: BoundsSites,
     pub label: Label,
     pub sources: Vec<String>,
     pub basis: String,
@@ -387,14 +387,14 @@ fn sites<'de, D: Deserializer<'de>>(deserializer: D) -> Result<Sites, D::Error> 
     }
 }
 
-fn envelope_sites<'de, D: Deserializer<'de>>(deserializer: D) -> Result<EnvelopeSites, D::Error> {
+fn bounds_sites<'de, D: Deserializer<'de>>(deserializer: D) -> Result<BoundsSites, D::Error> {
     use serde::de::Error as _;
     match ListOrWord::deserialize(deserializer)? {
-        ListOrWord::List(sites) => Ok(EnvelopeSites::List(sites)),
-        ListOrWord::Word(word) if word == "listed" => Ok(EnvelopeSites::Listed),
-        ListOrWord::Word(word) if word == "all" => Ok(EnvelopeSites::All),
+        ListOrWord::List(sites) => Ok(BoundsSites::List(sites)),
+        ListOrWord::Word(word) if word == "listed" => Ok(BoundsSites::Listed),
+        ListOrWord::Word(word) if word == "all" => Ok(BoundsSites::All),
         ListOrWord::Word(word) => Err(D::Error::custom(format!(
-            "envelope_sites is {word:?}; expected a list of geography ids, \"listed\" or \"all\""
+            "bounds_sites is {word:?}; expected a list of geography ids, \"listed\" or \"all\""
         ))),
     }
 }

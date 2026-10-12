@@ -2,15 +2,14 @@
 
 Three providers have published the energy or emissions of one chat
 request. This note runs requests like theirs through tokendraw and shows
-where each published figure falls in tokendraw's ranges: the central
-value, the plausible band and the envelope (see `tokendraw report
---help`).
+where each published figure falls in tokendraw's cases: the base case,
+the low and high case and the bounds (see `tokendraw report --help`).
 
 None of the three says how many tokens its request had, and the energy
 of a request depends on them. The comparisons below therefore rest on
 assumed token counts. They show whether a published figure is consistent
-with tokendraw's ranges at those counts; they do not show that the
-central value or the prices behind it are right.
+with tokendraw's cases at those counts; they do not show that the
+base case or the prices behind it are right.
 
 ## The published figures
 
@@ -78,56 +77,56 @@ validation` reruns it.
 
 Google, energy in Wh:
 
-| Input tokens | Parameter set | Envelope low | Plausible low | Central | Plausible high | Envelope high | 0.24 Wh is |
+| Input tokens | Parameter set | Lower bound | Low case | Base case | High case | Upper bound | 0.24 Wh is |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 100 | `frontier` | 0.0258 | 0.0520 | 0.116 | 0.240 | 0.670 | plausible, above central |
-| 1000 | `frontier` | 0.0534 | 0.108 | 0.242 | 0.545 | 1.47 | plausible, below central |
-| 10000 | `frontier` | 0.336 | 0.704 | 1.56 | 3.73 | 9.79 | below the envelope |
-| 100 | `frontier@gemini-2.5-flash` | 0.00311 | 0.00513 | 0.0172 | 0.0964 | 0.334 | above the plausible band |
-| 1000 | `frontier@gemini-2.5-flash` | 0.00637 | 0.0113 | 0.0366 | 0.197 | 0.675 | above the plausible band |
-| 10000 | `frontier@gemini-2.5-flash` | 0.0457 | 0.107 | 0.290 | 1.35 | 4.39 | plausible, below central |
-| 100 | `frontier@gemini-2.5-pro` | 0.0122 | 0.0191 | 0.0659 | 0.379 | 1.32 | plausible, above central |
-| 1000 | `frontier@gemini-2.5-pro` | 0.0243 | 0.0388 | 0.133 | 0.754 | 2.62 | plausible, above central |
-| 10000 | `frontier@gemini-2.5-pro` | 0.152 | 0.270 | 0.859 | 4.65 | 16.0 | below the plausible band |
+| 100 | `frontier` | 0.0258 | 0.0520 | 0.116 | 0.240 | 0.670 | base case to high case |
+| 1000 | `frontier` | 0.0534 | 0.108 | 0.242 | 0.545 | 1.47 | low case to base case |
+| 10000 | `frontier` | 0.336 | 0.704 | 1.56 | 3.73 | 9.79 | below the lower bound |
+| 100 | `frontier@gemini-2.5-flash` | 0.00311 | 0.00513 | 0.0172 | 0.0964 | 0.334 | between high case and upper bound |
+| 1000 | `frontier@gemini-2.5-flash` | 0.00637 | 0.0113 | 0.0366 | 0.197 | 0.675 | between high case and upper bound |
+| 10000 | `frontier@gemini-2.5-flash` | 0.0457 | 0.107 | 0.290 | 1.35 | 4.39 | low case to base case |
+| 100 | `frontier@gemini-2.5-pro` | 0.0122 | 0.0191 | 0.0659 | 0.379 | 1.32 | base case to high case |
+| 1000 | `frontier@gemini-2.5-pro` | 0.0243 | 0.0388 | 0.133 | 0.754 | 2.62 | base case to high case |
+| 10000 | `frontier@gemini-2.5-pro` | 0.152 | 0.270 | 0.859 | 4.65 | 16.0 | between lower bound and low case |
 
-At 1,000 input tokens the `frontier` central value, 0.242 Wh, is close
+At 1,000 input tokens the `frontier` base case, 0.242 Wh, is close
 to Google's figure. At 10,000 input tokens Google's figure is below the
-`frontier` envelope: with that set's assumptions, no values tokendraw
+`frontier` lower bound: with that set's assumptions, no values tokendraw
 allows serve such a prompt for 0.24 Wh. The figure is consistent with
 tokendraw if the median prompt is shorter, or if a smaller model serves
 it, as the Gemini 2.5 Flash rows show; Google discloses neither. With
-Gemini 2.5 Flash's price, the figure is above the plausible band for the
+Gemini 2.5 Flash's price, the figure is above the high case for the
 shorter prompts.
 
 OpenAI, energy in Wh:
 
-| Input tokens | Parameter set | Envelope low | Plausible low | Central | Plausible high | Envelope high | 0.34 Wh is |
+| Input tokens | Parameter set | Lower bound | Low case | Base case | High case | Upper bound | 0.34 Wh is |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 100 | `frontier` | 0.0258 | 0.0558 | 0.125 | 0.258 | 0.958 | above the plausible band |
-| 1000 | `frontier` | 0.0534 | 0.116 | 0.260 | 0.584 | 2.10 | plausible, above central |
-| 10000 | `frontier` | 0.336 | 0.756 | 1.68 | 4.01 | 14.0 | below the plausible band |
-| 100 | `frontier@gpt-4o` | 0.0146 | 0.0245 | 0.0846 | 0.488 | 2.27 | plausible, above central |
-| 1000 | `frontier@gpt-4o` | 0.0291 | 0.0495 | 0.170 | 0.969 | 4.50 | plausible, above central |
-| 10000 | `frontier@gpt-4o` | 0.180 | 0.336 | 1.08 | 5.94 | 27.2 | plausible, below central |
+| 100 | `frontier` | 0.0258 | 0.0558 | 0.125 | 0.258 | 0.958 | between high case and upper bound |
+| 1000 | `frontier` | 0.0534 | 0.116 | 0.260 | 0.584 | 2.10 | base case to high case |
+| 10000 | `frontier` | 0.336 | 0.756 | 1.68 | 4.01 | 14.0 | between lower bound and low case |
+| 100 | `frontier@gpt-4o` | 0.0146 | 0.0245 | 0.0846 | 0.488 | 2.27 | base case to high case |
+| 1000 | `frontier@gpt-4o` | 0.0291 | 0.0495 | 0.170 | 0.969 | 4.50 | base case to high case |
+| 10000 | `frontier@gpt-4o` | 0.180 | 0.336 | 1.08 | 5.94 | 27.2 | low case to base case |
 
-OpenAI's figure is inside every envelope, and inside the plausible band
-except with `frontier` at 100 and 10,000 input tokens. Since OpenAI does
+OpenAI's figure is inside every set of bounds, and between the low and
+the high case except with `frontier` at 100 and 10,000 input tokens. Since OpenAI does
 not say what its figure includes, this comparison is the weakest of the
 three.
 
 Mistral, emissions in g CO2e:
 
-| Input tokens | Parameter set | Envelope low | Plausible low | Central | Plausible high | Envelope high | 1.14 g CO2e is |
+| Input tokens | Parameter set | Lower bound | Low case | Base case | High case | Upper bound | 1.14 g CO2e is |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 100 | `frontier` | 0.000456 | 0.00245 | 0.0516 | 0.183 | 1.03 | above the envelope |
-| 1000 | `frontier` | 0.00105 | 0.00565 | 0.119 | 0.461 | 2.52 | above the plausible band |
-| 10000 | `frontier` | 0.00709 | 0.0396 | 0.826 | 3.38 | 18.0 | plausible, above central |
-| 100 | `frontier@mistral-large-2` | 0.000172 | 0.000718 | 0.0233 | 0.229 | 1.63 | above the plausible band |
-| 1000 | `frontier@mistral-large-2` | 0.000380 | 0.00163 | 0.0521 | 0.506 | 3.57 | above the plausible band |
-| 10000 | `frontier@mistral-large-2` | 0.00260 | 0.0126 | 0.372 | 3.40 | 23.6 | plausible, above central |
+| 100 | `frontier` | 0.000456 | 0.00245 | 0.0516 | 0.183 | 1.03 | above the upper bound |
+| 1000 | `frontier` | 0.00105 | 0.00565 | 0.119 | 0.461 | 2.52 | between high case and upper bound |
+| 10000 | `frontier` | 0.00709 | 0.0396 | 0.826 | 3.38 | 18.0 | base case to high case |
+| 100 | `frontier@mistral-large-2` | 0.000172 | 0.000718 | 0.0233 | 0.229 | 1.63 | between high case and upper bound |
+| 1000 | `frontier@mistral-large-2` | 0.000380 | 0.00163 | 0.0521 | 0.506 | 3.57 | between high case and upper bound |
+| 10000 | `frontier@mistral-large-2` | 0.00260 | 0.0126 | 0.372 | 3.40 | 23.6 | base case to high case |
 
-At 100 input tokens Mistral's figure is above the `frontier` envelope,
-and up to 1,000 input tokens it is above every plausible band. Possible
+At 100 input tokens Mistral's figure is above the `frontier` upper
+bound, and up to 1,000 input tokens it is above every high case. Possible
 contributors are the server manufacturing Mistral's figure includes and
 tokendraw's estimate does not, the grid and input length Mistral does not
 state, and tokendraw's assumptions about the model and its serving. The
@@ -135,8 +134,8 @@ figure does not say which; the cause is unresolved.
 
 ## What this does not test
 
-- **The central value.** A published figure near a central value at an
-  assumed token count does not show that the central value is right for
+- **The base case.** A published figure near a base case at an
+  assumed token count does not show that the base case is right for
   other requests, models or hardware.
 - **Prices as a measure of energy.** None of the providers says which
   model served its figure, so the `frontier@<price>` rows cannot confirm

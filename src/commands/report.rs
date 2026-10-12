@@ -17,7 +17,7 @@ use crate::quantity::{GramsCo2e, GramsCo2ePerKwh, TokenClasses, Tokens, WattHour
 
 /// The version of the report's JSON; it changes only when a field is
 /// removed or changed.
-const SCHEMA_VERSION: u32 = 1;
+const SCHEMA_VERSION: u32 = 2;
 
 /// The activity label: every count comes exactly from the logs (primary).
 const ACTIVITY_QUALITY: &str = "P";
@@ -56,18 +56,18 @@ pub struct Report {
     /// The calls attributed to no project; left out for one project.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub unresolved: Option<UnresolvedEmissions>,
-    /// Where the central L1 energy goes; left out without energy.
+    /// Where the base case L1 energy goes; left out without energy.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub breakdown: Option<Vec<Part>>,
 }
 
-/// A part of the central L1 energy, with the signal it comes from.
+/// A part of the base case L1 energy, with the signal it comes from.
 #[derive(Debug, Serialize)]
 #[serde(untagged)]
 pub enum Part {
     Share {
         name: &'static str,
-        share_of_central: f64,
+        share_of_base_case: f64,
         #[serde(skip_serializing_if = "Option::is_none")]
         threshold_cached_tokens: Option<u64>,
         signal: &'static str,
@@ -75,7 +75,7 @@ pub enum Part {
     /// Every part present, keyed by its id; the shares add up to 1.
     Split {
         name: &'static str,
-        shares_of_central: BTreeMap<String, f64>,
+        shares_of_base_case: BTreeMap<String, f64>,
         signal: &'static str,
     },
 }
@@ -501,9 +501,9 @@ pub fn build(
     }
 }
 
-/// `None` without central energy, which no share can divide.
+/// `None` without base case energy, which no share can divide.
 fn breakdown(l1: &L1, long_context: u64) -> Option<Vec<Part>> {
-    let total = l1.energy.central.0;
+    let total = l1.energy.base_case.0;
     if total <= 0.0 {
         return None;
     }
@@ -518,24 +518,24 @@ fn breakdown(l1: &L1, long_context: u64) -> Option<Vec<Part>> {
     Some(vec![
         Part::Share {
             name: "context_terms",
-            share_of_central: share(parts.context_terms),
+            share_of_base_case: share(parts.context_terms),
             threshold_cached_tokens: None,
             signal: "model terms a_p, a_d, c0",
         },
         Part::Share {
             name: "calls_above_cached_tokens",
-            share_of_central: share(parts.cached_above),
+            share_of_base_case: share(parts.cached_above),
             threshold_cached_tokens: Some(long_context),
             signal: "cache_read tokens per call",
         },
         Part::Split {
             name: "client",
-            shares_of_central: shares(&parts.by_client),
+            shares_of_base_case: shares(&parts.by_client),
             signal: "client of each call",
         },
         Part::Split {
             name: "role",
-            shares_of_central: shares(&parts.by_role),
+            shares_of_base_case: shares(&parts.by_role),
             signal: "role of each call",
         },
     ])
@@ -568,9 +568,9 @@ fn projects(data: &Data, rows: &[ProjectUsage]) -> Vec<ProjectEmissions> {
         .collect();
     projects.sort_by(|a, b| {
         b.emissions_g
-            .central
+            .base_case
             .0
-            .total_cmp(&a.emissions_g.central.0)
+            .total_cmp(&a.emissions_g.base_case.0)
             .then_with(|| a.project.cmp(&b.project))
     });
     projects
@@ -734,11 +734,11 @@ fn slashed(five: &Five<f64>) -> String {
     let shown = |value: f64| (value * DECIMALS).round() / DECIMALS;
     format!(
         "{}/{}/{}/{}/{}",
-        shown(five.envelope_low),
-        shown(five.plausible_low),
-        shown(five.central),
-        shown(five.plausible_high),
-        shown(five.envelope_high)
+        shown(five.lower_bound),
+        shown(five.low_case),
+        shown(five.base_case),
+        shown(five.high_case),
+        shown(five.upper_bound)
     )
 }
 
@@ -747,7 +747,7 @@ fn provenance(data: &Data, groups: &[Group]) -> GridProvenance {
     let geographies: Vec<_> = providers
         .iter()
         .filter_map(|id| data.providers.get(*id))
-        .flat_map(|provider| provider.site_ids.iter().chain(&provider.envelope_ids))
+        .flat_map(|provider| provider.site_ids.iter().chain(&provider.bounds_ids))
         .collect::<BTreeSet<_>>()
         .into_iter()
         .filter_map(|id| data.geographies.get(id))

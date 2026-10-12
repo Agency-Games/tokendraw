@@ -26,20 +26,20 @@ sources = ["deepseek-fleet"]
 # scenarios.
 [hardware]
 low = 0.5
-central = 0.65
+base = 0.65
 high = 1.0
 sources = ["mlenergy-v3"]
-basis = "High: H100 or H800, as DeepSeek's fleet. Central: B200, 35 percent less energy per token in the ML.ENERGY Leaderboard v3.0. Low: GB200-class with FP4 experts, an assumption below B200."
+basis = "High: H100 or H800, as DeepSeek's fleet. Base: B200, 35 percent less energy per token in the ML.ENERGY Leaderboard v3.0. Low: GB200-class with FP4 experts, an assumption below B200."
 
 [markup]
-envelope_low = 1
-plausible_low = 1
-central = 1.825
-plausible_high = 3.33
-envelope_high = 3.33
+lower_bound = 1
+low_case = 1
+base_case = 1.825
+high_case = 3.33
+upper_bound = 3.33
 label = "D"
 sources = ["margin-anthropic", "margin-openai"]
-basis = "How far a closed lab's list price sits above the price hosts of open-weight models charge for the same serving cost. Neither the labs nor the hosts publish it. Low: lab and hosts at the same margin. High: a lab at OpenAI's reported compute margin of 70 percent, 1 / (1 - 0.70) = 3.33 times compute cost, with hosts at cost; Anthropic's reported 40 percent gross margin gives at least 1.67. Both are leaked figures that neither company confirmed. Central: the geometric mean of 1 and 3.33."
+basis = "How far a closed lab's list price sits above the price hosts of open-weight models charge for the same serving cost. Neither the labs nor the hosts publish it. Low: lab and hosts at the same margin. High: a lab at OpenAI's reported compute margin of 70 percent, 1 / (1 - 0.70) = 3.33 times compute cost, with hosts at cost; Anthropic's reported 40 percent gross margin gives at least 1.67. Both are leaked figures that neither company confirmed. Base case: the geometric mean of 1 and 3.33."
 
 [sources.margin-anthropic]
 title = "Anthropic projected a 40 percent gross margin for 2025 on products sold to enterprises and developers (relaying The Information)"

@@ -18,17 +18,21 @@ Coverage        status      location
   codex         not found   ~/logs/codex/sessions
   pi            not found   ~/logs/pi/sessions
 
-Emissions, g CO2e   central   plausible      envelope
-  anthropic           0.394   0.075 to 3.7   0.0049 to 19
+Emissions, g CO2e   base case   low to high case   bounds
+  anthropic             0.394   0.075 to 3.7       0.0049 to 19
 
-  total               0.394   0.075 to 3.7   0.0049 to 19
+  total                 0.394   0.075 to 3.7       0.0049 to 19
 
-Projects, g CO2e   calls   central   plausible      envelope
-  unresolved          31     0.394   0.075 to 3.7   0.0049 to 19
+These are cases, not confidence intervals: see `tokendraw report --help`.
+
+Projects, g CO2e   calls   base case   low to high case   bounds
+  unresolved          31       0.394   0.075 to 3.7       0.0049 to 19
+
+These are cases, not confidence intervals: see `tokendraw report --help`.
 
 31 calls in 1 directory belong to no project. Run `tokendraw projects` to
 list them with the labels that would assign them.
 
-Where the energy goes (central)
+Where the energy goes (base case)
   rereading the context               3%
   calls above 200,000 cached tokens   0%

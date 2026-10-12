@@ -6,7 +6,7 @@
 //! over its price at that host (a host's endpoints at their median) is one
 //! cell, at the prices the files list: those in force when they were
 //! downloaded. The five values are the 5th and 25th percentile of the cells at the
-//! low hardware factor, their median at the central factor, and the 75th and
+//! low hardware factor, their median at the base factor, and the 75th and
 //! 95th percentile at the high factor.
 
 use std::collections::BTreeMap;
@@ -47,7 +47,7 @@ pub(crate) struct Anchor {
 #[serde(deny_unknown_fields)]
 pub(crate) struct Hardware {
     pub(crate) low: f64,
-    pub(crate) central: f64,
+    pub(crate) base: f64,
     pub(crate) high: f64,
     pub(crate) sources: Vec<String>,
     basis: String,
@@ -68,11 +68,11 @@ pub(crate) struct OpenModel {
 #[derive(Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub(crate) struct Factor {
-    pub(crate) envelope_low: f64,
-    pub(crate) plausible_low: f64,
-    pub(crate) central: f64,
-    pub(crate) plausible_high: f64,
-    pub(crate) envelope_high: f64,
+    pub(crate) lower_bound: f64,
+    pub(crate) low_case: f64,
+    pub(crate) base_case: f64,
+    pub(crate) high_case: f64,
+    pub(crate) upper_bound: f64,
     pub(crate) label: String,
     pub(crate) sources: Vec<String>,
     pub(crate) basis: String,
@@ -219,21 +219,17 @@ pub fn calibrate(input: &Input, files: &[EndpointFile]) -> anyhow::Result<Calibr
             .find(|model| model.id == *id)
             .context("a cell of an unlisted model")?;
         let usd = median(prices);
-        let factors = [
-            input.hardware.low,
-            input.hardware.central,
-            input.hardware.high,
-        ];
+        let factors = [input.hardware.low, input.hardware.base, input.hardware.high];
         for (ratios, factor) in ratios.iter_mut().zip(factors) {
             ratios.push(weight_wh(input, model, factor) / usd);
         }
     }
-    let [low, central, high] = ratios;
+    let [low, base, high] = ratios;
     Ok(Calibration {
         five: [
             quantile(&low, 0.05),
             quantile(&low, 0.25),
-            median(&central),
+            median(&base),
             quantile(&high, 0.75),
             quantile(&high, 0.95),
         ],
@@ -367,23 +363,17 @@ pub fn render(
     }
     let (chat_in, chat_out) = (input.chat_input_tokens, input.chat_output_tokens);
     let anchor = &input.anchor;
-    let [
-        envelope_low,
-        plausible_low,
-        central,
-        plausible_high,
-        envelope_high,
-    ] = calibration.five;
+    let [lower_bound, low_case, base_case, high_case, upper_bound] = calibration.five;
     let wh_per_usd = Factor {
-        envelope_low,
-        plausible_low,
-        central,
-        plausible_high,
-        envelope_high,
+        lower_bound,
+        low_case,
+        base_case,
+        high_case,
+        upper_bound,
         label: "D".to_owned(),
         sources: cited,
         basis: format!(
-            "Over {} host and model cells of OpenRouter's endpoints for {} open-weight models on {accessed}, the weight energy at load of a call of {chat_in} new input and {chat_out} output tokens, ({chat_in} x {} J x prefill active parameters + {chat_out} x {} J x active parameters) / {} billion times the hardware factor, divided by the call's price at the host (several endpoints of a host at their median). Envelope: 5th and 95th percentile at the low and the high hardware factor ({} and {}). Plausible: 25th and 75th percentile at the same factors. Central: the median at {}. {}",
+            "Over {} host and model cells of OpenRouter's endpoints for {} open-weight models on {accessed}, the weight energy at load of a call of {chat_in} new input and {chat_out} output tokens, ({chat_in} x {} J x prefill active parameters + {chat_out} x {} J x active parameters) / {} billion times the hardware factor, divided by the call's price at the host (several endpoints of a host at their median). Bounds: 5th and 95th percentile at the low and the high hardware factor ({} and {}). Low and high case: 25th and 75th percentile at the same factors. Base case: the median at {}. {}",
             calibration.cells,
             input.model.len(),
             anchor.in_j,
@@ -391,7 +381,7 @@ pub fn render(
             anchor.active_b,
             input.hardware.low,
             input.hardware.high,
-            input.hardware.central,
+            input.hardware.base,
             input.hardware.basis,
         ),
     };
@@ -459,17 +449,17 @@ sources = ["fleet"]
 
 [hardware]
 low = 0.5
-central = 0.65
+base = 0.65
 high = 1.0
 sources = ["bench"]
 basis = "b"
 
 [markup]
-envelope_low = 1
-plausible_low = 1
-central = 1.825
-plausible_high = 3.33
-envelope_high = 3.33
+lower_bound = 1
+low_case = 1
+base_case = 1.825
+high_case = 3.33
+upper_bound = 3.33
 label = "D"
 sources = ["margin"]
 basis = "b"
@@ -560,10 +550,10 @@ basis = "b"
         // at factor 1. Model b: (1000 x 0.23 x 1 + 500 x 0.38 x 2) / 3600 Wh.
         let a = 420.0 / 3600.0;
         let b = 610.0 / 3600.0;
-        let mut central = [a / 0.0025, a / 0.004, a / 0.002, b / 0.006].map(|v| v * 0.65);
-        central.sort_by(f64::total_cmp);
-        let expected_central = f64::midpoint(central[1], central[2]);
-        assert!((calibration.five[2] - expected_central).abs() < 1e-9);
+        let mut base_case = [a / 0.0025, a / 0.004, a / 0.002, b / 0.006].map(|v| v * 0.65);
+        base_case.sort_by(f64::total_cmp);
+        let expected_base_case = f64::midpoint(base_case[1], base_case[2]);
+        assert!((calibration.five[2] - expected_base_case).abs() < 1e-9);
         let mut high = [a / 0.0025, a / 0.004, a / 0.002, b / 0.006];
         high.sort_by(f64::total_cmp);
         // The 95th percentile of four values: position 2.85.
@@ -626,9 +616,9 @@ basis = "b"
             .and_then(toml::Value::as_table)
             .context("one record")?;
         assert_eq!(record["id"].as_str(), Some("hosts"));
-        assert_eq!(record["markup"]["central"].as_float(), Some(1.825));
+        assert_eq!(record["markup"]["base_case"].as_float(), Some(1.825));
         assert_eq!(
-            record["wh_per_usd"]["central"].as_float(),
+            record["wh_per_usd"]["base_case"].as_float(),
             Some(calibration.five[2])
         );
         let sources = value["sources"].as_table().context("sources")?;

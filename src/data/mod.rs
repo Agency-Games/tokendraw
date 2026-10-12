@@ -116,9 +116,9 @@ pub struct ResolvedProvider {
     pub provider: Provider,
     /// The geographies of `sites` after `named` is expanded.
     pub site_ids: Vec<String>,
-    /// The geographies of `envelope_sites` after `listed` or `all` is
+    /// The geographies of `bounds_sites` after `listed` or `all` is
     /// expanded.
-    pub envelope_ids: Vec<String>,
+    pub bounds_ids: Vec<String>,
     pub grid: Five<GramsCo2ePerKwh>,
 }
 

@@ -294,8 +294,13 @@ pub fn forgotten(client: &str, forgotten: Forgotten) -> io::Result<()> {
     out.flush()
 }
 
+/// The version of `tokendraw data --json`; it changes only when a field is
+/// removed or changed.
+const DATA_SCHEMA_VERSION: u32 = 2;
+
 #[derive(Serialize)]
 struct DataReport<'a> {
+    schema_version: u32,
     #[serde(flatten)]
     data: &'a Data,
     stale: Vec<Stale>,
@@ -304,6 +309,7 @@ struct DataReport<'a> {
 pub fn data(data: &Data, today: Date, json: bool) -> io::Result<()> {
     let mut out = io::stdout().lock();
     let report = DataReport {
+        schema_version: DATA_SCHEMA_VERSION,
         data,
         stale: data.stale(today),
     };
@@ -395,7 +401,7 @@ fn write_records(out: &mut impl Write, data: &Data) -> io::Result<()> {
     writeln!(out)?;
     writeln!(
         out,
-        "values: envelope low / plausible low / central / plausible high / envelope high, label"
+        "values: lower bound / low case / base case / high case / upper bound, label"
     )?;
     for set in data.parameter_sets.values() {
         writeln!(out)?;
@@ -591,15 +597,15 @@ fn write_prices(out: &mut impl Write, data: &Data) -> io::Result<()> {
         writeln!(out)?;
         writeln!(
             out,
-            "parameter sets from prices: b_in / b_out central, J per token; the other values as their base set"
+            "parameter sets from prices: b_in / b_out base case, J per token; the other values as their base set"
         )?;
         for set in data.priced_sets.values() {
             writeln!(
                 out,
                 "  {:<44}{} / {}  {:?}",
                 set.id,
-                report::significant(set.b_in_j_per_token.central, 3),
-                report::significant(set.b_out_j_per_token.central, 3),
+                report::significant(set.b_in_j_per_token.base_case, 3),
+                report::significant(set.b_out_j_per_token.base_case, 3),
                 set.b_in_j_per_token.label
             )?;
         }
@@ -615,11 +621,7 @@ fn factor_values(factor: &Factor) -> String {
 fn five(values: &Five<f64>) -> String {
     format!(
         "{} / {} / {} / {} / {}",
-        values.envelope_low,
-        values.plausible_low,
-        values.central,
-        values.plausible_high,
-        values.envelope_high
+        values.lower_bound, values.low_case, values.base_case, values.high_case, values.upper_bound
     )
 }
 
@@ -627,11 +629,11 @@ fn five(values: &Five<f64>) -> String {
 fn grid(values: &Five<GramsCo2ePerKwh>) -> String {
     format!(
         "{:.1} / {:.1} / {:.1} / {:.1} / {:.1}",
-        values.envelope_low.0,
-        values.plausible_low.0,
-        values.central.0,
-        values.plausible_high.0,
-        values.envelope_high.0
+        values.lower_bound.0,
+        values.low_case.0,
+        values.base_case.0,
+        values.high_case.0,
+        values.upper_bound.0
     )
 }
 

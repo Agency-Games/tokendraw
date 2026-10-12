@@ -9,64 +9,64 @@ description = "DeepSeek V4 Pro (deepseek-ai/DeepSeek-V4-Pro) from its published 
 reviewed = 2026-10-08
 
 [parameter_set.a_p_uj_per_pair]
-envelope_low = 0.04710399999999999
-plausible_low = 0.04710399999999999
-central = 0.0989184
-plausible_high = 0.15073280000000003
-envelope_high = 0.15073280000000003
+lower_bound = 0.04710399999999999
+low_case = 0.04710399999999999
+base_case = 0.0989184
+high_case = 0.15073280000000003
+upper_bound = 0.15073280000000003
 label = "D"
 sources = ["config-deepseek-v4-pro", "card-deepseek-v4-pro", "mlenergy-v3", "flashmla"]
-basis = "Prefill attention whose cost grows with every earlier token: full attention, compressed attention without a top-k cap (over its ratio) and lightning indexers, FLOPs per pair of a new token and an earlier token times energy per FLOP. Capped attention is in b_in. Envelope and plausible band: the low and the high scenario; central: the central scenario. Scenarios: low GB200-class, FP8 attention (0.5 pJ per FLOP, 150 pJ per byte), central B200, 16-bit attention (1.05 pJ, 225 pJ), high H100 or H800 (1.6 pJ, 360 pJ). Whole-node power divided by achieved throughput. Per FLOP: an H100 or H800 node draws about 7.5 to 8 kW over 8 x about 600 TFLOPS achieved, about 1.6 pJ; a B200 node about 11 to 12 kW over 8 x about 1,350 TFLOPS (FlashMLA sparse prefill on B200), about 1.05 pJ; FP8 attention on Blackwell about 0.5 pJ. Per byte: node power over 80 percent of peak memory bandwidth, H100 3.35 TB/s at about 7.75 kW per 8 GPUs (360 pJ), B200 8 TB/s at about 11.5 kW (225 pJ), GB200-class 150 pJ; about 30 uJ per pair of an output token and a context token for Qwen3-32B on B200 in the ML.ENERGY Leaderboard v3.0 is consistent with them. Reload: host memory read and PCIe transfer, 0.1 to 0.3 nJ per byte."
+basis = "Prefill attention whose cost grows with every earlier token: full attention, compressed attention without a top-k cap (over its ratio) and lightning indexers, FLOPs per pair of a new token and an earlier token times energy per FLOP. Capped attention is in b_in. Bounds, low case and high case: the low and the high scenario; base case: the base scenario. Scenarios: low GB200-class, FP8 attention (0.5 pJ per FLOP, 150 pJ per byte), base B200, 16-bit attention (1.05 pJ, 225 pJ), high H100 or H800 (1.6 pJ, 360 pJ). Whole-node power divided by achieved throughput. Per FLOP: an H100 or H800 node draws about 7.5 to 8 kW over 8 x about 600 TFLOPS achieved, about 1.6 pJ; a B200 node about 11 to 12 kW over 8 x about 1,350 TFLOPS (FlashMLA sparse prefill on B200), about 1.05 pJ; FP8 attention on Blackwell about 0.5 pJ. Per byte: node power over 80 percent of peak memory bandwidth, H100 3.35 TB/s at about 7.75 kW per 8 GPUs (360 pJ), B200 8 TB/s at about 11.5 kW (225 pJ), GB200-class 150 pJ; about 30 uJ per pair of an output token and a context token for Qwen3-32B on B200 in the ML.ENERGY Leaderboard v3.0 is consistent with them. Reload: host memory read and PCIe transfer, 0.1 to 0.3 nJ per byte."
 
 [parameter_set.a_d_uj_per_pair]
-envelope_low = 0.10374399999999999
-plausible_low = 0.10374399999999999
-central = 0.1746624
-plausible_high = 0.2743808
-envelope_high = 0.2743808
+lower_bound = 0.10374399999999999
+low_case = 0.10374399999999999
+base_case = 0.1746624
+high_case = 0.2743808
+upper_bound = 0.2743808
 label = "D"
 sources = ["config-deepseek-v4-pro", "card-deepseek-v4-pro", "mlenergy-v3", "flashmla"]
-basis = "Decode attention whose cost grows with every earlier token, as for a_p: per pair of an output token and an earlier token, the larger of the key-value bytes read times energy per byte and the FLOPs times energy per FLOP. Capped attention is in b_out. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Decode attention whose cost grows with every earlier token, as for a_p: per pair of an output token and an earlier token, the larger of the key-value bytes read times energy per byte and the FLOPs times energy per FLOP. Capped attention is in b_out. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.b_in_j_per_token]
-envelope_low = 0.15734723931329733
-plausible_low = 0.15734723931329733
-central = 0.20859136472008655
-plausible_high = 0.32075440904579466
-envelope_high = 0.32075440904579466
+lower_bound = 0.15734723931329733
+low_case = 0.15734723931329733
+base_case = 0.20859136472008655
+high_case = 0.32075440904579466
+upper_bound = 0.32075440904579466
 label = "D"
 sources = ["config-deepseek-v4-pro", "card-deepseek-v4-pro", "mlenergy-v3", "flashmla", "deepseek-fleet"]
-basis = "Weights: 0.23 J per new token at 37 billion active parameters on H800 (DeepSeek's fleet), scaled to 49 billion active in prefill and by the hardware factor 0.5 / 0.65 / 1, 0.1980 J central. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.0106 J central. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Weights: 0.23 J per new token at 37 billion active parameters on H800 (DeepSeek's fleet), scaled to 49 billion active in prefill and by the hardware factor 0.5 / 0.65 / 1, 0.1980 J base case. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.0106 J base case. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.b_out_j_per_token]
-envelope_low = 0.25667156363762167
-plausible_low = 0.25667156363762167
-central = 0.33771298634170815
-plausible_high = 0.5194030576944433
-envelope_high = 0.5194030576944433
+lower_bound = 0.25667156363762167
+low_case = 0.25667156363762167
+base_case = 0.33771298634170815
+high_case = 0.5194030576944433
+upper_bound = 0.5194030576944433
 label = "D"
 sources = ["config-deepseek-v4-pro", "card-deepseek-v4-pro", "mlenergy-v3", "flashmla", "deepseek-fleet"]
-basis = "Weights: 0.38 J per output token at 37 billion active parameters on H800, scaled to 49 billion active and by the hardware factor 0.5 / 0.65 / 1, 0.3271 J central. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.0106 J central. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Weights: 0.38 J per output token at 37 billion active parameters on H800, scaled to 49 billion active and by the hardware factor 0.5 / 0.65 / 1, 0.3271 J base case. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.0106 J base case. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.c0_mj_per_cached_token]
-envelope_low = 0.0004459500000000001
-plausible_low = 0.0004459500000000001
-central = 0.0008919000000000002
-plausible_high = 0.00133785
-envelope_high = 0.00133785
+lower_bound = 0.0004459500000000001
+low_case = 0.0004459500000000001
+base_case = 0.0008919000000000002
+high_case = 0.00133785
+upper_bound = 0.00133785
 label = "D"
 sources = ["config-deepseek-v4-pro", "card-deepseek-v4-pro", "mlenergy-v3", "flashmla"]
-basis = "Reloading the 4460 bytes of key-value entries a cached token holds over all layers (compressed entries over their ratio) from host memory once per call at 0.1 / 0.2 / 0.3 nJ per byte. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Reloading the 4460 bytes of key-value entries a cached token holds over all layers (compressed entries over their ratio) from host memory once per call at 0.1 / 0.2 / 0.3 nJ per byte. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.idle]
-envelope_low = 1.0
-plausible_low = 1.0
-central = 1.12
-plausible_high = 1.35
-envelope_high = 1.9
+lower_bound = 1.0
+low_case = 1.0
+base_case = 1.12
+high_case = 1.35
+upper_bound = 1.9
 label = "D"
 sources = ["deepseek-fleet", "google-gemini-energy", "dynamollm", "inverse-w-law"]
-basis = "Serving energy including reserved and idle capacity, divided by the energy of the same work at load; the provider's PUE is applied separately. Low: a fleet scaled to its load, as DeepSeek's, which releases inference nodes to research and training at night. Central: Google's Gemini measurement, idle machines 10 percent against 83 percent for active machines, (83 + 10) / 83 = 1.12. High: capacity provisioned for peak load, idle servers drawing half their power at load (H100, 300 W against 600 W), at a peak of 1.7 times the average load (Azure conversation traffic, plausible high, 1 + 0.7 x 0.5) and 2.8 times (Azure coding traffic, envelope high, 1 + 1.8 x 0.5)."
+basis = "Serving energy including reserved and idle capacity, divided by the energy of the same work at load; the provider's PUE is applied separately. Low: a fleet scaled to its load, as DeepSeek's, which releases inference nodes to research and training at night. Base case: Google's Gemini measurement, idle machines 10 percent against 83 percent for active machines, (83 + 10) / 83 = 1.12. High: capacity provisioned for peak load, idle servers drawing half their power at load (H100, 300 W against 600 W), at a peak of 1.7 times the average load (Azure conversation traffic, high case, 1 + 0.7 x 0.5) and 2.8 times (Azure coding traffic, upper bound, 1 + 1.8 x 0.5)."
 
 [[parameter_set]]
 id = "deepseek-v4.1-flash"
@@ -74,64 +74,64 @@ description = "DeepSeek V4.1 Flash (deepseek-ai/DeepSeek-V4.1-Flash) from its pu
 reviewed = 2026-10-08
 
 [parameter_set.a_p_uj_per_pair]
-envelope_low = 0.0066560000000000005
-plausible_low = 0.0066560000000000005
-central = 0.0139776
-plausible_high = 0.0212992
-envelope_high = 0.0212992
+lower_bound = 0.0066560000000000005
+low_case = 0.0066560000000000005
+base_case = 0.0139776
+high_case = 0.0212992
+upper_bound = 0.0212992
 label = "D"
 sources = ["config-deepseek-v4-1-flash", "card-deepseek-v4-1-flash", "mlenergy-v3", "flashmla"]
-basis = "Prefill attention whose cost grows with every earlier token: full attention, compressed attention without a top-k cap (over its ratio) and lightning indexers, FLOPs per pair of a new token and an earlier token times energy per FLOP. Capped attention is in b_in. Envelope and plausible band: the low and the high scenario; central: the central scenario. Scenarios: low GB200-class, FP8 attention (0.5 pJ per FLOP, 150 pJ per byte), central B200, 16-bit attention (1.05 pJ, 225 pJ), high H100 or H800 (1.6 pJ, 360 pJ). Whole-node power divided by achieved throughput. Per FLOP: an H100 or H800 node draws about 7.5 to 8 kW over 8 x about 600 TFLOPS achieved, about 1.6 pJ; a B200 node about 11 to 12 kW over 8 x about 1,350 TFLOPS (FlashMLA sparse prefill on B200), about 1.05 pJ; FP8 attention on Blackwell about 0.5 pJ. Per byte: node power over 80 percent of peak memory bandwidth, H100 3.35 TB/s at about 7.75 kW per 8 GPUs (360 pJ), B200 8 TB/s at about 11.5 kW (225 pJ), GB200-class 150 pJ; about 30 uJ per pair of an output token and a context token for Qwen3-32B on B200 in the ML.ENERGY Leaderboard v3.0 is consistent with them. Reload: host memory read and PCIe transfer, 0.1 to 0.3 nJ per byte."
+basis = "Prefill attention whose cost grows with every earlier token: full attention, compressed attention without a top-k cap (over its ratio) and lightning indexers, FLOPs per pair of a new token and an earlier token times energy per FLOP. Capped attention is in b_in. Bounds, low case and high case: the low and the high scenario; base case: the base scenario. Scenarios: low GB200-class, FP8 attention (0.5 pJ per FLOP, 150 pJ per byte), base B200, 16-bit attention (1.05 pJ, 225 pJ), high H100 or H800 (1.6 pJ, 360 pJ). Whole-node power divided by achieved throughput. Per FLOP: an H100 or H800 node draws about 7.5 to 8 kW over 8 x about 600 TFLOPS achieved, about 1.6 pJ; a B200 node about 11 to 12 kW over 8 x about 1,350 TFLOPS (FlashMLA sparse prefill on B200), about 1.05 pJ; FP8 attention on Blackwell about 0.5 pJ. Per byte: node power over 80 percent of peak memory bandwidth, H100 3.35 TB/s at about 7.75 kW per 8 GPUs (360 pJ), B200 8 TB/s at about 11.5 kW (225 pJ), GB200-class 150 pJ; about 30 uJ per pair of an output token and a context token for Qwen3-32B on B200 in the ML.ENERGY Leaderboard v3.0 is consistent with them. Reload: host memory read and PCIe transfer, 0.1 to 0.3 nJ per byte."
 
 [parameter_set.a_d_uj_per_pair]
-envelope_low = 0.062400000000000004
-plausible_low = 0.062400000000000004
-central = 0.09359999999999999
-plausible_high = 0.14975999999999998
-envelope_high = 0.14975999999999998
+lower_bound = 0.062400000000000004
+low_case = 0.062400000000000004
+base_case = 0.09359999999999999
+high_case = 0.14975999999999998
+upper_bound = 0.14975999999999998
 label = "D"
 sources = ["config-deepseek-v4-1-flash", "card-deepseek-v4-1-flash", "mlenergy-v3", "flashmla"]
-basis = "Decode attention whose cost grows with every earlier token, as for a_p: per pair of an output token and an earlier token, the larger of the key-value bytes read times energy per byte and the FLOPs times energy per FLOP. Capped attention is in b_out. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Decode attention whose cost grows with every earlier token, as for a_p: per pair of an output token and an earlier token, the larger of the key-value bytes read times energy per byte and the FLOPs times energy per FLOP. Capped attention is in b_out. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.b_in_j_per_token]
-envelope_low = 0.02647547760086487
-plausible_low = 0.02647547760086487
-central = 0.03570661106992433
-plausible_high = 0.054883690484929734
-envelope_high = 0.054883690484929734
+lower_bound = 0.02647547760086487
+low_case = 0.02647547760086487
+base_case = 0.03570661106992433
+high_case = 0.054883690484929734
+upper_bound = 0.054883690484929734
 label = "D"
 sources = ["config-deepseek-v4-1-flash", "card-deepseek-v4-1-flash", "mlenergy-v3", "flashmla", "deepseek-fleet"]
-basis = "Weights: 0.23 J per new token at 37 billion active parameters on H800 (DeepSeek's fleet), scaled to 8 billion active in prefill and by the hardware factor 0.5 / 0.65 / 1, 0.0323 J central. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.0034 J central. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Weights: 0.23 J per new token at 37 billion active parameters on H800 (DeepSeek's fleet), scaled to 8 billion active in prefill and by the hardware factor 0.5 / 0.65 / 1, 0.0323 J base case. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.0034 J base case. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.b_out_j_per_token]
-envelope_low = 0.08377565848216217
-plausible_low = 0.08377565848216217
-central = 0.11019309755641081
-plausible_high = 0.16947828507952434
-envelope_high = 0.16947828507952434
+lower_bound = 0.08377565848216217
+low_case = 0.08377565848216217
+base_case = 0.11019309755641081
+high_case = 0.16947828507952434
+upper_bound = 0.16947828507952434
 label = "D"
 sources = ["config-deepseek-v4-1-flash", "card-deepseek-v4-1-flash", "mlenergy-v3", "flashmla", "deepseek-fleet"]
-basis = "Weights: 0.38 J per output token at 37 billion active parameters on H800, scaled to 16 billion active and by the hardware factor 0.5 / 0.65 / 1, 0.1068 J central. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.0034 J central. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Weights: 0.38 J per output token at 37 billion active parameters on H800, scaled to 16 billion active and by the hardware factor 0.5 / 0.65 / 1, 0.1068 J base case. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.0034 J base case. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.c0_mj_per_cached_token]
-envelope_low = 0.00017025999999999999
-plausible_low = 0.00017025999999999999
-central = 0.00034051999999999997
-plausible_high = 0.0005107800000000001
-envelope_high = 0.0005107800000000001
+lower_bound = 0.00017025999999999999
+low_case = 0.00017025999999999999
+base_case = 0.00034051999999999997
+high_case = 0.0005107800000000001
+upper_bound = 0.0005107800000000001
 label = "D"
 sources = ["config-deepseek-v4-1-flash", "card-deepseek-v4-1-flash", "mlenergy-v3", "flashmla"]
-basis = "Reloading the 1703 bytes of key-value entries a cached token holds over all layers (compressed entries over their ratio) from host memory once per call at 0.1 / 0.2 / 0.3 nJ per byte. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Reloading the 1703 bytes of key-value entries a cached token holds over all layers (compressed entries over their ratio) from host memory once per call at 0.1 / 0.2 / 0.3 nJ per byte. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.idle]
-envelope_low = 1.0
-plausible_low = 1.0
-central = 1.12
-plausible_high = 1.35
-envelope_high = 1.9
+lower_bound = 1.0
+low_case = 1.0
+base_case = 1.12
+high_case = 1.35
+upper_bound = 1.9
 label = "D"
 sources = ["deepseek-fleet", "google-gemini-energy", "dynamollm", "inverse-w-law"]
-basis = "Serving energy including reserved and idle capacity, divided by the energy of the same work at load; the provider's PUE is applied separately. Low: a fleet scaled to its load, as DeepSeek's, which releases inference nodes to research and training at night. Central: Google's Gemini measurement, idle machines 10 percent against 83 percent for active machines, (83 + 10) / 83 = 1.12. High: capacity provisioned for peak load, idle servers drawing half their power at load (H100, 300 W against 600 W), at a peak of 1.7 times the average load (Azure conversation traffic, plausible high, 1 + 0.7 x 0.5) and 2.8 times (Azure coding traffic, envelope high, 1 + 1.8 x 0.5)."
+basis = "Serving energy including reserved and idle capacity, divided by the energy of the same work at load; the provider's PUE is applied separately. Low: a fleet scaled to its load, as DeepSeek's, which releases inference nodes to research and training at night. Base case: Google's Gemini measurement, idle machines 10 percent against 83 percent for active machines, (83 + 10) / 83 = 1.12. High: capacity provisioned for peak load, idle servers drawing half their power at load (H100, 300 W against 600 W), at a peak of 1.7 times the average load (Azure conversation traffic, high case, 1 + 0.7 x 0.5) and 2.8 times (Azure coding traffic, upper bound, 1 + 1.8 x 0.5)."
 
 [[parameter_set]]
 id = "glm-5.3"
@@ -139,64 +139,64 @@ description = "GLM 5.3 (zai-org/GLM-5.3) from its published configuration: 78 mu
 reviewed = 2026-10-08
 
 [parameter_set.a_p_uj_per_pair]
-envelope_low = 0.043008
-plausible_low = 0.043008
-central = 0.0903168
-plausible_high = 0.1376256
-envelope_high = 0.1376256
+lower_bound = 0.043008
+low_case = 0.043008
+base_case = 0.0903168
+high_case = 0.1376256
+upper_bound = 0.1376256
 label = "D"
 sources = ["config-glm-5-3", "mlenergy-v3", "flashmla"]
-basis = "Prefill attention whose cost grows with every earlier token: full attention, compressed attention without a top-k cap (over its ratio) and lightning indexers, FLOPs per pair of a new token and an earlier token times energy per FLOP. Capped attention is in b_in. Envelope and plausible band: the low and the high scenario; central: the central scenario. Scenarios: low GB200-class, FP8 attention (0.5 pJ per FLOP, 150 pJ per byte), central B200, 16-bit attention (1.05 pJ, 225 pJ), high H100 or H800 (1.6 pJ, 360 pJ). Whole-node power divided by achieved throughput. Per FLOP: an H100 or H800 node draws about 7.5 to 8 kW over 8 x about 600 TFLOPS achieved, about 1.6 pJ; a B200 node about 11 to 12 kW over 8 x about 1,350 TFLOPS (FlashMLA sparse prefill on B200), about 1.05 pJ; FP8 attention on Blackwell about 0.5 pJ. Per byte: node power over 80 percent of peak memory bandwidth, H100 3.35 TB/s at about 7.75 kW per 8 GPUs (360 pJ), B200 8 TB/s at about 11.5 kW (225 pJ), GB200-class 150 pJ; about 30 uJ per pair of an output token and a context token for Qwen3-32B on B200 in the ML.ENERGY Leaderboard v3.0 is consistent with them. Reload: host memory read and PCIe transfer, 0.1 to 0.3 nJ per byte."
+basis = "Prefill attention whose cost grows with every earlier token: full attention, compressed attention without a top-k cap (over its ratio) and lightning indexers, FLOPs per pair of a new token and an earlier token times energy per FLOP. Capped attention is in b_in. Bounds, low case and high case: the low and the high scenario; base case: the base scenario. Scenarios: low GB200-class, FP8 attention (0.5 pJ per FLOP, 150 pJ per byte), base B200, 16-bit attention (1.05 pJ, 225 pJ), high H100 or H800 (1.6 pJ, 360 pJ). Whole-node power divided by achieved throughput. Per FLOP: an H100 or H800 node draws about 7.5 to 8 kW over 8 x about 600 TFLOPS achieved, about 1.6 pJ; a B200 node about 11 to 12 kW over 8 x about 1,350 TFLOPS (FlashMLA sparse prefill on B200), about 1.05 pJ; FP8 attention on Blackwell about 0.5 pJ. Per byte: node power over 80 percent of peak memory bandwidth, H100 3.35 TB/s at about 7.75 kW per 8 GPUs (360 pJ), B200 8 TB/s at about 11.5 kW (225 pJ), GB200-class 150 pJ; about 30 uJ per pair of an output token and a context token for Qwen3-32B on B200 in the ML.ENERGY Leaderboard v3.0 is consistent with them. Reload: host memory read and PCIe transfer, 0.1 to 0.3 nJ per byte."
 
 [parameter_set.a_d_uj_per_pair]
-envelope_low = 0.4032
-plausible_low = 0.4032
-central = 0.6048
-plausible_high = 0.96768
-envelope_high = 0.96768
+lower_bound = 0.4032
+low_case = 0.4032
+base_case = 0.6048
+high_case = 0.96768
+upper_bound = 0.96768
 label = "D"
 sources = ["config-glm-5-3", "mlenergy-v3", "flashmla"]
-basis = "Decode attention whose cost grows with every earlier token, as for a_p: per pair of an output token and an earlier token, the larger of the key-value bytes read times energy per byte and the FLOPs times energy per FLOP. Capped attention is in b_out. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Decode attention whose cost grows with every earlier token, as for a_p: per pair of an output token and an earlier token, the larger of the key-value bytes read times energy per byte and the FLOPs times energy per FLOP. Capped attention is in b_out. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.b_in_j_per_token]
-envelope_low = 0.13637694285664867
-plausible_low = 0.13637694285664867
-central = 0.18618866108004326
-plausible_high = 0.2861018387628973
-envelope_high = 0.2861018387628973
+lower_bound = 0.13637694285664867
+low_case = 0.13637694285664867
+base_case = 0.18618866108004326
+high_case = 0.2861018387628973
+upper_bound = 0.2861018387628973
 label = "D"
 sources = ["config-glm-5-3", "mlenergy-v3", "flashmla", "deepseek-fleet"]
-basis = "Weights: 0.23 J per new token at 37 billion active parameters on H800 (DeepSeek's fleet), scaled to 40.299 billion active in prefill and by the hardware factor 0.5 / 0.65 / 1, 0.1628 J central. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.0234 J central. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Weights: 0.23 J per new token at 37 billion active parameters on H800 (DeepSeek's fleet), scaled to 40.299 billion active in prefill and by the hardware factor 0.5 / 0.65 / 1, 0.1628 J base case. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.0234 J base case. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.b_out_j_per_token]
-envelope_low = 0.23454457401081083
-plausible_low = 0.23454457401081083
-central = 0.3104286988540541
-plausible_high = 0.4801306533016217
-envelope_high = 0.4801306533016217
+lower_bound = 0.23454457401081083
+low_case = 0.23454457401081083
+base_case = 0.3104286988540541
+high_case = 0.4801306533016217
+upper_bound = 0.4801306533016217
 label = "D"
 sources = ["config-glm-5-3", "mlenergy-v3", "flashmla", "deepseek-fleet"]
-basis = "Weights: 0.38 J per output token at 37 billion active parameters on H800, scaled to 40.299 billion active and by the hardware factor 0.5 / 0.65 / 1, 0.2690 J central. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.0414 J central. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Weights: 0.38 J per output token at 37 billion active parameters on H800, scaled to 40.299 billion active and by the hardware factor 0.5 / 0.65 / 1, 0.2690 J base case. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.0414 J base case. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.c0_mj_per_cached_token]
-envelope_low = 0.008985600000000002
-plausible_low = 0.008985600000000002
-central = 0.017971200000000003
-plausible_high = 0.026956800000000003
-envelope_high = 0.026956800000000003
+lower_bound = 0.008985600000000002
+low_case = 0.008985600000000002
+base_case = 0.017971200000000003
+high_case = 0.026956800000000003
+upper_bound = 0.026956800000000003
 label = "D"
 sources = ["config-glm-5-3", "mlenergy-v3", "flashmla"]
-basis = "Reloading the 89856 bytes of key-value entries a cached token holds over all layers (compressed entries over their ratio) from host memory once per call at 0.1 / 0.2 / 0.3 nJ per byte. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Reloading the 89856 bytes of key-value entries a cached token holds over all layers (compressed entries over their ratio) from host memory once per call at 0.1 / 0.2 / 0.3 nJ per byte. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.idle]
-envelope_low = 1.0
-plausible_low = 1.0
-central = 1.12
-plausible_high = 1.35
-envelope_high = 1.9
+lower_bound = 1.0
+low_case = 1.0
+base_case = 1.12
+high_case = 1.35
+upper_bound = 1.9
 label = "D"
 sources = ["deepseek-fleet", "google-gemini-energy", "dynamollm", "inverse-w-law"]
-basis = "Serving energy including reserved and idle capacity, divided by the energy of the same work at load; the provider's PUE is applied separately. Low: a fleet scaled to its load, as DeepSeek's, which releases inference nodes to research and training at night. Central: Google's Gemini measurement, idle machines 10 percent against 83 percent for active machines, (83 + 10) / 83 = 1.12. High: capacity provisioned for peak load, idle servers drawing half their power at load (H100, 300 W against 600 W), at a peak of 1.7 times the average load (Azure conversation traffic, plausible high, 1 + 0.7 x 0.5) and 2.8 times (Azure coding traffic, envelope high, 1 + 1.8 x 0.5)."
+basis = "Serving energy including reserved and idle capacity, divided by the energy of the same work at load; the provider's PUE is applied separately. Low: a fleet scaled to its load, as DeepSeek's, which releases inference nodes to research and training at night. Base case: Google's Gemini measurement, idle machines 10 percent against 83 percent for active machines, (83 + 10) / 83 = 1.12. High: capacity provisioned for peak load, idle servers drawing half their power at load (H100, 300 W against 600 W), at a peak of 1.7 times the average load (Azure conversation traffic, high case, 1 + 0.7 x 0.5) and 2.8 times (Azure coding traffic, upper bound, 1 + 1.8 x 0.5)."
 
 [[parameter_set]]
 id = "kimi-k3"
@@ -204,64 +204,64 @@ description = "Kimi K3 (moonshotai/Kimi-K3) from its published configuration: 24
 reviewed = 2026-10-08
 
 [parameter_set.a_p_uj_per_pair]
-envelope_low = 0.73728
-plausible_low = 0.73728
-central = 1.548288
-plausible_high = 2.3592960000000005
-envelope_high = 2.3592960000000005
+lower_bound = 0.73728
+low_case = 0.73728
+base_case = 1.548288
+high_case = 2.3592960000000005
+upper_bound = 2.3592960000000005
 label = "D"
 sources = ["config-kimi-k3", "mlenergy-v3", "flashmla"]
-basis = "Prefill attention whose cost grows with every earlier token: full attention, compressed attention without a top-k cap (over its ratio) and lightning indexers, FLOPs per pair of a new token and an earlier token times energy per FLOP. Capped attention is in b_in. Envelope and plausible band: the low and the high scenario; central: the central scenario. Scenarios: low GB200-class, FP8 attention (0.5 pJ per FLOP, 150 pJ per byte), central B200, 16-bit attention (1.05 pJ, 225 pJ), high H100 or H800 (1.6 pJ, 360 pJ). Whole-node power divided by achieved throughput. Per FLOP: an H100 or H800 node draws about 7.5 to 8 kW over 8 x about 600 TFLOPS achieved, about 1.6 pJ; a B200 node about 11 to 12 kW over 8 x about 1,350 TFLOPS (FlashMLA sparse prefill on B200), about 1.05 pJ; FP8 attention on Blackwell about 0.5 pJ. Per byte: node power over 80 percent of peak memory bandwidth, H100 3.35 TB/s at about 7.75 kW per 8 GPUs (360 pJ), B200 8 TB/s at about 11.5 kW (225 pJ), GB200-class 150 pJ; about 30 uJ per pair of an output token and a context token for Qwen3-32B on B200 in the ML.ENERGY Leaderboard v3.0 is consistent with them. Reload: host memory read and PCIe transfer, 0.1 to 0.3 nJ per byte."
+basis = "Prefill attention whose cost grows with every earlier token: full attention, compressed attention without a top-k cap (over its ratio) and lightning indexers, FLOPs per pair of a new token and an earlier token times energy per FLOP. Capped attention is in b_in. Bounds, low case and high case: the low and the high scenario; base case: the base scenario. Scenarios: low GB200-class, FP8 attention (0.5 pJ per FLOP, 150 pJ per byte), base B200, 16-bit attention (1.05 pJ, 225 pJ), high H100 or H800 (1.6 pJ, 360 pJ). Whole-node power divided by achieved throughput. Per FLOP: an H100 or H800 node draws about 7.5 to 8 kW over 8 x about 600 TFLOPS achieved, about 1.6 pJ; a B200 node about 11 to 12 kW over 8 x about 1,350 TFLOPS (FlashMLA sparse prefill on B200), about 1.05 pJ; FP8 attention on Blackwell about 0.5 pJ. Per byte: node power over 80 percent of peak memory bandwidth, H100 3.35 TB/s at about 7.75 kW per 8 GPUs (360 pJ), B200 8 TB/s at about 11.5 kW (225 pJ), GB200-class 150 pJ; about 30 uJ per pair of an output token and a context token for Qwen3-32B on B200 in the ML.ENERGY Leaderboard v3.0 is consistent with them. Reload: host memory read and PCIe transfer, 0.1 to 0.3 nJ per byte."
 
 [parameter_set.a_d_uj_per_pair]
-envelope_low = 4.1472
-plausible_low = 4.1472
-central = 6.2208
-plausible_high = 9.953280000000001
-envelope_high = 9.953280000000001
+lower_bound = 4.1472
+low_case = 4.1472
+base_case = 6.2208
+high_case = 9.953280000000001
+upper_bound = 9.953280000000001
 label = "D"
 sources = ["config-kimi-k3", "mlenergy-v3", "flashmla"]
-basis = "Decode attention whose cost grows with every earlier token, as for a_p: per pair of an output token and an earlier token, the larger of the key-value bytes read times energy per byte and the FLOPs times energy per FLOP. Capped attention is in b_out. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Decode attention whose cost grows with every earlier token, as for a_p: per pair of an output token and an earlier token, the larger of the key-value bytes read times energy per byte and the FLOPs times energy per FLOP. Capped attention is in b_out. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.b_in_j_per_token]
-envelope_low = 0.3237622883632433
-plausible_low = 0.3237622883632433
-central = 0.42130621096821624
-plausible_high = 0.6481474308704865
-envelope_high = 0.6481474308704865
+lower_bound = 0.3237622883632433
+low_case = 0.3237622883632433
+base_case = 0.42130621096821624
+high_case = 0.6481474308704865
+upper_bound = 0.6481474308704865
 label = "D"
 sources = ["config-kimi-k3", "mlenergy-v3", "flashmla", "card-kimi-k3", "deepseek-fleet"]
-basis = "Weights: 0.23 J per new token at 37 billion active parameters on H800 (DeepSeek's fleet), scaled to 104 billion active in prefill and by the hardware factor 0.5 / 0.65 / 1, 0.4202 J central. Attention capped at a window, a top-k selection or a fixed state, at its cap, and expanding each new token's latent once, 0.0011 J central. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Weights: 0.23 J per new token at 37 billion active parameters on H800 (DeepSeek's fleet), scaled to 104 billion active in prefill and by the hardware factor 0.5 / 0.65 / 1, 0.4202 J base case. Attention capped at a window, a top-k selection or a fixed state, at its cap, and expanding each new token's latent once, 0.0011 J base case. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.b_out_j_per_token]
-envelope_low = 0.5991706236540542
-plausible_low = 0.5991706236540542
-central = 0.7919451246702703
-plausible_high = 1.2243878751481083
-envelope_high = 1.2243878751481083
+lower_bound = 0.5991706236540542
+low_case = 0.5991706236540542
+base_case = 0.7919451246702703
+high_case = 1.2243878751481083
+upper_bound = 1.2243878751481083
 label = "D"
 sources = ["config-kimi-k3", "mlenergy-v3", "flashmla", "card-kimi-k3", "deepseek-fleet"]
-basis = "Weights: 0.38 J per output token at 37 billion active parameters on H800, scaled to 104 billion active and by the hardware factor 0.5 / 0.65 / 1, 0.6943 J central. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.0977 J central. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Weights: 0.38 J per output token at 37 billion active parameters on H800, scaled to 104 billion active and by the hardware factor 0.5 / 0.65 / 1, 0.6943 J base case. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.0977 J base case. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.c0_mj_per_cached_token]
-envelope_low = 0.304754688
-plausible_low = 0.304754688
-central = 0.6397083648
-plausible_high = 0.9746620416
-envelope_high = 0.9746620416
+lower_bound = 0.304754688
+low_case = 0.304754688
+base_case = 0.6397083648
+high_case = 0.9746620416
+upper_bound = 0.9746620416
 label = "D"
 sources = ["config-kimi-k3", "mlenergy-v3", "flashmla"]
-basis = "Reloading the 27648 bytes of key-value entries a cached token holds over all layers (compressed entries over their ratio) from host memory once per call at 0.1 / 0.2 / 0.3 nJ per byte, and expanding each cached latent into keys and values once per call. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Reloading the 27648 bytes of key-value entries a cached token holds over all layers (compressed entries over their ratio) from host memory once per call at 0.1 / 0.2 / 0.3 nJ per byte, and expanding each cached latent into keys and values once per call. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.idle]
-envelope_low = 1.0
-plausible_low = 1.0
-central = 1.12
-plausible_high = 1.35
-envelope_high = 1.9
+lower_bound = 1.0
+low_case = 1.0
+base_case = 1.12
+high_case = 1.35
+upper_bound = 1.9
 label = "D"
 sources = ["deepseek-fleet", "google-gemini-energy", "dynamollm", "inverse-w-law"]
-basis = "Serving energy including reserved and idle capacity, divided by the energy of the same work at load; the provider's PUE is applied separately. Low: a fleet scaled to its load, as DeepSeek's, which releases inference nodes to research and training at night. Central: Google's Gemini measurement, idle machines 10 percent against 83 percent for active machines, (83 + 10) / 83 = 1.12. High: capacity provisioned for peak load, idle servers drawing half their power at load (H100, 300 W against 600 W), at a peak of 1.7 times the average load (Azure conversation traffic, plausible high, 1 + 0.7 x 0.5) and 2.8 times (Azure coding traffic, envelope high, 1 + 1.8 x 0.5)."
+basis = "Serving energy including reserved and idle capacity, divided by the energy of the same work at load; the provider's PUE is applied separately. Low: a fleet scaled to its load, as DeepSeek's, which releases inference nodes to research and training at night. Base case: Google's Gemini measurement, idle machines 10 percent against 83 percent for active machines, (83 + 10) / 83 = 1.12. High: capacity provisioned for peak load, idle servers drawing half their power at load (H100, 300 W against 600 W), at a peak of 1.7 times the average load (Azure conversation traffic, high case, 1 + 0.7 x 0.5) and 2.8 times (Azure coding traffic, upper bound, 1 + 1.8 x 0.5)."
 
 [[parameter_set]]
 id = "gpt-oss-120b"
@@ -269,64 +269,64 @@ description = "gpt-oss-120b (openai/gpt-oss-120b) from its published configurati
 reviewed = 2026-10-08
 
 [parameter_set.a_p_uj_per_pair]
-envelope_low = 0.147456
-plausible_low = 0.147456
-central = 0.30965760000000003
-plausible_high = 0.4718592
-envelope_high = 0.4718592
+lower_bound = 0.147456
+low_case = 0.147456
+base_case = 0.30965760000000003
+high_case = 0.4718592
+upper_bound = 0.4718592
 label = "D"
 sources = ["config-gpt-oss-120b", "mlenergy-v3", "flashmla"]
-basis = "Prefill attention whose cost grows with every earlier token: full attention, compressed attention without a top-k cap (over its ratio) and lightning indexers, FLOPs per pair of a new token and an earlier token times energy per FLOP. Capped attention is in b_in. Envelope and plausible band: the low and the high scenario; central: the central scenario. Scenarios: low GB200-class, FP8 attention (0.5 pJ per FLOP, 150 pJ per byte), central B200, 16-bit attention (1.05 pJ, 225 pJ), high H100 or H800 (1.6 pJ, 360 pJ). Whole-node power divided by achieved throughput. Per FLOP: an H100 or H800 node draws about 7.5 to 8 kW over 8 x about 600 TFLOPS achieved, about 1.6 pJ; a B200 node about 11 to 12 kW over 8 x about 1,350 TFLOPS (FlashMLA sparse prefill on B200), about 1.05 pJ; FP8 attention on Blackwell about 0.5 pJ. Per byte: node power over 80 percent of peak memory bandwidth, H100 3.35 TB/s at about 7.75 kW per 8 GPUs (360 pJ), B200 8 TB/s at about 11.5 kW (225 pJ), GB200-class 150 pJ; about 30 uJ per pair of an output token and a context token for Qwen3-32B on B200 in the ML.ENERGY Leaderboard v3.0 is consistent with them. Reload: host memory read and PCIe transfer, 0.1 to 0.3 nJ per byte."
+basis = "Prefill attention whose cost grows with every earlier token: full attention, compressed attention without a top-k cap (over its ratio) and lightning indexers, FLOPs per pair of a new token and an earlier token times energy per FLOP. Capped attention is in b_in. Bounds, low case and high case: the low and the high scenario; base case: the base scenario. Scenarios: low GB200-class, FP8 attention (0.5 pJ per FLOP, 150 pJ per byte), base B200, 16-bit attention (1.05 pJ, 225 pJ), high H100 or H800 (1.6 pJ, 360 pJ). Whole-node power divided by achieved throughput. Per FLOP: an H100 or H800 node draws about 7.5 to 8 kW over 8 x about 600 TFLOPS achieved, about 1.6 pJ; a B200 node about 11 to 12 kW over 8 x about 1,350 TFLOPS (FlashMLA sparse prefill on B200), about 1.05 pJ; FP8 attention on Blackwell about 0.5 pJ. Per byte: node power over 80 percent of peak memory bandwidth, H100 3.35 TB/s at about 7.75 kW per 8 GPUs (360 pJ), B200 8 TB/s at about 11.5 kW (225 pJ), GB200-class 150 pJ; about 30 uJ per pair of an output token and a context token for Qwen3-32B on B200 in the ML.ENERGY Leaderboard v3.0 is consistent with them. Reload: host memory read and PCIe transfer, 0.1 to 0.3 nJ per byte."
 
 [parameter_set.a_d_uj_per_pair]
-envelope_low = 5.5296
-plausible_low = 5.5296
-central = 8.2944
-plausible_high = 13.27104
-envelope_high = 13.27104
+lower_bound = 5.5296
+low_case = 5.5296
+base_case = 8.2944
+high_case = 13.27104
+upper_bound = 13.27104
 label = "D"
 sources = ["config-gpt-oss-120b", "mlenergy-v3", "flashmla"]
-basis = "Decode attention whose cost grows with every earlier token, as for a_p: per pair of an output token and an earlier token, the larger of the key-value bytes read times energy per byte and the FLOPs times energy per FLOP. Capped attention is in b_out. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Decode attention whose cost grows with every earlier token, as for a_p: per pair of an output token and an earlier token, the larger of the key-value bytes read times energy per byte and the FLOPs times energy per FLOP. Capped attention is in b_out. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.b_in_j_per_token]
-envelope_low = 0.015870225719351354
-plausible_low = 0.015870225719351354
-central = 0.020646392929556757
-plausible_high = 0.031763100680302706
-envelope_high = 0.031763100680302706
+lower_bound = 0.015870225719351354
+low_case = 0.015870225719351354
+base_case = 0.020646392929556757
+high_case = 0.031763100680302706
+upper_bound = 0.031763100680302706
 label = "D"
 sources = ["config-gpt-oss-120b", "mlenergy-v3", "flashmla", "card-gpt-oss-120b", "deepseek-fleet"]
-basis = "Weights: 0.23 J per new token at 37 billion active parameters on H800 (DeepSeek's fleet), scaled to 5.1 billion active in prefill and by the hardware factor 0.5 / 0.65 / 1, 0.0206 J central. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.0000 J central. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Weights: 0.23 J per new token at 37 billion active parameters on H800 (DeepSeek's fleet), scaled to 5.1 billion active in prefill and by the hardware factor 0.5 / 0.65 / 1, 0.0206 J base case. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.0000 J base case. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.b_out_j_per_token]
-envelope_low = 0.02689697798918919
-plausible_low = 0.02689697798918919
-central = 0.03510762914594595
-plausible_high = 0.05407707149837838
-envelope_high = 0.05407707149837838
+lower_bound = 0.02689697798918919
+low_case = 0.02689697798918919
+base_case = 0.03510762914594595
+high_case = 0.05407707149837838
+upper_bound = 0.05407707149837838
 label = "D"
 sources = ["config-gpt-oss-120b", "mlenergy-v3", "flashmla", "card-gpt-oss-120b", "deepseek-fleet"]
-basis = "Weights: 0.38 J per output token at 37 billion active parameters on H800, scaled to 5.1 billion active and by the hardware factor 0.5 / 0.65 / 1, 0.0340 J central. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.0011 J central. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Weights: 0.38 J per output token at 37 billion active parameters on H800, scaled to 5.1 billion active and by the hardware factor 0.5 / 0.65 / 1, 0.0340 J base case. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.0011 J base case. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.c0_mj_per_cached_token]
-envelope_low = 0.0073728000000000005
-plausible_low = 0.0073728000000000005
-central = 0.014745600000000001
-plausible_high = 0.0221184
-envelope_high = 0.0221184
+lower_bound = 0.0073728000000000005
+low_case = 0.0073728000000000005
+base_case = 0.014745600000000001
+high_case = 0.0221184
+upper_bound = 0.0221184
 label = "D"
 sources = ["config-gpt-oss-120b", "mlenergy-v3", "flashmla"]
-basis = "Reloading the 73728 bytes of key-value entries a cached token holds over all layers (compressed entries over their ratio) from host memory once per call at 0.1 / 0.2 / 0.3 nJ per byte. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Reloading the 73728 bytes of key-value entries a cached token holds over all layers (compressed entries over their ratio) from host memory once per call at 0.1 / 0.2 / 0.3 nJ per byte. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.idle]
-envelope_low = 1.0
-plausible_low = 1.0
-central = 1.12
-plausible_high = 1.35
-envelope_high = 1.9
+lower_bound = 1.0
+low_case = 1.0
+base_case = 1.12
+high_case = 1.35
+upper_bound = 1.9
 label = "D"
 sources = ["deepseek-fleet", "google-gemini-energy", "dynamollm", "inverse-w-law"]
-basis = "Serving energy including reserved and idle capacity, divided by the energy of the same work at load; the provider's PUE is applied separately. Low: a fleet scaled to its load, as DeepSeek's, which releases inference nodes to research and training at night. Central: Google's Gemini measurement, idle machines 10 percent against 83 percent for active machines, (83 + 10) / 83 = 1.12. High: capacity provisioned for peak load, idle servers drawing half their power at load (H100, 300 W against 600 W), at a peak of 1.7 times the average load (Azure conversation traffic, plausible high, 1 + 0.7 x 0.5) and 2.8 times (Azure coding traffic, envelope high, 1 + 1.8 x 0.5)."
+basis = "Serving energy including reserved and idle capacity, divided by the energy of the same work at load; the provider's PUE is applied separately. Low: a fleet scaled to its load, as DeepSeek's, which releases inference nodes to research and training at night. Base case: Google's Gemini measurement, idle machines 10 percent against 83 percent for active machines, (83 + 10) / 83 = 1.12. High: capacity provisioned for peak load, idle servers drawing half their power at load (H100, 300 W against 600 W), at a peak of 1.7 times the average load (Azure conversation traffic, high case, 1 + 0.7 x 0.5) and 2.8 times (Azure coding traffic, upper bound, 1 + 1.8 x 0.5)."
 
 [[parameter_set]]
 id = "qwen3.5-397b-a17b"
@@ -334,64 +334,64 @@ description = "Qwen3.5-397B-A17B (Qwen/Qwen3.5-397B-A17B) from its published con
 reviewed = 2026-10-08
 
 [parameter_set.a_p_uj_per_pair]
-envelope_low = 0.24576
-plausible_low = 0.24576
-central = 0.516096
-plausible_high = 0.786432
-envelope_high = 0.786432
+lower_bound = 0.24576
+low_case = 0.24576
+base_case = 0.516096
+high_case = 0.786432
+upper_bound = 0.786432
 label = "D"
 sources = ["config-qwen3-5-397b-a17b", "mlenergy-v3", "flashmla"]
-basis = "Prefill attention whose cost grows with every earlier token: full attention, compressed attention without a top-k cap (over its ratio) and lightning indexers, FLOPs per pair of a new token and an earlier token times energy per FLOP. Capped attention is in b_in. Envelope and plausible band: the low and the high scenario; central: the central scenario. Scenarios: low GB200-class, FP8 attention (0.5 pJ per FLOP, 150 pJ per byte), central B200, 16-bit attention (1.05 pJ, 225 pJ), high H100 or H800 (1.6 pJ, 360 pJ). Whole-node power divided by achieved throughput. Per FLOP: an H100 or H800 node draws about 7.5 to 8 kW over 8 x about 600 TFLOPS achieved, about 1.6 pJ; a B200 node about 11 to 12 kW over 8 x about 1,350 TFLOPS (FlashMLA sparse prefill on B200), about 1.05 pJ; FP8 attention on Blackwell about 0.5 pJ. Per byte: node power over 80 percent of peak memory bandwidth, H100 3.35 TB/s at about 7.75 kW per 8 GPUs (360 pJ), B200 8 TB/s at about 11.5 kW (225 pJ), GB200-class 150 pJ; about 30 uJ per pair of an output token and a context token for Qwen3-32B on B200 in the ML.ENERGY Leaderboard v3.0 is consistent with them. Reload: host memory read and PCIe transfer, 0.1 to 0.3 nJ per byte."
+basis = "Prefill attention whose cost grows with every earlier token: full attention, compressed attention without a top-k cap (over its ratio) and lightning indexers, FLOPs per pair of a new token and an earlier token times energy per FLOP. Capped attention is in b_in. Bounds, low case and high case: the low and the high scenario; base case: the base scenario. Scenarios: low GB200-class, FP8 attention (0.5 pJ per FLOP, 150 pJ per byte), base B200, 16-bit attention (1.05 pJ, 225 pJ), high H100 or H800 (1.6 pJ, 360 pJ). Whole-node power divided by achieved throughput. Per FLOP: an H100 or H800 node draws about 7.5 to 8 kW over 8 x about 600 TFLOPS achieved, about 1.6 pJ; a B200 node about 11 to 12 kW over 8 x about 1,350 TFLOPS (FlashMLA sparse prefill on B200), about 1.05 pJ; FP8 attention on Blackwell about 0.5 pJ. Per byte: node power over 80 percent of peak memory bandwidth, H100 3.35 TB/s at about 7.75 kW per 8 GPUs (360 pJ), B200 8 TB/s at about 11.5 kW (225 pJ), GB200-class 150 pJ; about 30 uJ per pair of an output token and a context token for Qwen3-32B on B200 in the ML.ENERGY Leaderboard v3.0 is consistent with them. Reload: host memory read and PCIe transfer, 0.1 to 0.3 nJ per byte."
 
 [parameter_set.a_d_uj_per_pair]
-envelope_low = 4.608
-plausible_low = 4.608
-central = 6.912
-plausible_high = 11.0592
-envelope_high = 11.0592
+lower_bound = 4.608
+low_case = 4.608
+base_case = 6.912
+high_case = 11.0592
+upper_bound = 11.0592
 label = "D"
 sources = ["config-qwen3-5-397b-a17b", "mlenergy-v3", "flashmla"]
-basis = "Decode attention whose cost grows with every earlier token, as for a_p: per pair of an output token and an earlier token, the larger of the key-value bytes read times energy per byte and the FLOPs times energy per FLOP. Capped attention is in b_out. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Decode attention whose cost grows with every earlier token, as for a_p: per pair of an output token and an earlier token, the larger of the key-value bytes read times energy per byte and the FLOPs times energy per FLOP. Capped attention is in b_out. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.b_in_j_per_token]
-envelope_low = 0.05293220967783784
-plausible_low = 0.05293220967783784
-central = 0.06888737005318919
-plausible_high = 0.10597766556367567
-envelope_high = 0.10597766556367567
+lower_bound = 0.05293220967783784
+low_case = 0.05293220967783784
+base_case = 0.06888737005318919
+high_case = 0.10597766556367567
+upper_bound = 0.10597766556367567
 label = "D"
 sources = ["config-qwen3-5-397b-a17b", "mlenergy-v3", "flashmla", "card-qwen3-5-397b-a17b", "deepseek-fleet"]
-basis = "Weights: 0.23 J per new token at 37 billion active parameters on H800 (DeepSeek's fleet), scaled to 17 billion active in prefill and by the hardware factor 0.5 / 0.65 / 1, 0.0687 J central. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.0002 J central. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Weights: 0.23 J per new token at 37 billion active parameters on H800 (DeepSeek's fleet), scaled to 17 billion active in prefill and by the hardware factor 0.5 / 0.65 / 1, 0.0687 J base case. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.0002 J base case. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.b_out_j_per_token]
-envelope_low = 0.11560884929729731
-plausible_low = 0.11560884929729731
-central = 0.1559538144864865
-plausible_high = 0.2425423193945946
-envelope_high = 0.2425423193945946
+lower_bound = 0.11560884929729731
+low_case = 0.11560884929729731
+base_case = 0.1559538144864865
+high_case = 0.2425423193945946
+upper_bound = 0.2425423193945946
 label = "D"
 sources = ["config-qwen3-5-397b-a17b", "mlenergy-v3", "flashmla", "card-qwen3-5-397b-a17b", "deepseek-fleet"]
-basis = "Weights: 0.38 J per output token at 37 billion active parameters on H800, scaled to 17 billion active and by the hardware factor 0.5 / 0.65 / 1, 0.1135 J central. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.0425 J central. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Weights: 0.38 J per output token at 37 billion active parameters on H800, scaled to 17 billion active and by the hardware factor 0.5 / 0.65 / 1, 0.1135 J base case. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.0425 J base case. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.c0_mj_per_cached_token]
-envelope_low = 0.0030720000000000005
-plausible_low = 0.0030720000000000005
-central = 0.006144000000000001
-plausible_high = 0.009216000000000002
-envelope_high = 0.009216000000000002
+lower_bound = 0.0030720000000000005
+low_case = 0.0030720000000000005
+base_case = 0.006144000000000001
+high_case = 0.009216000000000002
+upper_bound = 0.009216000000000002
 label = "D"
 sources = ["config-qwen3-5-397b-a17b", "mlenergy-v3", "flashmla"]
-basis = "Reloading the 30720 bytes of key-value entries a cached token holds over all layers (compressed entries over their ratio) from host memory once per call at 0.1 / 0.2 / 0.3 nJ per byte. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Reloading the 30720 bytes of key-value entries a cached token holds over all layers (compressed entries over their ratio) from host memory once per call at 0.1 / 0.2 / 0.3 nJ per byte. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.idle]
-envelope_low = 1.0
-plausible_low = 1.0
-central = 1.12
-plausible_high = 1.35
-envelope_high = 1.9
+lower_bound = 1.0
+low_case = 1.0
+base_case = 1.12
+high_case = 1.35
+upper_bound = 1.9
 label = "D"
 sources = ["deepseek-fleet", "google-gemini-energy", "dynamollm", "inverse-w-law"]
-basis = "Serving energy including reserved and idle capacity, divided by the energy of the same work at load; the provider's PUE is applied separately. Low: a fleet scaled to its load, as DeepSeek's, which releases inference nodes to research and training at night. Central: Google's Gemini measurement, idle machines 10 percent against 83 percent for active machines, (83 + 10) / 83 = 1.12. High: capacity provisioned for peak load, idle servers drawing half their power at load (H100, 300 W against 600 W), at a peak of 1.7 times the average load (Azure conversation traffic, plausible high, 1 + 0.7 x 0.5) and 2.8 times (Azure coding traffic, envelope high, 1 + 1.8 x 0.5)."
+basis = "Serving energy including reserved and idle capacity, divided by the energy of the same work at load; the provider's PUE is applied separately. Low: a fleet scaled to its load, as DeepSeek's, which releases inference nodes to research and training at night. Base case: Google's Gemini measurement, idle machines 10 percent against 83 percent for active machines, (83 + 10) / 83 = 1.12. High: capacity provisioned for peak load, idle servers drawing half their power at load (H100, 300 W against 600 W), at a peak of 1.7 times the average load (Azure conversation traffic, high case, 1 + 0.7 x 0.5) and 2.8 times (Azure coding traffic, upper bound, 1 + 1.8 x 0.5)."
 
 [[parameter_set]]
 id = "qwen3.8-2.4t-a95b"
@@ -399,64 +399,64 @@ description = "Qwen3.8-2.4T-A95B (Qwen/Qwen3.8-2.4T-A95B) from its published con
 reviewed = 2026-10-08
 
 [parameter_set.a_p_uj_per_pair]
-envelope_low = 0.7536639999999999
-plausible_low = 0.7536639999999999
-central = 1.5826943999999998
-plausible_high = 2.4117248
-envelope_high = 2.4117248
+lower_bound = 0.7536639999999999
+low_case = 0.7536639999999999
+base_case = 1.5826943999999998
+high_case = 2.4117248
+upper_bound = 2.4117248
 label = "D"
 sources = ["config-qwen3-8-2-4t-a95b", "mlenergy-v3", "flashmla"]
-basis = "Prefill attention whose cost grows with every earlier token: full attention, compressed attention without a top-k cap (over its ratio) and lightning indexers, FLOPs per pair of a new token and an earlier token times energy per FLOP. Capped attention is in b_in. Envelope and plausible band: the low and the high scenario; central: the central scenario. Scenarios: low GB200-class, FP8 attention (0.5 pJ per FLOP, 150 pJ per byte), central B200, 16-bit attention (1.05 pJ, 225 pJ), high H100 or H800 (1.6 pJ, 360 pJ). Whole-node power divided by achieved throughput. Per FLOP: an H100 or H800 node draws about 7.5 to 8 kW over 8 x about 600 TFLOPS achieved, about 1.6 pJ; a B200 node about 11 to 12 kW over 8 x about 1,350 TFLOPS (FlashMLA sparse prefill on B200), about 1.05 pJ; FP8 attention on Blackwell about 0.5 pJ. Per byte: node power over 80 percent of peak memory bandwidth, H100 3.35 TB/s at about 7.75 kW per 8 GPUs (360 pJ), B200 8 TB/s at about 11.5 kW (225 pJ), GB200-class 150 pJ; about 30 uJ per pair of an output token and a context token for Qwen3-32B on B200 in the ML.ENERGY Leaderboard v3.0 is consistent with them. Reload: host memory read and PCIe transfer, 0.1 to 0.3 nJ per byte."
+basis = "Prefill attention whose cost grows with every earlier token: full attention, compressed attention without a top-k cap (over its ratio) and lightning indexers, FLOPs per pair of a new token and an earlier token times energy per FLOP. Capped attention is in b_in. Bounds, low case and high case: the low and the high scenario; base case: the base scenario. Scenarios: low GB200-class, FP8 attention (0.5 pJ per FLOP, 150 pJ per byte), base B200, 16-bit attention (1.05 pJ, 225 pJ), high H100 or H800 (1.6 pJ, 360 pJ). Whole-node power divided by achieved throughput. Per FLOP: an H100 or H800 node draws about 7.5 to 8 kW over 8 x about 600 TFLOPS achieved, about 1.6 pJ; a B200 node about 11 to 12 kW over 8 x about 1,350 TFLOPS (FlashMLA sparse prefill on B200), about 1.05 pJ; FP8 attention on Blackwell about 0.5 pJ. Per byte: node power over 80 percent of peak memory bandwidth, H100 3.35 TB/s at about 7.75 kW per 8 GPUs (360 pJ), B200 8 TB/s at about 11.5 kW (225 pJ), GB200-class 150 pJ; about 30 uJ per pair of an output token and a context token for Qwen3-32B on B200 in the ML.ENERGY Leaderboard v3.0 is consistent with them. Reload: host memory read and PCIe transfer, 0.1 to 0.3 nJ per byte."
 
 [parameter_set.a_d_uj_per_pair]
-envelope_low = 14.1312
-plausible_low = 14.1312
-central = 21.1968
-plausible_high = 33.914880000000004
-envelope_high = 33.914880000000004
+lower_bound = 14.1312
+low_case = 14.1312
+base_case = 21.1968
+high_case = 33.914880000000004
+upper_bound = 33.914880000000004
 label = "D"
 sources = ["config-qwen3-8-2-4t-a95b", "mlenergy-v3", "flashmla"]
-basis = "Decode attention whose cost grows with every earlier token, as for a_p: per pair of an output token and an earlier token, the larger of the key-value bytes read times energy per byte and the FLOPs times energy per FLOP. Capped attention is in b_out. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Decode attention whose cost grows with every earlier token, as for a_p: per pair of an output token and an earlier token, the larger of the key-value bytes read times energy per byte and the FLOPs times energy per FLOP. Capped attention is in b_out. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.b_in_j_per_token]
-envelope_low = 0.2955596772462703
-plausible_low = 0.2955596772462703
-central = 0.3844591060009514
-plausible_high = 0.5914666428637406
-envelope_high = 0.5914666428637406
+lower_bound = 0.2955596772462703
+low_case = 0.2955596772462703
+base_case = 0.3844591060009514
+high_case = 0.5914666428637406
+upper_bound = 0.5914666428637406
 label = "D"
 sources = ["config-qwen3-8-2-4t-a95b", "mlenergy-v3", "flashmla", "card-qwen3-8-2-4t-a95b", "deepseek-fleet"]
-basis = "Weights: 0.23 J per new token at 37 billion active parameters on H800 (DeepSeek's fleet), scaled to 95 billion active in prefill and by the hardware factor 0.5 / 0.65 / 1, 0.3839 J central. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.0006 J central. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Weights: 0.23 J per new token at 37 billion active parameters on H800 (DeepSeek's fleet), scaled to 95 billion active in prefill and by the hardware factor 0.5 / 0.65 / 1, 0.3839 J base case. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.0006 J base case. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.b_out_j_per_token]
-envelope_low = 0.5746599306378379
-plausible_low = 0.5746599306378379
-central = 0.7644223283891892
-plausible_high = 1.1840486983956757
-envelope_high = 1.1840486983956757
+lower_bound = 0.5746599306378379
+low_case = 0.5746599306378379
+base_case = 0.7644223283891892
+high_case = 1.1840486983956757
+upper_bound = 1.1840486983956757
 label = "D"
 sources = ["config-qwen3-8-2-4t-a95b", "mlenergy-v3", "flashmla", "card-qwen3-8-2-4t-a95b", "deepseek-fleet"]
-basis = "Weights: 0.38 J per output token at 37 billion active parameters on H800, scaled to 95 billion active and by the hardware factor 0.5 / 0.65 / 1, 0.6342 J central. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.1302 J central. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Weights: 0.38 J per output token at 37 billion active parameters on H800, scaled to 95 billion active and by the hardware factor 0.5 / 0.65 / 1, 0.6342 J base case. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.1302 J base case. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.c0_mj_per_cached_token]
-envelope_low = 0.009420800000000002
-plausible_low = 0.009420800000000002
-central = 0.018841600000000003
-plausible_high = 0.0282624
-envelope_high = 0.0282624
+lower_bound = 0.009420800000000002
+low_case = 0.009420800000000002
+base_case = 0.018841600000000003
+high_case = 0.0282624
+upper_bound = 0.0282624
 label = "D"
 sources = ["config-qwen3-8-2-4t-a95b", "mlenergy-v3", "flashmla"]
-basis = "Reloading the 94208 bytes of key-value entries a cached token holds over all layers (compressed entries over their ratio) from host memory once per call at 0.1 / 0.2 / 0.3 nJ per byte. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Reloading the 94208 bytes of key-value entries a cached token holds over all layers (compressed entries over their ratio) from host memory once per call at 0.1 / 0.2 / 0.3 nJ per byte. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.idle]
-envelope_low = 1.0
-plausible_low = 1.0
-central = 1.12
-plausible_high = 1.35
-envelope_high = 1.9
+lower_bound = 1.0
+low_case = 1.0
+base_case = 1.12
+high_case = 1.35
+upper_bound = 1.9
 label = "D"
 sources = ["deepseek-fleet", "google-gemini-energy", "dynamollm", "inverse-w-law"]
-basis = "Serving energy including reserved and idle capacity, divided by the energy of the same work at load; the provider's PUE is applied separately. Low: a fleet scaled to its load, as DeepSeek's, which releases inference nodes to research and training at night. Central: Google's Gemini measurement, idle machines 10 percent against 83 percent for active machines, (83 + 10) / 83 = 1.12. High: capacity provisioned for peak load, idle servers drawing half their power at load (H100, 300 W against 600 W), at a peak of 1.7 times the average load (Azure conversation traffic, plausible high, 1 + 0.7 x 0.5) and 2.8 times (Azure coding traffic, envelope high, 1 + 1.8 x 0.5)."
+basis = "Serving energy including reserved and idle capacity, divided by the energy of the same work at load; the provider's PUE is applied separately. Low: a fleet scaled to its load, as DeepSeek's, which releases inference nodes to research and training at night. Base case: Google's Gemini measurement, idle machines 10 percent against 83 percent for active machines, (83 + 10) / 83 = 1.12. High: capacity provisioned for peak load, idle servers drawing half their power at load (H100, 300 W against 600 W), at a peak of 1.7 times the average load (Azure conversation traffic, high case, 1 + 0.7 x 0.5) and 2.8 times (Azure coding traffic, upper bound, 1 + 1.8 x 0.5)."
 
 [[parameter_set]]
 id = "llama-3.3-70b-instruct"
@@ -464,64 +464,64 @@ description = "Llama 3.3 70B Instruct (meta-llama/Llama-3.3-70B-Instruct) from i
 reviewed = 2026-10-08
 
 [parameter_set.a_p_uj_per_pair]
-envelope_low = 1.3107199999999999
-plausible_low = 1.3107199999999999
-central = 2.752512
-plausible_high = 4.194304
-envelope_high = 4.194304
+lower_bound = 1.3107199999999999
+low_case = 1.3107199999999999
+base_case = 2.752512
+high_case = 4.194304
+upper_bound = 4.194304
 label = "D"
 sources = ["config-llama-3-3-70b-instruct", "mlenergy-v3", "flashmla"]
-basis = "Prefill attention whose cost grows with every earlier token: full attention, compressed attention without a top-k cap (over its ratio) and lightning indexers, FLOPs per pair of a new token and an earlier token times energy per FLOP. Capped attention is in b_in. Envelope and plausible band: the low and the high scenario; central: the central scenario. Scenarios: low GB200-class, FP8 attention (0.5 pJ per FLOP, 150 pJ per byte), central B200, 16-bit attention (1.05 pJ, 225 pJ), high H100 or H800 (1.6 pJ, 360 pJ). Whole-node power divided by achieved throughput. Per FLOP: an H100 or H800 node draws about 7.5 to 8 kW over 8 x about 600 TFLOPS achieved, about 1.6 pJ; a B200 node about 11 to 12 kW over 8 x about 1,350 TFLOPS (FlashMLA sparse prefill on B200), about 1.05 pJ; FP8 attention on Blackwell about 0.5 pJ. Per byte: node power over 80 percent of peak memory bandwidth, H100 3.35 TB/s at about 7.75 kW per 8 GPUs (360 pJ), B200 8 TB/s at about 11.5 kW (225 pJ), GB200-class 150 pJ; about 30 uJ per pair of an output token and a context token for Qwen3-32B on B200 in the ML.ENERGY Leaderboard v3.0 is consistent with them. Reload: host memory read and PCIe transfer, 0.1 to 0.3 nJ per byte."
+basis = "Prefill attention whose cost grows with every earlier token: full attention, compressed attention without a top-k cap (over its ratio) and lightning indexers, FLOPs per pair of a new token and an earlier token times energy per FLOP. Capped attention is in b_in. Bounds, low case and high case: the low and the high scenario; base case: the base scenario. Scenarios: low GB200-class, FP8 attention (0.5 pJ per FLOP, 150 pJ per byte), base B200, 16-bit attention (1.05 pJ, 225 pJ), high H100 or H800 (1.6 pJ, 360 pJ). Whole-node power divided by achieved throughput. Per FLOP: an H100 or H800 node draws about 7.5 to 8 kW over 8 x about 600 TFLOPS achieved, about 1.6 pJ; a B200 node about 11 to 12 kW over 8 x about 1,350 TFLOPS (FlashMLA sparse prefill on B200), about 1.05 pJ; FP8 attention on Blackwell about 0.5 pJ. Per byte: node power over 80 percent of peak memory bandwidth, H100 3.35 TB/s at about 7.75 kW per 8 GPUs (360 pJ), B200 8 TB/s at about 11.5 kW (225 pJ), GB200-class 150 pJ; about 30 uJ per pair of an output token and a context token for Qwen3-32B on B200 in the ML.ENERGY Leaderboard v3.0 is consistent with them. Reload: host memory read and PCIe transfer, 0.1 to 0.3 nJ per byte."
 
 [parameter_set.a_d_uj_per_pair]
-envelope_low = 49.152
-plausible_low = 49.152
-central = 73.728
-plausible_high = 117.9648
-envelope_high = 117.9648
+lower_bound = 49.152
+low_case = 49.152
+base_case = 73.728
+high_case = 117.9648
+upper_bound = 117.9648
 label = "D"
 sources = ["config-llama-3-3-70b-instruct", "mlenergy-v3", "flashmla"]
-basis = "Decode attention whose cost grows with every earlier token, as for a_p: per pair of an output token and an earlier token, the larger of the key-value bytes read times energy per byte and the FLOPs times energy per FLOP. Capped attention is in b_out. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Decode attention whose cost grows with every earlier token, as for a_p: per pair of an output token and an earlier token, the larger of the key-value bytes read times energy per byte and the FLOPs times energy per FLOP. Capped attention is in b_out. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.b_in_j_per_token]
-envelope_low = 0.2192894594594595
-plausible_low = 0.2192894594594595
-central = 0.28507629729729733
-plausible_high = 0.438578918918919
-envelope_high = 0.438578918918919
+lower_bound = 0.2192894594594595
+low_case = 0.2192894594594595
+base_case = 0.28507629729729733
+high_case = 0.438578918918919
+upper_bound = 0.438578918918919
 label = "D"
 sources = ["config-llama-3-3-70b-instruct", "mlenergy-v3", "flashmla", "deepseek-fleet"]
-basis = "Weights: 0.23 J per new token at 37 billion active parameters on H800 (DeepSeek's fleet), scaled to 70.554 billion active in prefill and by the hardware factor 0.5 / 0.65 / 1, 0.2851 J central. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.0000 J central. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Weights: 0.23 J per new token at 37 billion active parameters on H800 (DeepSeek's fleet), scaled to 70.554 billion active in prefill and by the hardware factor 0.5 / 0.65 / 1, 0.2851 J base case. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.0000 J base case. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.b_out_j_per_token]
-envelope_low = 0.36230432432432436
-plausible_low = 0.36230432432432436
-central = 0.4709956216216217
-plausible_high = 0.7246086486486487
-envelope_high = 0.7246086486486487
+lower_bound = 0.36230432432432436
+low_case = 0.36230432432432436
+base_case = 0.4709956216216217
+high_case = 0.7246086486486487
+upper_bound = 0.7246086486486487
 label = "D"
 sources = ["config-llama-3-3-70b-instruct", "mlenergy-v3", "flashmla", "deepseek-fleet"]
-basis = "Weights: 0.38 J per output token at 37 billion active parameters on H800, scaled to 70.554 billion active and by the hardware factor 0.5 / 0.65 / 1, 0.4710 J central. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.0000 J central. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Weights: 0.38 J per output token at 37 billion active parameters on H800, scaled to 70.554 billion active and by the hardware factor 0.5 / 0.65 / 1, 0.4710 J base case. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.0000 J base case. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.c0_mj_per_cached_token]
-envelope_low = 0.032768000000000005
-plausible_low = 0.032768000000000005
-central = 0.06553600000000001
-plausible_high = 0.09830400000000002
-envelope_high = 0.09830400000000002
+lower_bound = 0.032768000000000005
+low_case = 0.032768000000000005
+base_case = 0.06553600000000001
+high_case = 0.09830400000000002
+upper_bound = 0.09830400000000002
 label = "D"
 sources = ["config-llama-3-3-70b-instruct", "mlenergy-v3", "flashmla"]
-basis = "Reloading the 327680 bytes of key-value entries a cached token holds over all layers (compressed entries over their ratio) from host memory once per call at 0.1 / 0.2 / 0.3 nJ per byte. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Reloading the 327680 bytes of key-value entries a cached token holds over all layers (compressed entries over their ratio) from host memory once per call at 0.1 / 0.2 / 0.3 nJ per byte. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.idle]
-envelope_low = 1.0
-plausible_low = 1.0
-central = 1.12
-plausible_high = 1.35
-envelope_high = 1.9
+lower_bound = 1.0
+low_case = 1.0
+base_case = 1.12
+high_case = 1.35
+upper_bound = 1.9
 label = "D"
 sources = ["deepseek-fleet", "google-gemini-energy", "dynamollm", "inverse-w-law"]
-basis = "Serving energy including reserved and idle capacity, divided by the energy of the same work at load; the provider's PUE is applied separately. Low: a fleet scaled to its load, as DeepSeek's, which releases inference nodes to research and training at night. Central: Google's Gemini measurement, idle machines 10 percent against 83 percent for active machines, (83 + 10) / 83 = 1.12. High: capacity provisioned for peak load, idle servers drawing half their power at load (H100, 300 W against 600 W), at a peak of 1.7 times the average load (Azure conversation traffic, plausible high, 1 + 0.7 x 0.5) and 2.8 times (Azure coding traffic, envelope high, 1 + 1.8 x 0.5)."
+basis = "Serving energy including reserved and idle capacity, divided by the energy of the same work at load; the provider's PUE is applied separately. Low: a fleet scaled to its load, as DeepSeek's, which releases inference nodes to research and training at night. Base case: Google's Gemini measurement, idle machines 10 percent against 83 percent for active machines, (83 + 10) / 83 = 1.12. High: capacity provisioned for peak load, idle servers drawing half their power at load (H100, 300 W against 600 W), at a peak of 1.7 times the average load (Azure conversation traffic, high case, 1 + 0.7 x 0.5) and 2.8 times (Azure coding traffic, upper bound, 1 + 1.8 x 0.5)."
 
 [[parameter_set]]
 id = "minimax-m3"
@@ -529,64 +529,64 @@ description = "MiniMax M3 (MiniMaxAI/MiniMax-M3) from its published configuratio
 reviewed = 2026-10-08
 
 [parameter_set.a_p_uj_per_pair]
-envelope_low = 0.07833599999999999
-plausible_low = 0.07833599999999999
-central = 0.1645056
-plausible_high = 0.25067520000000004
-envelope_high = 0.25067520000000004
+lower_bound = 0.07833599999999999
+low_case = 0.07833599999999999
+base_case = 0.1645056
+high_case = 0.25067520000000004
+upper_bound = 0.25067520000000004
 label = "D"
 sources = ["config-minimax-m3", "mlenergy-v3", "flashmla"]
-basis = "Prefill attention whose cost grows with every earlier token: full attention, compressed attention without a top-k cap (over its ratio) and lightning indexers, FLOPs per pair of a new token and an earlier token times energy per FLOP. Capped attention is in b_in. Envelope and plausible band: the low and the high scenario; central: the central scenario. Scenarios: low GB200-class, FP8 attention (0.5 pJ per FLOP, 150 pJ per byte), central B200, 16-bit attention (1.05 pJ, 225 pJ), high H100 or H800 (1.6 pJ, 360 pJ). Whole-node power divided by achieved throughput. Per FLOP: an H100 or H800 node draws about 7.5 to 8 kW over 8 x about 600 TFLOPS achieved, about 1.6 pJ; a B200 node about 11 to 12 kW over 8 x about 1,350 TFLOPS (FlashMLA sparse prefill on B200), about 1.05 pJ; FP8 attention on Blackwell about 0.5 pJ. Per byte: node power over 80 percent of peak memory bandwidth, H100 3.35 TB/s at about 7.75 kW per 8 GPUs (360 pJ), B200 8 TB/s at about 11.5 kW (225 pJ), GB200-class 150 pJ; about 30 uJ per pair of an output token and a context token for Qwen3-32B on B200 in the ML.ENERGY Leaderboard v3.0 is consistent with them. Reload: host memory read and PCIe transfer, 0.1 to 0.3 nJ per byte."
+basis = "Prefill attention whose cost grows with every earlier token: full attention, compressed attention without a top-k cap (over its ratio) and lightning indexers, FLOPs per pair of a new token and an earlier token times energy per FLOP. Capped attention is in b_in. Bounds, low case and high case: the low and the high scenario; base case: the base scenario. Scenarios: low GB200-class, FP8 attention (0.5 pJ per FLOP, 150 pJ per byte), base B200, 16-bit attention (1.05 pJ, 225 pJ), high H100 or H800 (1.6 pJ, 360 pJ). Whole-node power divided by achieved throughput. Per FLOP: an H100 or H800 node draws about 7.5 to 8 kW over 8 x about 600 TFLOPS achieved, about 1.6 pJ; a B200 node about 11 to 12 kW over 8 x about 1,350 TFLOPS (FlashMLA sparse prefill on B200), about 1.05 pJ; FP8 attention on Blackwell about 0.5 pJ. Per byte: node power over 80 percent of peak memory bandwidth, H100 3.35 TB/s at about 7.75 kW per 8 GPUs (360 pJ), B200 8 TB/s at about 11.5 kW (225 pJ), GB200-class 150 pJ; about 30 uJ per pair of an output token and a context token for Qwen3-32B on B200 in the ML.ENERGY Leaderboard v3.0 is consistent with them. Reload: host memory read and PCIe transfer, 0.1 to 0.3 nJ per byte."
 
 [parameter_set.a_d_uj_per_pair]
-envelope_low = 3.1104
-plausible_low = 3.1104
-central = 4.6655999999999995
-plausible_high = 7.4649600000000005
-envelope_high = 7.4649600000000005
+lower_bound = 3.1104
+low_case = 3.1104
+base_case = 4.6655999999999995
+high_case = 7.4649600000000005
+upper_bound = 7.4649600000000005
 label = "D"
 sources = ["config-minimax-m3", "mlenergy-v3", "flashmla"]
-basis = "Decode attention whose cost grows with every earlier token, as for a_p: per pair of an output token and an earlier token, the larger of the key-value bytes read times energy per byte and the FLOPs times energy per FLOP. Capped attention is in b_out. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Decode attention whose cost grows with every earlier token, as for a_p: per pair of an output token and an earlier token, the larger of the key-value bytes read times energy per byte and the FLOPs times energy per FLOP. Capped attention is in b_out. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.b_in_j_per_token]
-envelope_low = 0.07351862677448649
-plausible_low = 0.07351862677448649
-central = 0.09719992703723243
-plausible_high = 0.14947582189457298
-envelope_high = 0.14947582189457298
+lower_bound = 0.07351862677448649
+low_case = 0.07351862677448649
+base_case = 0.09719992703723243
+high_case = 0.14947582189457298
+upper_bound = 0.14947582189457298
 label = "D"
 sources = ["config-minimax-m3", "mlenergy-v3", "flashmla", "card-minimax-m3", "deepseek-fleet"]
-basis = "Weights: 0.23 J per new token at 37 billion active parameters on H800 (DeepSeek's fleet), scaled to 23 billion active in prefill and by the hardware factor 0.5 / 0.65 / 1, 0.0929 J central. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.0043 J central. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Weights: 0.23 J per new token at 37 billion active parameters on H800 (DeepSeek's fleet), scaled to 23 billion active in prefill and by the hardware factor 0.5 / 0.65 / 1, 0.0929 J base case. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.0043 J base case. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.b_out_j_per_token]
-envelope_low = 0.15621073850810813
-plausible_low = 0.15621073850810813
-central = 0.21069448614054057
-plausible_high = 0.32766252917621624
-envelope_high = 0.32766252917621624
+lower_bound = 0.15621073850810813
+low_case = 0.15621073850810813
+base_case = 0.21069448614054057
+high_case = 0.32766252917621624
+upper_bound = 0.32766252917621624
 label = "D"
 sources = ["config-minimax-m3", "mlenergy-v3", "flashmla", "card-minimax-m3", "deepseek-fleet"]
-basis = "Weights: 0.38 J per output token at 37 billion active parameters on H800, scaled to 23 billion active and by the hardware factor 0.5 / 0.65 / 1, 0.1535 J central. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.0572 J central. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Weights: 0.38 J per output token at 37 billion active parameters on H800, scaled to 23 billion active and by the hardware factor 0.5 / 0.65 / 1, 0.1535 J base case. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.0572 J base case. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.c0_mj_per_cached_token]
-envelope_low = 0.012288000000000002
-plausible_low = 0.012288000000000002
-central = 0.024576000000000004
-plausible_high = 0.03686400000000001
-envelope_high = 0.03686400000000001
+lower_bound = 0.012288000000000002
+low_case = 0.012288000000000002
+base_case = 0.024576000000000004
+high_case = 0.03686400000000001
+upper_bound = 0.03686400000000001
 label = "D"
 sources = ["config-minimax-m3", "mlenergy-v3", "flashmla"]
-basis = "Reloading the 122880 bytes of key-value entries a cached token holds over all layers (compressed entries over their ratio) from host memory once per call at 0.1 / 0.2 / 0.3 nJ per byte. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Reloading the 122880 bytes of key-value entries a cached token holds over all layers (compressed entries over their ratio) from host memory once per call at 0.1 / 0.2 / 0.3 nJ per byte. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.idle]
-envelope_low = 1.0
-plausible_low = 1.0
-central = 1.12
-plausible_high = 1.35
-envelope_high = 1.9
+lower_bound = 1.0
+low_case = 1.0
+base_case = 1.12
+high_case = 1.35
+upper_bound = 1.9
 label = "D"
 sources = ["deepseek-fleet", "google-gemini-energy", "dynamollm", "inverse-w-law"]
-basis = "Serving energy including reserved and idle capacity, divided by the energy of the same work at load; the provider's PUE is applied separately. Low: a fleet scaled to its load, as DeepSeek's, which releases inference nodes to research and training at night. Central: Google's Gemini measurement, idle machines 10 percent against 83 percent for active machines, (83 + 10) / 83 = 1.12. High: capacity provisioned for peak load, idle servers drawing half their power at load (H100, 300 W against 600 W), at a peak of 1.7 times the average load (Azure conversation traffic, plausible high, 1 + 0.7 x 0.5) and 2.8 times (Azure coding traffic, envelope high, 1 + 1.8 x 0.5)."
+basis = "Serving energy including reserved and idle capacity, divided by the energy of the same work at load; the provider's PUE is applied separately. Low: a fleet scaled to its load, as DeepSeek's, which releases inference nodes to research and training at night. Base case: Google's Gemini measurement, idle machines 10 percent against 83 percent for active machines, (83 + 10) / 83 = 1.12. High: capacity provisioned for peak load, idle servers drawing half their power at load (H100, 300 W against 600 W), at a peak of 1.7 times the average load (Azure conversation traffic, high case, 1 + 0.7 x 0.5) and 2.8 times (Azure coding traffic, upper bound, 1 + 1.8 x 0.5)."
 
 [[parameter_set]]
 id = "mimo-v2.6-flash"
@@ -594,64 +594,64 @@ description = "MiMo V2.6 Flash (XiaomiMiMo/MiMo-V2.6-Flash-RL) from its publishe
 reviewed = 2026-10-08
 
 [parameter_set.a_p_uj_per_pair]
-envelope_low = 0.18432
-plausible_low = 0.18432
-central = 0.38707199999999997
-plausible_high = 0.589824
-envelope_high = 0.589824
+lower_bound = 0.18432
+low_case = 0.18432
+base_case = 0.38707199999999997
+high_case = 0.589824
+upper_bound = 0.589824
 label = "D"
 sources = ["config-mimo-v2-6-flash", "mlenergy-v3", "flashmla"]
-basis = "Prefill attention whose cost grows with every earlier token: full attention, compressed attention without a top-k cap (over its ratio) and lightning indexers, FLOPs per pair of a new token and an earlier token times energy per FLOP. Capped attention is in b_in. Envelope and plausible band: the low and the high scenario; central: the central scenario. Scenarios: low GB200-class, FP8 attention (0.5 pJ per FLOP, 150 pJ per byte), central B200, 16-bit attention (1.05 pJ, 225 pJ), high H100 or H800 (1.6 pJ, 360 pJ). Whole-node power divided by achieved throughput. Per FLOP: an H100 or H800 node draws about 7.5 to 8 kW over 8 x about 600 TFLOPS achieved, about 1.6 pJ; a B200 node about 11 to 12 kW over 8 x about 1,350 TFLOPS (FlashMLA sparse prefill on B200), about 1.05 pJ; FP8 attention on Blackwell about 0.5 pJ. Per byte: node power over 80 percent of peak memory bandwidth, H100 3.35 TB/s at about 7.75 kW per 8 GPUs (360 pJ), B200 8 TB/s at about 11.5 kW (225 pJ), GB200-class 150 pJ; about 30 uJ per pair of an output token and a context token for Qwen3-32B on B200 in the ML.ENERGY Leaderboard v3.0 is consistent with them. Reload: host memory read and PCIe transfer, 0.1 to 0.3 nJ per byte."
+basis = "Prefill attention whose cost grows with every earlier token: full attention, compressed attention without a top-k cap (over its ratio) and lightning indexers, FLOPs per pair of a new token and an earlier token times energy per FLOP. Capped attention is in b_in. Bounds, low case and high case: the low and the high scenario; base case: the base scenario. Scenarios: low GB200-class, FP8 attention (0.5 pJ per FLOP, 150 pJ per byte), base B200, 16-bit attention (1.05 pJ, 225 pJ), high H100 or H800 (1.6 pJ, 360 pJ). Whole-node power divided by achieved throughput. Per FLOP: an H100 or H800 node draws about 7.5 to 8 kW over 8 x about 600 TFLOPS achieved, about 1.6 pJ; a B200 node about 11 to 12 kW over 8 x about 1,350 TFLOPS (FlashMLA sparse prefill on B200), about 1.05 pJ; FP8 attention on Blackwell about 0.5 pJ. Per byte: node power over 80 percent of peak memory bandwidth, H100 3.35 TB/s at about 7.75 kW per 8 GPUs (360 pJ), B200 8 TB/s at about 11.5 kW (225 pJ), GB200-class 150 pJ; about 30 uJ per pair of an output token and a context token for Qwen3-32B on B200 in the ML.ENERGY Leaderboard v3.0 is consistent with them. Reload: host memory read and PCIe transfer, 0.1 to 0.3 nJ per byte."
 
 [parameter_set.a_d_uj_per_pair]
-envelope_low = 3.456
-plausible_low = 3.456
-central = 5.184
-plausible_high = 8.2944
-envelope_high = 8.2944
+lower_bound = 3.456
+low_case = 3.456
+base_case = 5.184
+high_case = 8.2944
+upper_bound = 8.2944
 label = "D"
 sources = ["config-mimo-v2-6-flash", "mlenergy-v3", "flashmla"]
-basis = "Decode attention whose cost grows with every earlier token, as for a_p: per pair of an output token and an earlier token, the larger of the key-value bytes read times energy per byte and the FLOPs times energy per FLOP. Capped attention is in b_out. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Decode attention whose cost grows with every earlier token, as for a_p: per pair of an output token and an earlier token, the larger of the key-value bytes read times energy per byte and the FLOPs times energy per FLOP. Capped attention is in b_out. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.b_in_j_per_token]
-envelope_low = 0.04672385778162162
-plausible_low = 0.04672385778162162
-central = 0.060822804044108114
-plausible_high = 0.09357039895524324
-envelope_high = 0.09357039895524324
+lower_bound = 0.04672385778162162
+low_case = 0.04672385778162162
+base_case = 0.060822804044108114
+high_case = 0.09357039895524324
+upper_bound = 0.09357039895524324
 label = "D"
 sources = ["config-mimo-v2-6-flash", "mlenergy-v3", "flashmla", "card-mimo-v2-6-flash", "deepseek-fleet"]
-basis = "Weights: 0.23 J per new token at 37 billion active parameters on H800 (DeepSeek's fleet), scaled to 15 billion active in prefill and by the hardware factor 0.5 / 0.65 / 1, 0.0606 J central. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.0002 J central. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Weights: 0.23 J per new token at 37 billion active parameters on H800 (DeepSeek's fleet), scaled to 15 billion active in prefill and by the hardware factor 0.5 / 0.65 / 1, 0.0606 J base case. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.0002 J base case. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.b_out_j_per_token]
-envelope_low = 0.08086088302702703
-plausible_low = 0.08086088302702703
-central = 0.10588591913513513
-plausible_high = 0.16325530845405406
-envelope_high = 0.16325530845405406
+lower_bound = 0.08086088302702703
+low_case = 0.08086088302702703
+base_case = 0.10588591913513513
+high_case = 0.16325530845405406
+upper_bound = 0.16325530845405406
 label = "D"
 sources = ["config-mimo-v2-6-flash", "mlenergy-v3", "flashmla", "card-mimo-v2-6-flash", "deepseek-fleet"]
-basis = "Weights: 0.38 J per output token at 37 billion active parameters on H800, scaled to 15 billion active and by the hardware factor 0.5 / 0.65 / 1, 0.1001 J central. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.0058 J central. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Weights: 0.38 J per output token at 37 billion active parameters on H800, scaled to 15 billion active and by the hardware factor 0.5 / 0.65 / 1, 0.1001 J base case. Attention capped at a window, a top-k selection or a fixed state, at its cap, 0.0058 J base case. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.c0_mj_per_cached_token]
-envelope_low = 0.022272000000000004
-plausible_low = 0.022272000000000004
-central = 0.04454400000000001
-plausible_high = 0.066816
-envelope_high = 0.066816
+lower_bound = 0.022272000000000004
+low_case = 0.022272000000000004
+base_case = 0.04454400000000001
+high_case = 0.066816
+upper_bound = 0.066816
 label = "D"
 sources = ["config-mimo-v2-6-flash", "mlenergy-v3", "flashmla"]
-basis = "Reloading the 222720 bytes of key-value entries a cached token holds over all layers (compressed entries over their ratio) from host memory once per call at 0.1 / 0.2 / 0.3 nJ per byte. Envelope and plausible band: the low and the high scenario; central: the central scenario."
+basis = "Reloading the 222720 bytes of key-value entries a cached token holds over all layers (compressed entries over their ratio) from host memory once per call at 0.1 / 0.2 / 0.3 nJ per byte. Bounds, low case and high case: the low and the high scenario; base case: the base scenario."
 
 [parameter_set.idle]
-envelope_low = 1.0
-plausible_low = 1.0
-central = 1.12
-plausible_high = 1.35
-envelope_high = 1.9
+lower_bound = 1.0
+low_case = 1.0
+base_case = 1.12
+high_case = 1.35
+upper_bound = 1.9
 label = "D"
 sources = ["deepseek-fleet", "google-gemini-energy", "dynamollm", "inverse-w-law"]
-basis = "Serving energy including reserved and idle capacity, divided by the energy of the same work at load; the provider's PUE is applied separately. Low: a fleet scaled to its load, as DeepSeek's, which releases inference nodes to research and training at night. Central: Google's Gemini measurement, idle machines 10 percent against 83 percent for active machines, (83 + 10) / 83 = 1.12. High: capacity provisioned for peak load, idle servers drawing half their power at load (H100, 300 W against 600 W), at a peak of 1.7 times the average load (Azure conversation traffic, plausible high, 1 + 0.7 x 0.5) and 2.8 times (Azure coding traffic, envelope high, 1 + 1.8 x 0.5)."
+basis = "Serving energy including reserved and idle capacity, divided by the energy of the same work at load; the provider's PUE is applied separately. Low: a fleet scaled to its load, as DeepSeek's, which releases inference nodes to research and training at night. Base case: Google's Gemini measurement, idle machines 10 percent against 83 percent for active machines, (83 + 10) / 83 = 1.12. High: capacity provisioned for peak load, idle servers drawing half their power at load (H100, 300 W against 600 W), at a peak of 1.7 times the average load (Azure conversation traffic, high case, 1 + 0.7 x 0.5) and 2.8 times (Azure coding traffic, upper bound, 1 + 1.8 x 0.5)."
 
 [sources.config-deepseek-v4-1-flash]
 title = "deepseek-ai/DeepSeek-V4.1-Flash config.json, commit 2cba9e42aa026125f3ed06c6d98c1db82f7ca027"

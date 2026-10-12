@@ -220,22 +220,25 @@ between calls, the embodied emissions of serving hardware, training and
 water are not estimated yet and do not appear in the output.
 
 Model providers do not disclose per-token energy, attention design or
-serving hardware, so every figure is a range:
+serving hardware, so every figure is given in three cases. Each case
+computes the calls with every value in the data at the same point of its
+range. They are scenarios, not a mean with confidence intervals:
 
-  central    if a closed model is a mixture-of-experts model with about
-             100 billion active parameters and full attention on B200-class
-             accelerators; for a closed model with a list price, its weight
-             energy is what its price buys at open-weight hosts' prices; for
-             an open-weight model with a published configuration, that
-             model on B200 accelerators
-  plausible  the spread across documented architectures, hardware and, for
-             priced models, host prices and markups; for an open-weight
-             model with a published configuration, hardware alone; each
-             band also spans the provider's idle capacity, PUE and sites;
-             not a confidence interval
-  envelope   what the providers' non-disclosure leaves open
+  base case          if a closed model is a mixture-of-experts model with
+                     about 100 billion active parameters and full attention
+                     on B200-class accelerators; for a closed model with a
+                     list price, its weight energy is what its price buys at
+                     open-weight hosts' prices; for an open-weight model with
+                     a published configuration, that model on B200
+                     accelerators
+  low to high case   the spread across documented architectures, hardware
+                     and, for priced models, host prices and markups; for an
+                     open-weight model with a published configuration,
+                     hardware alone; it also spans the provider's idle
+                     capacity, PUE and sites
+  bounds             what the providers' non-disclosure leaves open
 
-A total's band is the sum of its providers' bands.
+A total's cases are the sums of its providers' cases.
 
 --verbose adds the figures between usage and emissions, in the order they
 are computed: power usage effectiveness (PUE, the data centre's total power
@@ -253,7 +256,7 @@ Calls are assigned to projects from labels and Git checkouts, as
 tokendraw projects --help explains. The report shows the emissions of each
 project and of the calls that remain unresolved.
 
-Where the energy goes splits the central energy by what the calls did.
+Where the energy goes splits the base case energy by what the calls did.
 Rereading the context is the terms of the energy model that grow with the
 context each call reads: attention (a_p and a_d) and cache reload (c0), as
 the data's README describes them. The other lines are the calls with more

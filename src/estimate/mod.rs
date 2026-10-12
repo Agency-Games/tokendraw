@@ -4,7 +4,7 @@
 //! `a_p * prefill_pairs + a_d * decode_pairs + b_in * n_new + b_out * n_out + c0 * L`;
 //! IT energy is node energy times `idle`, facility energy IT energy times
 //! (PUE - 1), and emissions energy times the provider's grid intensity.
-//! Every product pairs like bands: envelope low with envelope low, and so on.
+//! Every product pairs like bands: lower bound with lower bound, and so on.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::ops::Add;
@@ -35,7 +35,7 @@ pub struct Group {
     pub emissions_quality: Label,
 }
 
-/// Parts of the central L1 energy, by what the calls did.
+/// Parts of the base case L1 energy, by what the calls did.
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct Breakdown {
     /// The terms that grow with the context: `a_p`, `a_d` and `c0`.
@@ -59,7 +59,7 @@ pub struct L1 {
     /// calls.
     pub energy_quality: Option<Label>,
     /// The weakest label of those, the provider records and the
-    /// geographies of their sites and envelope sites; `None` without calls.
+    /// geographies of their sites and bounds sites; `None` without calls.
     pub emissions_quality: Option<Label>,
     pub parameter_sets: Vec<String>,
     /// Model names no pattern matched, with their calls.
@@ -134,18 +134,18 @@ pub fn l1(data: &Data, usage: &[Usage]) -> L1 {
         group.energy = add(&group.energy, &energy);
         group.emissions = add(&group.emissions, &emissions);
         let breakdown = &mut total.breakdown;
-        let central = WattHours(energy.central.0);
+        let base_case = WattHours(energy.base_case.0);
         breakdown.context_terms =
-            breakdown.context_terms + WattHours(context * set.idle.central * pue.central);
+            breakdown.context_terms + WattHours(context * set.idle.base_case * pue.base_case);
         if row.cached_above {
-            breakdown.cached_above = breakdown.cached_above + central;
+            breakdown.cached_above = breakdown.cached_above + base_case;
         }
         for (part, key) in [
             (&mut breakdown.by_client, &row.client),
             (&mut breakdown.by_role, &row.role),
         ] {
             let sum = part.entry(key.clone()).or_insert(WattHours(0.0));
-            *sum = *sum + central;
+            *sum = *sum + base_case;
         }
         total.facility = add(&total.facility, &facility);
         total.energy = add(&total.energy, &energy);
@@ -158,7 +158,7 @@ pub fn l1(data: &Data, usage: &[Usage]) -> L1 {
     total
 }
 
-/// In Wh, with the central value of the context terms.
+/// In Wh, with the base case value of the context terms.
 fn node(set: &ParameterSet, usage: &Usage) -> (Five<f64>, f64) {
     #[expect(
         clippy::cast_precision_loss,
@@ -195,7 +195,7 @@ fn node(set: &ParameterSet, usage: &Usage) -> (Five<f64>, f64) {
         .fold(Five::same(0.0), |total, term| total.zip(term, |a, b| a + b))
         .map(|joules| joules / JOULES_PER_WATT_HOUR);
     let [a_p, a_d, _, _, c0] = &terms;
-    let context = (a_p.central + a_d.central + c0.central) / JOULES_PER_WATT_HOUR;
+    let context = (a_p.base_case + a_d.base_case + c0.base_case) / JOULES_PER_WATT_HOUR;
     (total, context)
 }
 
@@ -218,7 +218,7 @@ fn grid_label(data: &Data, provider: &ResolvedProvider) -> Label {
     provider
         .site_ids
         .iter()
-        .chain(&provider.envelope_ids)
+        .chain(&provider.bounds_ids)
         .filter_map(|id| data.geographies.get(id))
         .map(|geography| geography.label)
         .fold(provider.provider.label, Label::max)

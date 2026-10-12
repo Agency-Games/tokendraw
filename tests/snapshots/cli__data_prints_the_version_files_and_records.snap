@@ -2,22 +2,22 @@
 source: tests/cli.rs
 expression: without_stale(&stdout(&output))
 ---
-data 2026-10-09, shipped sha256 92735cdc2a25ef5c4b1eb84a946a202da15aecbc65701a22726d55142d3bf9a5
+data 2026-10-12, shipped sha256 e50df3cf0b2e68ef793bd5c5386bce6041b699330a7424c487086b94d9165f59
 shipped files, sha256
-  data/data.toml                      1428ee15005eac968e8520a24162a7c60d50c6059403f6eccd30323d747be0bb
-  data/energy/parameter-sets.toml     8de8bfe37d283ca05fc24d27b28c8054ab639229e3a923c1758b810145791b1e
-  data/energy/open-weight-sets.toml   dc18082bfa82337e6e458aded3e34044fcdc228274c7b653562acd6a6ce27114
-  data/energy/price-calibration.toml  69997ab193b66181169339288d7eb8a9d4658a558e18cbdfa014cb9229edcac8
+  data/data.toml                      aea68875dbdc90adef46e7a5f9e833660e60c45497f9f9d6b96fa4af4e8b739d
+  data/energy/parameter-sets.toml     a6d8f75c866880cfe1266283a1449ce01df46c327cf17acfd3dd27b6d93c516c
+  data/energy/open-weight-sets.toml   16c4d397ad6d42cfb2ec2e8255742918c239d717f8e6f03cf385cca66e218f96
+  data/energy/price-calibration.toml  f495d1dcb6e900679b8cb067191271db5372116ae86921c883b6545889b45400
   data/energy/prices.toml             868e3f440043cea2a8d9dc18ca0a0704799ab0c6b6b5d0ccf0f1634a2f508cab
   data/energy/models.toml             5e9076cc6ee525db8c1f0a05586788ba0858360c58dd461c7e4a1e4044af1850
-  data/providers.toml                 123172caeb298e206de64399538fb5ebf7f1bda154880d299da0983cef1a709c
+  data/providers.toml                 0520a9522a3d765bde5f87759544751d779a61dadd4e1cdf61a27dae3427a41c
   data/grid/ember.toml                3ddbe09b98b603d46a2354c71b6fb5983a7de374bfa1c0a61d6032656ebaf398
   data/discovery.toml                 d6e01b132e02c0ac5e8628f05a1cddae7b8e769ca55ccc5da19d50fbe07a2f06
   data/findings.toml                  00b03f6a104f6afb729a053be1088740cfa387c78dc0cddd6a91fea4b5f266e9
 overrides: none
 stale: <depends on the date>
 
-values: envelope low / plausible low / central / plausible high / envelope high, label
+values: lower bound / low case / base case / high case / upper bound, label
 
 parameter set deepseek-v4-pro, reviewed 2026-10-08
   DeepSeek V4 Pro (deepseek-ai/DeepSeek-V4-Pro) from its published configuration: 61 layers: 30 Compressed Sparse Attention layers (compression ratio 4, lightning indexer top-k 1,024) and 31 Heavily Compressed Attention layers (ratio 128, dense over the compressed entries), each with a 128-token sliding branch; 128 query heads over one shared 512-wide key-value vector, stored in FP8 with BF16 rotary dimensions (448 + 64 x 2 = 576 bytes per entry); FP4 indexer, 64 heads x 128. The multi-token prediction layer and hyper-connections are not counted.
@@ -144,7 +144,7 @@ prices: input / output USD per million tokens, label; above a prompt of N tokens
   gpt-6-sol                   2 / 10  C; above 272,000: 4 / 15
   gpt-6.1-sol                 2 / 10  C; above 272,000: 4 / 15
 
-parameter sets from prices: b_in / b_out central, J per token; the other values as their base set
+parameter sets from prices: b_in / b_out base case, J per token; the other values as their base set
   frontier@claude-fable-5-1                   1.15 / 1.91  D
   frontier@claude-haiku-4-5-20251001          0.115 / 0.191  D
   frontier@claude-haiku-5-5                   0.0115 / 0.0191  D

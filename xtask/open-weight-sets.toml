@@ -42,7 +42,7 @@ e_flop_pj = 0.5
 e_byte_pj = 150
 reload_nj_per_byte = 0.1
 
-[hardware.central]
+[hardware.base]
 description = "B200, 16-bit attention"
 e_flop_pj = 1.05
 e_byte_pj = 225
