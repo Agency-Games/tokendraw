@@ -26,10 +26,17 @@ fn spec(usage: Usage) -> Spec {
     }
 }
 
+/// The root `/logs` made absolute on the system running the test: on
+/// Windows a path without a drive is not absolute.
+fn root() -> PathBuf {
+    std::path::absolute("/logs")
+        .unwrap_or_else(|error| panic!("cannot make /logs absolute: {error}"))
+}
+
 fn adapter(spec: Spec) -> Declared {
     Declared::new(
         "example".to_owned(),
-        PathBuf::from("/logs"),
+        root(),
         "jsonl".to_owned(),
         spec,
         Definition {
@@ -40,7 +47,7 @@ fn adapter(spec: Spec) -> Declared {
 }
 
 fn file() -> PathBuf {
-    Path::new("/logs").join("day").join("one.jsonl")
+    root().join("day").join("one.jsonl")
 }
 
 fn response(id: Option<&str>, time: &str, input: u64, output: u64) -> Value {
@@ -260,15 +267,15 @@ fn two_files_sharing_a_session_never_share_a_generated_id() {
     spec.session = Some("/session".to_owned());
     let adapter = adapter(spec);
     let line = response(None, "2026-09-30T10:00:00Z", 7, 40);
-    let ids = |path: &str| -> Vec<String> {
-        let mut reader = adapter.start(Path::new(path));
+    let ids = |name: &str| -> Vec<String> {
+        let mut reader = adapter.start(&root().join(name));
         match reader.parse_line(line.to_string().as_bytes()) {
             Line::Call(call) => vec![call.id],
             Line::Other | Line::Unreadable => Vec::new(),
         }
     };
-    let first = ids("/logs/a.jsonl");
-    let second = ids("/logs/b.jsonl");
+    let first = ids("a.jsonl");
+    let second = ids("b.jsonl");
     assert_eq!(first.len(), 1);
     assert_ne!(first, second);
 }

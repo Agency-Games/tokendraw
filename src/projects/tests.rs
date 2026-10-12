@@ -446,17 +446,29 @@ fn the_deepest_match_wins_then_the_most_specific_pattern_in_any_order() -> TestR
 }
 
 #[test]
-fn arguments_become_absolute_normalized_paths() {
-    let cwd = Path::new("/work/repo");
-    let home = Some(Path::new("/users/me"));
-    let path = |arg: &str| absolute(arg, cwd, home);
-    let expected = |path: &str| Some(PathBuf::from(path));
-    assert_eq!(path("~/src/app/"), expected("/users/me/src/app"));
-    assert_eq!(path("~"), expected("/users/me"));
-    assert_eq!(path("../other/./x"), expected("/work/other/x"));
-    assert_eq!(path("/abs/../b"), expected("/b"));
-    assert_eq!(path("~user/x"), expected("/work/repo/~user/x"));
-    assert_eq!(absolute("~/x", cwd, None), None);
+fn arguments_become_absolute_normalized_paths() -> TestResult {
+    // On Windows a path without a drive is not absolute.
+    let base = std::path::absolute("/")?;
+    let cwd = base.join("work").join("repo");
+    let home = base.join("users").join("me");
+    let input = base.join("abs").join("..").join("b");
+    assert!(input.is_absolute());
+    let input = input.to_str().ok_or("the base is not UTF-8")?;
+    let path = |arg: &str| absolute(arg, &cwd, Some(&home));
+    let cases = [
+        ("~/src/app/", home.join("src").join("app")),
+        ("~", home.clone()),
+        ("../other/./x", base.join("work").join("other").join("x")),
+        (input, base.join("b")),
+        ("~user/x", cwd.join("~user").join("x")),
+    ];
+    for (arg, expected) in cases {
+        let found = path(arg).ok_or(arg)?;
+        assert!(found.is_absolute(), "{arg} became {}", found.display());
+        assert_eq!(found, expected, "{arg}");
+    }
+    assert_eq!(absolute("~/x", &cwd, None), None);
+    Ok(())
 }
 
 #[test]

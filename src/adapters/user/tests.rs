@@ -4,10 +4,11 @@ use super::*;
 
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 
+/// A log adapter file with `ROOT` for its root.
 const LOGS: &str = r#"client = "example"
 
 [files]
-root = "~/logs"
+root = ROOT
 
 [when]
 "/type" = "response"
@@ -24,6 +25,19 @@ input = "/usage/input"
 output = "/usage/output"
 "#;
 
+/// The root `/logs` made absolute on the system running the test, as a
+/// TOML literal string: on Windows a path without a drive is not
+/// absolute, and its separators would need escaping in a basic string.
+fn logs_root() -> String {
+    let root = std::path::absolute("/logs")
+        .unwrap_or_else(|error| panic!("cannot make /logs absolute: {error}"));
+    format!("'{}'", root.display())
+}
+
+fn logs() -> String {
+    LOGS.replace("ROOT", &logs_root())
+}
+
 fn problem(text: &str) -> String {
     match parse(Path::new("/adapters/example.toml"), text, &["claude-code"]) {
         Ok(_) => String::new(),
@@ -33,9 +47,9 @@ fn problem(text: &str) -> String {
 
 #[test]
 fn a_log_adapter_file_declares_a_declared_adapter() {
-    assert_eq!(problem(LOGS), "");
+    assert_eq!(problem(&logs()), "");
     assert!(matches!(
-        parse(Path::new("/adapters/example.toml"), LOGS, &[]),
+        parse(Path::new("/adapters/example.toml"), &logs(), &[]),
         Ok(UserAdapter::Declared(_))
     ));
 }
@@ -53,7 +67,7 @@ fn a_command_file_declares_an_external_adapter() {
 fn invalid_files_name_what_is_wrong() {
     let cases = [
         (
-            LOGS.replace("[files]", "command = [\"tool\"]\n[files]"),
+            logs().replace("[files]", "command = [\"tool\"]\n[files]"),
             "both command and [files]",
         ),
         (
@@ -69,46 +83,50 @@ fn invalid_files_name_what_is_wrong() {
             "a command adapter takes no",
         ),
         (
-            LOGS.replace("client = \"example\"", "client = \"claude-code\""),
+            logs().replace("client = \"example\"", "client = \"claude-code\""),
             "shipped adapter's",
         ),
         (
-            LOGS.replace("client = \"example\"", "client = \" \""),
+            logs().replace("client = \"example\"", "client = \" \""),
             "client is empty",
         ),
+        (LOGS.replace("ROOT", "\"logs\""), "is relative"),
         (
-            LOGS.replace("root = \"~/logs\"", "root = \"logs\""),
-            "is relative",
-        ),
-        (
-            LOGS.replace("timestamp = \"/time\"", "timestamp = \"time\""),
+            logs().replace("timestamp = \"/time\"", "timestamp = \"time\""),
             "not a JSON Pointer",
         ),
-        (LOGS.replace("\"/type\"", "\"type\""), "not a JSON Pointer"),
         (
-            LOGS.replace("timestamp = \"/time\"\n", ""),
+            logs().replace("\"/type\"", "\"type\""),
+            "not a JSON Pointer",
+        ),
+        (
+            logs().replace("timestamp = \"/time\"\n", ""),
             "timestamp is missing",
         ),
-        (LOGS.replace("model = \"/model\"\n", ""), "model is missing"),
         (
-            LOGS.replace("[values]", "[values]\nmodel = \"m\""),
+            logs().replace("model = \"/model\"\n", ""),
+            "model is missing",
+        ),
+        (
+            logs().replace("[values]", "[values]\nmodel = \"m\""),
             "model is set in both",
         ),
         (
-            LOGS.replace("input = \"/usage/input\"\noutput = \"/usage/output\"\n", "")
+            logs()
+                .replace("input = \"/usage/input\"\noutput = \"/usage/output\"\n", "")
                 .replace("[tokens]\n", ""),
             "[tokens] is missing",
         ),
         (
-            LOGS.replace("[tokens]", "[tokens]\ncache = \"/c\""),
+            logs().replace("[tokens]", "[tokens]\ncache = \"/c\""),
             "line 17: unknown field `cache`",
         ),
         (
-            LOGS.replace("[when]", "colour = 1\n[when]"),
+            logs().replace("[when]", "colour = 1\n[when]"),
             "unknown field `colour`",
         ),
         (
-            format!("usage = \"sometimes\"\n{LOGS}"),
+            format!("usage = \"sometimes\"\n{}", logs()),
             "line 1: unknown variant `sometimes`",
         ),
         ("client = ".to_owned(), "line 1"),
@@ -138,16 +156,17 @@ timestamp = "/time"
 [when]
 "/type" = "response"
 [files]
-root = "~/logs"
-"#;
+root = ROOT
+"#
+    .replace("ROOT", &logs_root());
     let definition = |text: &str| -> Option<String> {
         let generic: Value = toml::from_str(text).ok()?;
         Some(canonical(&generic))
     };
-    assert_eq!(definition(LOGS), definition(reordered));
+    assert_eq!(definition(&logs()), definition(&reordered));
     assert_ne!(
-        definition(LOGS),
-        definition(&LOGS.replace("/usage/output", "/usage/total"))
+        definition(&logs()),
+        definition(&logs().replace("/usage/output", "/usage/total"))
     );
 }
 
