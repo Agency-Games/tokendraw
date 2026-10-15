@@ -85,20 +85,20 @@ fn write_finding(out: &mut impl Write, finding: &Finding) -> io::Result<()> {
             threshold_cached_tokens,
             ..
         } => format!(
-            "{} of calls carried more than {} cached tokens and used {} of the energy. Every new and output token re-reads that context.",
+            "{} of calls carried more than {} cached tokens and used {} of the energy. With full attention, every new and output token re-reads that context.",
             percent(*share_of_calls),
             count(*threshold_cached_tokens),
             percent(*share_of_base_case)
         ),
         Facts::FixedContext { calls: 0, .. } => {
-            "No call carried context from the start of its session.".to_owned()
+            "No call carried context from the start of its session or subagent.".to_owned()
         }
         Facts::FixedContext {
             mean_fixed_tokens,
             share_of_base_case,
             ..
         } => format!(
-            "Each call re-read on average {} tokens its session started with: the system prompt, tool definitions, instruction files and first prompt. That used {} of the energy.",
+            "Each call re-read on average {} tokens its session or subagent started with: the system prompt, tool definitions, instruction files and first prompt or brief. That used {} of the energy.",
             fixed_tokens(*mean_fixed_tokens),
             percent(*share_of_base_case)
         ),

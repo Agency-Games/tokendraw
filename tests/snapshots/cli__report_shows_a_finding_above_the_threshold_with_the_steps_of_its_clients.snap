@@ -4,7 +4,8 @@ expression: "section(&text, \"long-context\")"
 ---
 long-context
   50% of calls carried more than 1,000 cached tokens and used 19% of the
-  energy. Every new and output token re-reads that context.
+  energy. With full attention, every new and output token re-reads that
+  context.
   What you can do:
     claude-code:
       /compact during a task

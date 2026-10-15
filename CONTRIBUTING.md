@@ -4,7 +4,8 @@
 
 Install Rust with rustup, which picks up the toolchain pinned in
 `rust-toolchain.toml`. The build compiles SQLite, so it also needs a C
-compiler. Before opening a pull request, run what CI runs:
+compiler. Before opening a pull request, format the code and run the lints and
+tests:
 
 ```sh
 cargo fmt

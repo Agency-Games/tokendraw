@@ -11,7 +11,8 @@ and tokendraw follows Semantic Versioning (https://semver.org/).
 - `report` shows the findings with at least 10% of the energy, set by
   `threshold_percent` in the new configuration file, with the steps for
   each client and a command to see the effect; `tokendraw findings` lists
-  them all.
+  them all. `report --json` has them in a new `findings` field, and
+  `findings --json` prints them with its own `schema_version`, 1.
 - The `long-context` finding: calls that carry more than 200,000 cached
   tokens.
 - The `fixed-context` finding: the context each call carries from the

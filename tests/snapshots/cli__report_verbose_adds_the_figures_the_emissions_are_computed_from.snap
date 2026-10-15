@@ -66,9 +66,9 @@ Where the energy goes (base case)
   interactive / subagent / headless   84% / 1% / 15%
 
 fixed-context
-  Each call re-read on average 4,840 tokens its session started with: the
-  system prompt, tool definitions, instruction files and first prompt. That
-  used 81% of the energy.
+  Each call re-read on average 4,840 tokens its session or subagent started
+  with: the system prompt, tool definitions, instruction files and first
+  prompt or brief. That used 81% of the energy.
   What you can do:
     claude-code:
       /context to see what fills the context

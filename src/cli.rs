@@ -275,16 +275,17 @@ findings lists.";
 
 const FINDINGS_HELP: &str =
     "Read new usage from the agents' logs and print every finding: a behaviour in
-the calls you can change, its share of the base case energy, what you can
-do about it in each client the calls came from, and how to see the effect.
+the calls you can change and its share of the base case energy, and for a
+finding the calls show, what you can do about it in each client they came
+from and how to see the effect.
 
 long-context   calls whose cache-read tokens exceed the long-context
-               threshold in tokendraw data; every new and output token of
-               such a call re-reads that context
+               threshold in tokendraw data; with full attention, every new
+               and output token of such a call re-reads that context
 fixed-context  the context each call's session or subagent started with,
                up to the call's own: system prompt, tool definitions,
-               instruction files and the first prompt, which the logs do
-               not separate, so its share is an upper estimate
+               instruction files and the first prompt or brief, which the
+               logs do not separate, so its share is an upper estimate
 model-choice   subagent and headless calls on models with a list price
                above the model it compares each client with, the
                lowest-priced its docs list; the share is the energy of
