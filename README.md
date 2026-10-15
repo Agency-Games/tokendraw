@@ -87,6 +87,20 @@ example to declare where a model you run yourself is served, put your own
 TOML files in the `data` directory of the configuration directory;
 [data/README.md](data/README.md) describes the format.
 
+### The configuration file
+
+`config.toml` in the configuration directory, or the file the
+`TOKENDRAW_CONFIG` variable names, holds your settings. The report shows
+the findings that reach a share of the energy, 10% unless you set
+another:
+
+```toml
+[findings]
+threshold_percent = 5
+```
+
+`tokendraw findings` shows every finding.
+
 ## Sending us your setup
 
 If tokendraw cannot read an agent you use, counts unreadable lines in its

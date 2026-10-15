@@ -31,22 +31,39 @@ const BAND_ALIGNS: [Align; 4] = [Align::Left, Align::Right, Align::Left, Align::
 
 const SOURCE_NAMES: usize = 28;
 
-pub fn write(out: &mut impl Write, report: &Report, verbose: bool) -> io::Result<()> {
-    match (&report.project, &report.directory) {
-        (Some(project), _) => writeln!(
-            out,
-            "tokendraw report, project {}, {}",
+/// The first line: the command, the project or directory, and the period.
+pub(super) fn header(
+    command: &str,
+    project: Option<&str>,
+    directory: Option<&str>,
+    period: &Period,
+) -> String {
+    match (project, directory) {
+        (Some(project), _) => format!(
+            "{command}, project {}, {}",
             shown_path(project),
-            period(&report.period)
-        )?,
-        (None, Some(directory)) => writeln!(
-            out,
-            "tokendraw report, unresolved calls in {}, {}",
+            self::period(period)
+        ),
+        (None, Some(directory)) => format!(
+            "{command}, unresolved calls in {}, {}",
             shown_path(directory),
-            period(&report.period)
-        )?,
-        (None, None) => writeln!(out, "tokendraw report, {}", period(&report.period))?,
+            self::period(period)
+        ),
+        (None, None) => format!("{command}, {}", self::period(period)),
     }
+}
+
+pub fn write(out: &mut impl Write, report: &Report, verbose: bool) -> io::Result<()> {
+    writeln!(
+        out,
+        "{}",
+        header(
+            "tokendraw report",
+            report.project.as_deref(),
+            report.directory.as_deref(),
+            &report.period
+        )
+    )?;
     writeln!(out)?;
     write_usage(out, report)?;
     write_final_usage(out, report)?;
@@ -70,6 +87,7 @@ pub fn write(out: &mut impl Write, report: &Report, verbose: bool) -> io::Result
     write_cases(out)?;
     write_projects(out, report)?;
     write_breakdown(out, report)?;
+    super::findings::write_report_findings(out, report)?;
     if verbose {
         writeln!(out)?;
         write_sources(out, report)
@@ -239,7 +257,7 @@ fn write_breakdown(out: &mut impl Write, report: &Report) -> io::Result<()> {
 }
 
 /// Whole percent; a share above 0 that rounds to 0 is `<1%`.
-fn percent(share: f64) -> String {
+pub(super) fn percent(share: f64) -> String {
     let rounded = (share * 100.0).round();
     if rounded == 0.0 && share > 0.0 {
         "<1%".to_owned()

@@ -3,13 +3,18 @@ use std::fmt::Write as _;
 
 use anyhow::{Result, bail};
 use jiff::Timestamp;
+use jiff::civil::Date;
+use jiff::tz::TimeZone;
 use serde::Serialize;
 
 use crate::adapters::coverage::{self, Coverage, Status};
 use crate::cli::ReportArgs;
+use crate::commands::findings as findings_command;
 use crate::commands::tokens::{self, ClientReport, ClientVersion};
+use crate::config::Config;
 use crate::data::{Data, Five, Label, Override};
 use crate::estimate::{self, L1};
+use crate::findings::{self, Finding, Measure};
 use crate::ledger::{FinalUsage, ProjectUsage, ProviderCalls, Split, Unrecorded, Usage};
 use crate::output::{self, redact};
 use crate::projects::{self, Resolution, ResolvedBy, Resolver, Selected};
@@ -59,6 +64,24 @@ pub struct Report {
     /// Where the base case L1 energy goes; left out without energy.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub breakdown: Option<Vec<Part>>,
+    /// The findings at or above the threshold, largest first; left out
+    /// without energy.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub findings: Option<Vec<Finding>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub hidden_findings: Option<HiddenFindings>,
+    /// Every finding that applies, for `tokendraw findings`.
+    #[serde(skip)]
+    pub every_finding: Option<Vec<Finding>>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct HiddenFindings {
+    /// The findings with calls below the threshold.
+    pub count: u64,
+    pub threshold_share_of_base_case: f64,
+    /// Without backticks; it selects the report's calls.
+    pub command: String,
 }
 
 /// A part of the base case L1 energy, with the signal it comes from.
@@ -285,8 +308,9 @@ pub struct Named {
     pub calls: u64,
 }
 
-/// Ingests new usage first, as the `tokens` command does.
-pub fn run(args: &ReportArgs, data: &Data) -> Result<Report> {
+/// Ingests new usage first, as the `tokens` command does. `today` is the
+/// UTC date the measurement step of a finding counts from the day after.
+pub fn run(args: &ReportArgs, data: &Data, config: Config, today: Date) -> Result<Report> {
     let (mut ledger, adapters) = tokens::ingest_all()?;
     let covered = adapters.iter().map(|entry| entry.client.as_str()).collect();
     let known = coverage::known(data, &covered);
@@ -351,10 +375,45 @@ pub fn run(args: &ReportArgs, data: &Data) -> Result<Report> {
         by_project.as_deref(),
     );
     report.directory = directory;
+    let project = args.project.as_deref().map(|project| {
+        if args.redact {
+            redact::REDACTED
+        } else {
+            project
+        }
+    });
+    let tomorrow = today.tomorrow()?.to_zoned(TimeZone::UTC)?.timestamp();
+    select_findings(
+        &mut report,
+        config.threshold_share(),
+        &findings_command::command(args.since, args.until, project),
+        &findings_command::command(Some(tomorrow), None, project),
+    );
     if args.redact {
         redact::report(&mut report);
     }
     Ok(report)
+}
+
+/// Gives every finding with calls its measurement step, from the day after
+/// the report on, and splits them at the threshold.
+fn select_findings(report: &mut Report, threshold: f64, selection: &str, measure: &str) {
+    let Some(every) = &mut report.every_finding else {
+        return;
+    };
+    for finding in every.iter_mut().filter(|finding| finding.facts.calls() > 0) {
+        finding.measure = Some(Measure {
+            command: measure.to_owned(),
+            compare: "share_of_base_case",
+        });
+    }
+    let (shown, count) = findings::shown(every, threshold);
+    report.findings = Some(shown);
+    report.hidden_findings = Some(HiddenFindings {
+        count,
+        threshold_share_of_base_case: threshold,
+        command: selection.to_owned(),
+    });
 }
 
 /// Each client's coverage: its adapter's, else that of a client with calls
@@ -498,6 +557,9 @@ pub fn build(
         projects: by_project.map(|rows| projects(data, rows)),
         unresolved: by_project.map(|rows| unresolved(data, rows)),
         breakdown: breakdown(&l1, data.long_context_tokens()),
+        findings: None,
+        hidden_findings: None,
+        every_finding: findings::every(data, &l1),
     }
 }
 

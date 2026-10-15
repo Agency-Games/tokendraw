@@ -17,7 +17,7 @@ with your own files.
 | `providers.toml` | Per provider: the grid geographies it serves from, and its PUE |
 | `grid/ember.toml` | Grid intensity per country and US state, from Ember (CC BY 4.0, see `grid/README.md`) |
 | `discovery.toml` | Where agents without an adapter keep their logs, so a report can say it found them but did not read them |
-| `findings.toml` | The parameters of the report's findings, such as the cache-read tokens above which a call is long-context |
+| `findings.toml` | The parameters of the report's findings, such as the cache-read tokens above which a call is long-context, and the steps a user of each client can take |
 
 ## Overriding and extending the data
 
@@ -66,13 +66,14 @@ first 12 characters of the shipped files' hash and your files.
 
 ## Records
 
-Every record has an `id`, its values, a quality label, the ids of its
-sources, a review date (`reviewed`) and, where a value is derived, its
-`basis` in words. Labels: `M` disclosed by the provider for this model,
-`C` published by a company and not verified, `I` independent research,
-`D` the tool's default with a range. `S`, spend-based, is refused: such
-figures are a cross-check only and never enter an estimate. A report
-labels each estimate with the weakest label among the records it uses.
+Every record has an `id` (an action has none, see below), its values, a
+quality label, the ids of its sources, a review date (`reviewed`) and,
+where a value is derived, its `basis` in words. Labels: `M` disclosed by
+the provider for this model, `C` published by a company and not
+verified, `I` independent research, `D` the tool's default with a range.
+`S`, spend-based, is refused: such figures are a cross-check only and
+never enter an estimate. A report labels each estimate with the weakest
+label among the records it uses.
 
 A parameter or a PUE has five values, lowest first: `lower_bound`,
 `low_case`, `base_case`, `high_case`, `upper_bound`. The bounds are what
@@ -120,6 +121,29 @@ A `[[finding]]` record holds the parameters of one finding of the report,
 by its `id`. `long-context` has `cached_tokens`: a call whose cache-read
 tokens exceed it is long-context, which the report's "Where the energy
 goes" counts.
+
+An `[[action]]` record holds the `steps` a user of one `client` can take
+about one `finding`, each naming the client's command or setting. It has
+no `id`: the finding and the client identify it, so a record for a shipped
+pair replaces that record, and a record for another client adds its
+steps. A finding counts only the calls of clients it has steps for. For
+example, for a user adapter's client:
+
+```toml
+[sources.my-agent-docs]
+title = "My agent's commands"
+publisher = "Example studio"
+accessed = 2026-10-15
+
+[[action]]
+finding = "long-context"
+client = "my-agent"
+steps = ["/summarize during a task", "/reset between tasks"]
+label = "C"
+sources = ["my-agent-docs"]
+basis = "The agent's command list"
+reviewed = 2026-10-15
+```
 
 ## Open-weight models
 

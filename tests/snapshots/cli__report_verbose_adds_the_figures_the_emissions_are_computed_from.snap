@@ -66,7 +66,7 @@ Where the energy goes (base case)
   interactive / subagent / headless   84% / 1% / 15%
 
 Data sources
-  data version                2026-10-12, shipped sha256 c20379ed27dd, no
+  data version                2026-10-15, shipped sha256 fa5d72cd1f1b, no
                               overrides
   energy per call             parameter sets frontier,
                               frontier@claude-opus-5-5,

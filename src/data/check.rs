@@ -111,6 +111,31 @@ fn check_findings(merged: &Merged, origins: &[Origin]) -> Result<(), Error> {
             ));
         }
     }
+    for (id, (action, origin)) in &merged.actions {
+        let origin = &origins[*origin];
+        let what = format!("action {id}");
+        if !FINDINGS.contains(&action.finding.as_str()) {
+            return Err(invalid(
+                origin,
+                format!(
+                    "{what} names the finding {}, which tokendraw does not know; use one of {}",
+                    action.finding,
+                    FINDINGS.join(", ")
+                ),
+            ));
+        }
+        if action.client.is_empty()
+            || action.steps.is_empty()
+            || action.steps.iter().any(|step| step.trim().is_empty())
+        {
+            return Err(invalid(
+                origin,
+                format!("{what} needs a client and at least one step, none of them empty"),
+            ));
+        }
+        check_sources(&merged.sources, origin, &what, &action.sources)?;
+        check_label(origin, &what, action.label)?;
+    }
     if !merged.findings.contains_key(LONG_CONTEXT) {
         return Err(Error::Invalid {
             file: "data/findings.toml".to_owned(),

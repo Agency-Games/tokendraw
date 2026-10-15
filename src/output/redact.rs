@@ -24,6 +24,11 @@ pub fn data(data: &Data) -> Data {
                     REDACTED.clone_into(&mut geography.basis);
                 }
             }
+            Kind::Action => {
+                if let Some(action) = redacted.actions.get_mut(&record.id) {
+                    action.steps = vec![REDACTED.to_owned()];
+                }
+            }
             _ => {}
         }
     }

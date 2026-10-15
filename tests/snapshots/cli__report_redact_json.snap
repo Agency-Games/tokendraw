@@ -10,8 +10,8 @@ expression: without_platform(&json)?
     "arch": "<arch>"
   },
   "data_version": {
-    "id": "2026-10-12",
-    "shipped_sha256": "c20379ed27ddeb8afedb2fdd6650f280b6c765ed7beb5172c22f40613800ea13",
+    "id": "2026-10-15",
+    "shipped_sha256": "fa5d72cd1f1b4e952cf84746ed203fbc3f63d005f985064d32206ac64991fc10",
     "overrides": [
       {
         "path": "override 1",
@@ -462,5 +462,11 @@ expression: without_platform(&json)?
       },
       "signal": "role of each call"
     }
-  ]
+  ],
+  "findings": [],
+  "hidden_findings": {
+    "count": 0,
+    "threshold_share_of_base_case": 0.1,
+    "command": "tokendraw findings"
+  }
 }

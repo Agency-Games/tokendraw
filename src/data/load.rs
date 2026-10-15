@@ -9,7 +9,8 @@ use sha2::{Digest, Sha256};
 
 use super::derive::{ShippedSites, resolve};
 use super::records::{
-    Finding, Geography, Location, Model, ParameterSet, Price, PriceCalibration, Provider, Source,
+    ClientAction, Finding, Geography, Location, Model, ParameterSet, Price, PriceCalibration,
+    Provider, Source,
 };
 use super::{Data, Error, Kind, SHIPPED};
 
@@ -39,6 +40,8 @@ struct File {
     location: Vec<Location>,
     #[serde(default)]
     finding: Vec<Finding>,
+    #[serde(default)]
+    action: Vec<ClientAction>,
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -169,6 +172,7 @@ pub(super) struct Merged {
     pub(super) geographies: Records<Geography>,
     pub(super) locations: Records<Location>,
     pub(super) findings: Records<Finding>,
+    pub(super) actions: Records<ClientAction>,
 }
 
 pub(super) const SHIPPED_RECOVERY: &str = "the shipped data must be fixed in tokendraw";
@@ -331,6 +335,8 @@ pub(super) fn misfit(text: &str) -> Option<String> {
         location: Records,
         #[serde(default)]
         finding: Records,
+        #[serde(default)]
+        action: Records,
     }
     fn fails<T: for<'de> Deserialize<'de>>(record: &toml::Table) -> Option<String> {
         toml::Value::Table(record.clone())
@@ -339,11 +345,12 @@ pub(super) fn misfit(text: &str) -> Option<String> {
             .map(|error| error.message().to_owned())
     }
     fn id(record: &toml::Table) -> String {
-        record
-            .get("id")
-            .and_then(toml::Value::as_str)
-            .unwrap_or("without an id")
-            .to_owned()
+        let field = |key: &str| record.get(key).and_then(toml::Value::as_str);
+        match (field("id"), field("finding"), field("client")) {
+            (Some(id), _, _) => id.to_owned(),
+            (None, Some(finding), Some(client)) => super::records::action_id(finding, client),
+            _ => "without an id".to_owned(),
+        }
     }
     let records: Kinds = toml::from_str(text).ok()?;
     let mut found: Vec<(usize, String)> = Vec::new();
@@ -355,7 +362,7 @@ pub(super) fn misfit(text: &str) -> Option<String> {
             ));
         }
     }
-    let kinds: [(Kind, &Records, Check); 8] = [
+    let kinds: [(Kind, &Records, Check); 9] = [
         (
             Kind::ParameterSet,
             &records.parameter_set,
@@ -372,6 +379,7 @@ pub(super) fn misfit(text: &str) -> Option<String> {
         (Kind::Geography, &records.geography, fails::<Geography>),
         (Kind::Location, &records.location, fails::<Location>),
         (Kind::Finding, &records.finding, fails::<Finding>),
+        (Kind::Action, &records.action, fails::<ClientAction>),
     ];
     for (kind, list, check) in kinds {
         for record in list {
@@ -409,6 +417,7 @@ fn add(
         geography,
         location,
         finding,
+        action,
         ..
     } = file;
     let mut adding = Adding {
@@ -457,6 +466,11 @@ fn add(
         &mut merged.findings,
         Kind::Finding,
         finding.into_iter().map(|r| (r.id.clone(), r)),
+    )?;
+    adding.all(
+        &mut merged.actions,
+        Kind::Action,
+        action.into_iter().map(|r| (r.id(), r)),
     )?;
     Ok(())
 }

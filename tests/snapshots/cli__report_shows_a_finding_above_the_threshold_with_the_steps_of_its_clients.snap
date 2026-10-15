@@ -1,0 +1,13 @@
+---
+source: tests/cli.rs
+expression: "section(&text, \"long-context\")"
+---
+long-context
+  50% of calls carried more than 1,000 cached tokens and used 19% of the
+  energy. Every new and output token re-reads that context.
+  What you can do:
+    claude-code: /compact during a task, /clear between tasks
+    codex: /compact during a task, /new between tasks
+    pi: /compact during a task, /new between tasks
+  To see the effect, run this after the change:
+  `tokendraw findings --since <tomorrow>`

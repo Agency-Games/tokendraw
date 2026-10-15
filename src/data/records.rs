@@ -306,6 +306,35 @@ pub struct Finding {
     pub reviewed: Date,
 }
 
+/// What a user of one client does about one finding. The pair of `finding`
+/// and `client` identifies the record, so an override can add the actions
+/// of a user adapter's client.
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ClientAction {
+    pub finding: String,
+    pub client: String,
+    /// Each names the client's command or setting as the client names it.
+    pub steps: Vec<String>,
+    pub label: Label,
+    pub sources: Vec<String>,
+    pub basis: String,
+    #[serde(deserialize_with = "toml_date")]
+    pub reviewed: Date,
+}
+
+impl ClientAction {
+    #[must_use]
+    pub fn id(&self) -> String {
+        action_id(&self.finding, &self.client)
+    }
+}
+
+#[must_use]
+pub fn action_id(finding: &str, client: &str) -> String {
+    format!("{finding}/{client}")
+}
+
 /// Where a client without an adapter keeps its logs, so a report can say
 /// that they were found but not read.
 #[derive(Clone, Debug, Deserialize, Serialize)]

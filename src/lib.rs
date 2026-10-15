@@ -3,9 +3,11 @@
 mod adapters;
 mod cli;
 mod commands;
+mod config;
 mod data;
 mod dirs;
 mod estimate;
+mod findings;
 mod ledger;
 mod output;
 mod projects;
@@ -32,8 +34,13 @@ pub fn run() -> ExitCode {
     let cli = Cli::parse_checked();
     let result = match cli.command {
         Command::Report(args) => load_data()
-            .and_then(|data| report::run(&args, &data))
+            .and_then(|data| Ok((data, config::load()?)))
+            .and_then(|(data, config)| report::run(&args, &data, config, today()))
             .and_then(|report| quietly_closed(output::report(&report, args.json, args.verbose))),
+        Command::Findings(args) => load_data()
+            .and_then(|data| Ok((data, config::load()?)))
+            .and_then(|(data, config)| commands::findings::run(&args, &data, config, today()))
+            .and_then(|findings| quietly_closed(output::findings(&findings, args.json))),
         Command::Tokens(args) => {
             tokens::run(&args).and_then(|report| quietly_closed(output::tokens(&report, args.json)))
         }
@@ -53,10 +60,9 @@ pub fn run() -> ExitCode {
         Command::Adapter(AdapterCommand::Reset(args)) => adapter::reset(&args.client)
             .and_then(|forgotten| quietly_closed(output::forgotten(&args.client, forgotten))),
         Command::Data(args) => match args.command {
-            None => load_data().and_then(|data| {
-                let today = Timestamp::now().to_zoned(TimeZone::UTC).date();
-                quietly_closed(output::data(&data, today, args.json))
-            }),
+            None => {
+                load_data().and_then(|data| quietly_closed(output::data(&data, today(), args.json)))
+            }
             Some(DataCommand::Export(export)) => data::export(&export.dir)
                 .map_err(anyhow::Error::from)
                 .and_then(|written| quietly_closed(output::exported(&export.dir, &written))),
@@ -74,6 +80,10 @@ pub fn run() -> ExitCode {
 fn load_data() -> anyhow::Result<data::Data> {
     let overrides = dirs::config().map(|config| config.join("data"));
     Ok(data::load(overrides.as_deref())?)
+}
+
+fn today() -> jiff::civil::Date {
+    Timestamp::now().to_zoned(TimeZone::UTC).date()
 }
 
 fn quietly_closed(result: io::Result<()>) -> anyhow::Result<()> {

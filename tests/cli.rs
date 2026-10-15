@@ -106,7 +106,8 @@ fn tokendraw_with_state(state: &Path, args: &[&str]) -> Command {
         .env("LOCALAPPDATA", state)
         .env("XDG_CONFIG_HOME", state)
         .env("XDG_DATA_HOME", state)
-        .env("APPDATA", state);
+        .env("APPDATA", state)
+        .env_remove("TOKENDRAW_CONFIG");
     command
 }
 
@@ -2014,6 +2015,229 @@ fn validation_tables_match_the_tool() -> TestResult {
         tables,
         "the tables the tool gives now:\n\n{}\n",
         tables.join("\n\n")
+    );
+    Ok(())
+}
+
+/// Makes calls with more than `tokens` cache-read tokens long-context, so
+/// the synthetic logs, whose calls are short, have some.
+fn long_context_above(state: &Path, tokens: u64) -> std::io::Result<()> {
+    let dir = data_dir(state);
+    std::fs::create_dir_all(&dir)?;
+    std::fs::write(
+        dir.join("long-context.toml"),
+        format!(
+            "[[finding]]\nid = \"long-context\"\ncached_tokens = {tokens}\nlabel = \"D\"\nsources = [\"anthropic-context-windows\"]\nbasis = \"A threshold for the synthetic logs\"\nreviewed = 2026-10-15\n"
+        ),
+    )
+}
+
+fn write_config(state: &Path, text: &str) -> std::io::Result<PathBuf> {
+    let file = adapters_dir(state).with_file_name("config.toml");
+    if let Some(dir) = file.parent() {
+        std::fs::create_dir_all(dir)?;
+    }
+    std::fs::write(&file, text)?;
+    Ok(file)
+}
+
+/// The text with the UTC date after today, which the measurement step
+/// counts from, written `<tomorrow>`.
+fn without_tomorrow(text: &str) -> TestResult<String> {
+    let tomorrow = jiff::Timestamp::now()
+        .to_zoned(jiff::tz::TimeZone::UTC)
+        .date()
+        .tomorrow()?;
+    Ok(text.replace(&tomorrow.to_string(), "<tomorrow>"))
+}
+
+/// The lines from the one that is exactly `heading` to the next empty line.
+fn section(text: &str, heading: &str) -> String {
+    text.lines()
+        .skip_while(|line| *line != heading)
+        .take_while(|line| !line.is_empty())
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+fn json_of(output: &Output) -> TestResult<serde_json::Value> {
+    assert_eq!(output.status.code(), Some(0), "{output:?}");
+    Ok(serde_json::from_slice(&output.stdout)?)
+}
+
+#[test]
+fn report_shows_a_finding_above_the_threshold_with_the_steps_of_its_clients() -> TestResult {
+    let state = TempDir::new()?;
+    long_context_above(state.path(), 1000)?;
+    let output = run(state.path(), &["report"])?;
+    assert_eq!(output.status.code(), Some(0), "{output:?}");
+    let text = without_tomorrow(&stdout(&output))?;
+    insta::assert_snapshot!(section(&text, "long-context"));
+    assert!(!text.contains("below 10% of the energy"), "{text}");
+    let json = json_of(&run(state.path(), &["report", "--json"])?)?;
+    assert_eq!(json["findings"][0]["code"], "long-context");
+    let finding = json["findings"][0]["facts"]["share_of_base_case"].as_f64();
+    let breakdown = json["breakdown"][1]["share_of_base_case"].as_f64();
+    assert!(
+        finding
+            .zip(breakdown)
+            .is_some_and(|(finding, breakdown)| (finding - breakdown).abs() < 1e-12),
+        "every client has steps, so the finding counts the calls the breakdown does: {json}"
+    );
+
+    assert_eq!(json["hidden_findings"]["count"], 0);
+    Ok(())
+}
+
+#[test]
+fn the_hidden_findings_command_shows_the_calls_of_the_report() -> TestResult {
+    let state = TempDir::new()?;
+    long_context_above(state.path(), 1000)?;
+    write_config(state.path(), "[findings]\nthreshold_percent = 100\n")?;
+    let alpha = work("alpha");
+    let selection = [
+        "--since",
+        "2026-09-30",
+        "--until",
+        "2026-10-01",
+        "--project",
+        alpha.as_str(),
+    ];
+    let text = run(state.path(), &[&["report"][..], &selection].concat())?;
+    let text = stdout(&text);
+    let expected = format!(
+        "1 finding below 100% of the energy:\n`tokendraw findings --since 2026-09-30 --until 2026-10-01 --project {alpha}`"
+    );
+    assert!(text.contains(&expected), "{text}");
+    let report = json_of(&run(
+        state.path(),
+        &[&["report", "--json"][..], &selection].concat(),
+    )?)?;
+    assert_eq!(report["findings"], serde_json::json!([]));
+    let command = report["hidden_findings"]["command"]
+        .as_str()
+        .unwrap_or_default()
+        .to_owned();
+    let words: Vec<&str> = command.split(' ').collect();
+    assert_eq!(words.first(), Some(&"tokendraw"), "{command}");
+    let shown = json_of(&run(
+        state.path(),
+        &[&words[1..], &["--json"][..]].concat(),
+    )?)?;
+    let share = |json: &serde_json::Value| json["facts"]["share_of_base_case"].as_f64();
+    write_config(state.path(), "[findings]\nthreshold_percent = 0\n")?;
+    let at_zero = json_of(&run(
+        state.path(),
+        &[&["report", "--json"][..], &selection].concat(),
+    )?)?;
+    assert_eq!(share(&shown["findings"][0]), share(&at_zero["findings"][0]));
+    let every_call = json_of(&run(state.path(), &["findings", "--json"])?)?;
+    assert_ne!(
+        share(&every_call["findings"][0]),
+        share(&shown["findings"][0]),
+        "the selection must change the share for this test to show anything"
+    );
+    Ok(())
+}
+
+#[test]
+fn findings_lists_a_finding_without_calls_with_its_zero_share() -> TestResult {
+    let state = TempDir::new()?;
+    let output = run(state.path(), &["findings"])?;
+    assert_eq!(output.status.code(), Some(0), "{output:?}");
+    insta::assert_snapshot!(stdout(&output));
+    let json = json_of(&run(state.path(), &["findings", "--json"])?)?;
+    let finding = &json["findings"][0];
+    assert_eq!(finding["facts"]["calls"], 0);
+    assert_eq!(finding["facts"]["share_of_base_case"], 0.0);
+    assert!(finding.get("measure").is_none(), "{finding}");
+    assert_eq!(json["reason"], serde_json::Value::Null);
+    let report = json_of(&run(state.path(), &["report", "--json"])?)?;
+    assert_eq!(report["findings"], serde_json::json!([]));
+    assert_eq!(report["hidden_findings"]["count"], 0);
+    Ok(())
+}
+
+#[test]
+fn findings_without_energy_say_that_no_share_can_be_computed() -> TestResult {
+    let state = TempDir::new()?;
+    let range = ["--since", "2020-01-01", "--until", "2020-01-02"];
+    let json = json_of(&run(
+        state.path(),
+        &[&["findings", "--json"][..], &range].concat(),
+    )?)?;
+    assert_eq!(json["findings"], serde_json::Value::Null);
+    assert!(json["reason"].is_string(), "{json}");
+    let text = run(state.path(), &[&["findings"][..], &range].concat())?;
+    assert!(stdout(&text).contains("No findings: no energy was estimated"));
+    let report = json_of(&run(
+        state.path(),
+        &[&["report", "--json"][..], &range].concat(),
+    )?)?;
+    assert!(report.get("findings").is_none(), "{report}");
+    assert!(report.get("hidden_findings").is_none(), "{report}");
+    Ok(())
+}
+
+#[test]
+fn a_client_without_steps_is_left_out_until_an_override_adds_them() -> TestResult {
+    let state = TempDir::new()?;
+    install_adapters(state.path())?;
+    long_context_above(state.path(), 500)?;
+    let calls = |json: &serde_json::Value| json["findings"][0]["facts"]["calls"].as_u64();
+    let without = json_of(&run(state.path(), &["findings", "--json"])?)?;
+    assert!(
+        without["findings"][0]["actions"]
+            .get("example-agent")
+            .is_none(),
+        "{without}"
+    );
+    std::fs::write(
+        data_dir(state.path()).join("steps.toml"),
+        "[sources.agent-docs]\ntitle = \"Commands\"\npublisher = \"Example\"\naccessed = 2026-10-15\n\n[[action]]\nfinding = \"long-context\"\nclient = \"example-agent\"\nsteps = [\"/reset between tasks\"]\nlabel = \"C\"\nsources = [\"agent-docs\"]\nbasis = \"The agent's commands\"\nreviewed = 2026-10-15\n",
+    )?;
+    let with = json_of(&run(state.path(), &["findings", "--json"])?)?;
+    assert_eq!(
+        with["findings"][0]["actions"]["example-agent"],
+        serde_json::json!(["/reset between tasks"])
+    );
+    assert!(calls(&with) > calls(&without), "{with}");
+    let redacted = json_of(&run(state.path(), &["report", "--json", "--redact"])?)?;
+    let actions = &redacted["findings"][0]["actions"];
+    assert_eq!(actions["example-agent"], serde_json::json!(["redacted"]));
+    assert_eq!(
+        actions["codex"],
+        serde_json::json!(["/compact during a task", "/new between tasks"])
+    );
+    Ok(())
+}
+
+#[test]
+fn the_configuration_file_named_by_the_variable_sets_the_threshold() -> TestResult {
+    let state = TempDir::new()?;
+    long_context_above(state.path(), 1000)?;
+    let elsewhere = state.path().join("elsewhere.toml");
+    std::fs::write(&elsewhere, "[findings]\nthreshold_percent = 99\n")?;
+    let output = tokendraw_with_state(state.path(), &["report", "--json"])
+        .env("TOKENDRAW_CONFIG", &elsewhere)
+        .output()?;
+    let json = json_of(&output)?;
+    assert_eq!(
+        json["hidden_findings"]["threshold_share_of_base_case"],
+        0.99
+    );
+    assert_eq!(json["hidden_findings"]["count"], 1);
+    let missing = tokendraw_with_state(state.path(), &["report"])
+        .env("TOKENDRAW_CONFIG", state.path().join("missing.toml"))
+        .output()?;
+    assert_eq!(missing.status.code(), Some(1), "{missing:?}");
+    assert!(stderr(&missing).contains("set TOKENDRAW_CONFIG to a readable file or unset it"));
+    write_config(state.path(), "[findings]\nthreshold_percent = 120\n")?;
+    let invalid = run(state.path(), &["findings"])?;
+    assert_eq!(invalid.status.code(), Some(1), "{invalid:?}");
+    assert!(
+        stderr(&invalid).contains("it must be from 0 to 100; fix or remove the file"),
+        "{invalid:?}"
     );
     Ok(())
 }

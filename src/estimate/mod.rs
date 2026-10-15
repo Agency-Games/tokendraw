@@ -43,8 +43,18 @@ pub struct Breakdown {
     /// The calls whose cache-read tokens exceed the threshold the usage was
     /// split by.
     pub cached_above: WattHours,
+    /// The same calls by client, for the findings, which count only the
+    /// clients they have an action for.
+    pub cached_above_by_client: BTreeMap<String, Calls>,
     pub by_client: BTreeMap<String, WattHours>,
     pub by_role: BTreeMap<String, WattHours>,
+}
+
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct Calls {
+    pub calls: u64,
+    /// Base case.
+    pub energy: WattHours,
 }
 
 /// Excludes the cache residency term `R`, which the data does not hold.
@@ -67,6 +77,7 @@ pub struct L1 {
     /// Provider names no record named, with their calls.
     pub unmatched_providers: Vec<(String, u64)>,
     pub breakdown: Breakdown,
+    pub calls: u64,
 }
 
 #[must_use]
@@ -86,6 +97,7 @@ pub fn l1(data: &Data, usage: &[Usage]) -> L1 {
         unmatched_models: Vec::new(),
         unmatched_providers: Vec::new(),
         breakdown: Breakdown::default(),
+        calls: 0,
     };
     let mut sets = BTreeSet::new();
     for row in usage {
@@ -139,7 +151,14 @@ pub fn l1(data: &Data, usage: &[Usage]) -> L1 {
             breakdown.context_terms + WattHours(context * set.idle.base_case * pue.base_case);
         if row.cached_above {
             breakdown.cached_above = breakdown.cached_above + base_case;
+            let client = breakdown
+                .cached_above_by_client
+                .entry(row.client.clone())
+                .or_default();
+            client.calls += row.calls;
+            client.energy = client.energy + base_case;
         }
+        total.calls += row.calls;
         for (part, key) in [
             (&mut breakdown.by_client, &row.client),
             (&mut breakdown.by_role, &row.role),

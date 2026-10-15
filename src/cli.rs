@@ -20,6 +20,11 @@ pub enum Command {
     /// emissions by provider
     #[command(long_about = REPORT_HELP)]
     Report(ReportArgs),
+    /// Read new usage from the agents' logs and print every finding: a
+    /// behaviour in the calls you can change, its share of the energy and
+    /// what to do about it
+    #[command(long_about = FINDINGS_HELP)]
+    Findings(FindingsArgs),
     /// Read new usage from the agents' logs and print the tokens per client
     Tokens(TokensArgs),
     /// Read new usage from the agents' logs and print the projects of the
@@ -262,7 +267,42 @@ context each call reads: attention (a_p and a_d) and cache reload (c0), as
 the data's README describes them. The other lines are the calls with more
 cache-read tokens than the long-context threshold in tokendraw data, and
 the clients and roles (interactive, subagent or headless) of the calls.
---json names the signal each share comes from.";
+--json names the signal each share comes from.
+
+Then come the findings with at least 10% of the energy by default, each
+with what you can do about it; one line counts the others, which tokendraw
+findings lists.";
+
+const FINDINGS_HELP: &str =
+    "Read new usage from the agents' logs and print every finding: a behaviour in
+the calls you can change, its share of the base case energy, what you can
+do about it in each client the calls came from, and how to see the effect.
+
+long-context  calls whose cache-read tokens exceed the long-context
+              threshold in tokendraw data; every new and output token of
+              such a call re-reads that context
+
+tokendraw report shows only the findings with at least 10% of the energy
+by default; this command shows them all.";
+
+#[derive(Args)]
+pub struct FindingsArgs {
+    /// Count calls at or after this UTC date (2026-09-01)
+    /// or RFC 3339 time with its offset
+    #[arg(long, value_parser = parse_time)]
+    pub since: Option<Timestamp>,
+    /// Count calls before this UTC date (2026-10-01)
+    /// or RFC 3339 time with its offset
+    #[arg(long, value_parser = parse_time)]
+    pub until: Option<Timestamp>,
+    /// Count only the calls of project DIR as `tokendraw projects` names
+    /// it, else of the project DIR is in, or the unresolved calls made in DIR
+    #[arg(long, value_name = "DIR")]
+    pub project: Option<String>,
+    /// Print JSON instead of text
+    #[arg(long)]
+    pub json: bool,
+}
 
 #[derive(Args)]
 pub struct ReportArgs {
@@ -306,6 +346,7 @@ impl Cli {
     fn checked(self) -> Result<Self, clap::Error> {
         let (name, period) = match &self.command {
             Command::Report(args) => ("report", (args.since, args.until)),
+            Command::Findings(args) => ("findings", (args.since, args.until)),
             Command::Tokens(args) => ("tokens", (args.since, args.until)),
             Command::Projects(args) => ("projects", (args.since, args.until)),
             _ => return Ok(self),
@@ -388,7 +429,7 @@ mod tests {
 
     #[test]
     fn a_period_must_end_after_it_starts() -> Result<(), clap::Error> {
-        for command in ["report", "tokens", "projects"] {
+        for command in ["report", "findings", "tokens", "projects"] {
             for (since, until) in [("2026-10-05", "2026-10-01"), ("2026-10-01", "2026-10-01")] {
                 let error = checked(&["tokendraw", command, "--since", since, "--until", until])
                     .err()

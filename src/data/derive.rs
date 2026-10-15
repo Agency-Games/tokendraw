@@ -68,6 +68,7 @@ pub(super) fn resolve(
         geographies,
         locations,
         findings,
+        actions,
     } = merged;
     let mut resolved = BTreeMap::new();
     for (id, (provider, origin)) in providers {
@@ -112,6 +113,7 @@ pub(super) fn resolve(
         geographies: records(geographies),
         locations: records(locations),
         findings: records(findings),
+        actions: records(actions),
     })
 }
 

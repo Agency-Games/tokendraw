@@ -14,6 +14,7 @@ use crate::ledger::{FinalUsage, Forgotten, LabelRecord, Target, Unrecorded};
 use crate::projects::{Elsewhere, PROJECT, is_pattern};
 use crate::quantity::{GramsCo2ePerKwh, Tokens};
 
+mod findings;
 mod projects;
 pub(crate) mod redact;
 mod report;
@@ -283,6 +284,20 @@ pub fn report(
     out.flush()
 }
 
+pub fn findings(
+    findings: &crate::commands::findings::FindingsReport,
+    json: bool,
+) -> io::Result<()> {
+    let mut out = io::stdout().lock();
+    if json {
+        serde_json::to_writer_pretty(&mut out, findings)?;
+        writeln!(out)?;
+    } else {
+        findings::write(&mut out, findings)?;
+    }
+    out.flush()
+}
+
 pub fn forgotten(client: &str, forgotten: Forgotten) -> io::Result<()> {
     let mut out = io::stdout().lock();
     writeln!(
@@ -508,7 +523,29 @@ fn write_findings(out: &mut impl Write, data: &Data) -> io::Result<()> {
             finding.label
         )?;
     }
-    Ok(())
+    writeln!(out)?;
+    writeln!(out, "actions: steps, label")?;
+    let rows: Vec<Vec<String>> = data
+        .actions
+        .iter()
+        .map(|(id, action)| {
+            vec![
+                id.clone(),
+                action.steps.join(", "),
+                format!("{:?}", action.label),
+            ]
+        })
+        .collect();
+    report::write_table(
+        out,
+        "  ",
+        &[
+            report::Align::Left,
+            report::Align::Left,
+            report::Align::Left,
+        ],
+        &rows,
+    )
 }
 
 fn write_locations(out: &mut impl Write, data: &Data) -> io::Result<()> {

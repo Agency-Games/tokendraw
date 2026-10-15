@@ -25,6 +25,26 @@ label = "D"
 sources = ["study"]
 basis = "A default"
 reviewed = 2026-10-06
+
+[[action]]
+finding = "long-context"
+client = "claude-code"
+steps = ["/compact during a task", "/clear between tasks"]
+label = "C"
+sources = ["study"]
+basis = "The commands"
+reviewed = 2026-10-06
+"#;
+
+const AGENT_ACTION_TOML: &str = r#"
+[[action]]
+finding = "long-context"
+client = "my-agent"
+steps = ["/reset between tasks"]
+label = "C"
+sources = ["study"]
+basis = "The agent's commands"
+reviewed = 2026-10-06
 "#;
 
 fn factor(values: &str) -> String {
@@ -987,4 +1007,61 @@ fn a_finding_without_its_parameter_or_unknown_or_missing_is_refused() {
         ..Shipped::new()
     };
     assert!(problem(missing.load(&[])).contains("finding long-context is missing"));
+}
+
+#[test]
+fn an_action_is_identified_by_its_finding_and_client() -> Result<(), Error> {
+    let shipped = Shipped::new();
+    let data = shipped.load(&[])?;
+    assert_eq!(
+        data.steps("long-context", "claude-code"),
+        Some(
+            &[
+                "/compact during a task".to_owned(),
+                "/clear between tasks".to_owned()
+            ][..]
+        )
+    );
+    assert_eq!(data.steps("long-context", "my-agent"), None);
+    let added = shipped.load(&[("a.toml", AGENT_ACTION_TOML)])?;
+    assert_eq!(
+        added.steps("long-context", "my-agent"),
+        Some(&["/reset between tasks".to_owned()][..])
+    );
+    assert!(added.steps("long-context", "claude-code").is_some());
+    let replaced = shipped.load(&[(
+        "a.toml",
+        &AGENT_ACTION_TOML.replace("my-agent", "claude-code"),
+    )])?;
+    assert_eq!(
+        replaced.steps("long-context", "claude-code"),
+        Some(&["/reset between tasks".to_owned()][..])
+    );
+    assert!(replaced.is_overridden(Kind::Action, "long-context/claude-code"));
+    Ok(())
+}
+
+#[test]
+fn an_action_for_an_unknown_finding_or_without_steps_is_refused() {
+    let shipped = Shipped::new();
+    let unknown = AGENT_ACTION_TOML.replace("\"long-context\"", "\"short-context\"");
+    assert!(
+        problem(shipped.load(&[("a.toml", &unknown)]))
+            .contains("action short-context/my-agent names the finding short-context")
+    );
+    for steps in ["[]", "[\" \"]"] {
+        let empty = AGENT_ACTION_TOML.replace("[\"/reset between tasks\"]", steps);
+        assert!(
+            problem(shipped.load(&[("a.toml", &empty)]))
+                .contains("action long-context/my-agent needs a client and at least one step"),
+            "{steps}"
+        );
+    }
+    let twice = format!("{AGENT_ACTION_TOML}{AGENT_ACTION_TOML}");
+    assert!(
+        problem(shipped.load(&[("a.toml", &twice)]))
+            .contains("action long-context/my-agent appears twice")
+    );
+    let unsourced = AGENT_ACTION_TOML.replace("[\"study\"]", "[\"nowhere\"]");
+    assert!(problem(shipped.load(&[("a.toml", &unsourced)])).contains("nowhere"));
 }

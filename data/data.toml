@@ -6,7 +6,7 @@
 # tool default with a range, S spend-based.
 
 # The date of the last change to any shipped data file.
-id = "2026-10-12"
+id = "2026-10-15"
 
 # Values last reviewed longer ago than this are flagged as stale.
 review_interval_days = 90

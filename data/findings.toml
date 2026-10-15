@@ -1,5 +1,5 @@
 # The parameters of the report's findings and of the breakdown of the
-# energy that uses them.
+# energy that uses them, and the steps a user of each client can take.
 
 [sources.anthropic-context-windows]
 title = "Context windows (context window sizes by model)"
@@ -14,3 +14,50 @@ label = "D"
 sources = ["anthropic-context-windows"]
 basis = "Tool default for the cache-read tokens above which a call counts as long-context. 200,000 tokens is the context window of Claude models without the 1M-token window, such as Claude Sonnet 4.5 and Claude Haiku 4.5."
 reviewed = 2026-10-09
+
+# Each step names the client's own command.
+
+[sources.claude-code-commands]
+title = "Commands"
+url = "https://code.claude.com/docs/en/commands"
+publisher = "Anthropic"
+accessed = 2026-10-15
+
+[sources.codex-slash-commands]
+title = "codex-rs/tui/src/slash_command.rs"
+url = "https://github.com/openai/codex/blob/main/codex-rs/tui/src/slash_command.rs"
+publisher = "OpenAI"
+accessed = 2026-10-15
+
+[sources.pi-usage]
+title = "pi coding agent usage"
+url = "https://github.com/badlogic/pi-mono/blob/main/packages/coding-agent/docs/usage.md"
+publisher = "pi-mono"
+accessed = 2026-10-15
+
+[[action]]
+finding = "long-context"
+client = "claude-code"
+steps = ["/compact during a task", "/clear between tasks"]
+label = "C"
+sources = ["claude-code-commands"]
+basis = "/compact frees up context by summarizing the conversation so far; /clear starts a new conversation with empty context."
+reviewed = 2026-10-15
+
+[[action]]
+finding = "long-context"
+client = "codex"
+steps = ["/compact during a task", "/new between tasks"]
+label = "C"
+sources = ["codex-slash-commands"]
+basis = "/compact summarizes the conversation to prevent hitting the context limit; /new starts a new chat during a conversation."
+reviewed = 2026-10-15
+
+[[action]]
+finding = "long-context"
+client = "pi"
+steps = ["/compact during a task", "/new between tasks"]
+label = "C"
+sources = ["pi-usage"]
+basis = "/compact reduces the conversation history sent to the model; /new starts a new session."
+reviewed = 2026-10-15

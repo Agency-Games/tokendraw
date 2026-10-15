@@ -1,0 +1,8 @@
+---
+source: tests/cli.rs
+expression: stdout(&output)
+---
+tokendraw findings, all calls
+
+long-context
+  No calls carried more than 200,000 cached tokens.

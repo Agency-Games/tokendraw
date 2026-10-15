@@ -92,6 +92,7 @@ pub enum Kind {
     Geography,
     Location,
     Finding,
+    Action,
 }
 
 impl fmt::Display for Kind {
@@ -106,6 +107,7 @@ impl fmt::Display for Kind {
             Kind::Geography => "geography",
             Kind::Location => "location",
             Kind::Finding => "finding",
+            Kind::Action => "action",
         })
     }
 }
@@ -146,6 +148,8 @@ pub struct Data {
     pub geographies: BTreeMap<String, Geography>,
     pub locations: BTreeMap<String, Location>,
     pub findings: BTreeMap<String, Finding>,
+    /// By [`action_id`].
+    pub actions: BTreeMap<String, ClientAction>,
 }
 
 /// `matched` is false when `record` is the fallback.
@@ -218,6 +222,15 @@ impl Data {
             .unwrap_or_default()
     }
 
+    /// The steps a user of `client` can take about `finding`; `None` when
+    /// the data names none, so the finding leaves that client's calls out.
+    #[must_use]
+    pub fn steps(&self, finding: &str, client: &str) -> Option<&[String]> {
+        self.actions
+            .get(&action_id(finding, client))
+            .map(|action| action.steps.as_slice())
+    }
+
     #[must_use]
     pub fn prompt_thresholds(&self) -> Vec<u64> {
         self.prices
@@ -283,6 +296,11 @@ impl Data {
                 self.findings
                     .values()
                     .map(|record| (Kind::Finding, &record.id, record.reviewed)),
+            )
+            .chain(
+                self.actions
+                    .iter()
+                    .map(|(id, record)| (Kind::Action, id, record.reviewed)),
             );
         records
             .filter(|(kind, _, reviewed)| {
