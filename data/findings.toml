@@ -61,3 +61,51 @@ label = "C"
 sources = ["pi-usage"]
 basis = "/compact reduces the conversation history sent to the model; /new starts a new session."
 reviewed = 2026-10-15
+
+# fixed-context: each step names the client's command, setting or file
+# that shrinks what every call carries.
+
+[sources.codex-config-reference]
+title = "Configuration reference"
+url = "https://learn.chatgpt.com/docs/config-file/config-reference"
+publisher = "OpenAI"
+accessed = 2026-10-15
+
+[sources.pi-mcp]
+title = "MCP Servers"
+url = "https://github.com/badlogic/pi-mono/blob/main/packages/coding-agent/docs/mcp.md"
+publisher = "pi-mono"
+accessed = 2026-10-15
+
+[sources.pi-how-it-works]
+title = "How Pi works"
+url = "https://github.com/badlogic/pi-mono/blob/main/packages/coding-agent/docs/how-pi-works.md"
+publisher = "pi-mono"
+accessed = 2026-10-15
+
+[[action]]
+finding = "fixed-context"
+client = "claude-code"
+steps = ["/context to see what fills the context", "/mcp disable for servers you do not use", "/memory to shorten CLAUDE.md"]
+label = "C"
+sources = ["claude-code-commands"]
+basis = "/context visualizes current context usage and shows optimization suggestions for context-heavy tools and memory bloat; /mcp disable changes a server's connection state; /memory edits CLAUDE.md files."
+reviewed = 2026-10-15
+
+[[action]]
+finding = "fixed-context"
+client = "codex"
+steps = ["enabled = false in config.toml for MCP servers you do not use", "shorten AGENTS.md"]
+label = "C"
+sources = ["codex-config-reference"]
+basis = "mcp_servers.<id>.enabled disables an MCP server without removing its configuration; Codex reads AGENTS.md when building project instructions."
+reviewed = 2026-10-15
+
+[[action]]
+finding = "fixed-context"
+client = "pi"
+steps = ["/mcp to disable servers you do not use", "shorten AGENTS.md"]
+label = "C"
+sources = ["pi-mcp", "pi-how-it-works"]
+basis = "/mcp can enable and disable servers; Pi builds the system prompt from its base instructions and discovered context files such as AGENTS.md, and each request carries the tool definitions."
+reviewed = 2026-10-15

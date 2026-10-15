@@ -4,5 +4,18 @@ expression: stdout(&output)
 ---
 tokendraw findings, all calls
 
+fixed-context
+  Each call re-read on average 4,840 tokens its session started with: the
+  system prompt, tool definitions, instruction files and first prompt. That
+  used 81% of the energy.
+  What you can do:
+    claude-code: /context to see what fills the context, /mcp disable for
+    servers you do not use, /memory to shorten CLAUDE.md
+    codex: enabled = false in config.toml for MCP servers you do not use,
+    shorten AGENTS.md
+    pi: /mcp to disable servers you do not use, shorten AGENTS.md
+  To see the effect, run this after the change:
+  `tokendraw findings --since <tomorrow>`
+
 long-context
   No calls carried more than 200,000 cached tokens.

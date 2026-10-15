@@ -65,8 +65,21 @@ Where the energy goes (base case)
   claude-code / codex / pi            4% / 91% / 6%
   interactive / subagent / headless   84% / 1% / 15%
 
+fixed-context
+  Each call re-read on average 4,840 tokens its session started with: the
+  system prompt, tool definitions, instruction files and first prompt. That
+  used 81% of the energy.
+  What you can do:
+    claude-code: /context to see what fills the context, /mcp disable for
+    servers you do not use, /memory to shorten CLAUDE.md
+    codex: enabled = false in config.toml for MCP servers you do not use,
+    shorten AGENTS.md
+    pi: /mcp to disable servers you do not use, shorten AGENTS.md
+  To see the effect, run this after the change:
+  `tokendraw findings --since <tomorrow>`
+
 Data sources
-  data version                2026-10-15, shipped sha256 fa5d72cd1f1b, no
+  data version                2026-10-15, shipped sha256 4cafbc5d054a, no
                               overrides
   energy per call             parameter sets frontier,
                               frontier@claude-opus-5-5,

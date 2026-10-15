@@ -23,7 +23,7 @@ pub use ingest::Forgotten;
 pub use labels::{Attribution, LabelRecord, Target};
 pub use query::{
     ClientCalls, Context, FinalUsage, ProjectUsage, ProviderCalls, Sources, Split, Unrecorded,
-    Usage, VersionCalls,
+    Usage, VersionCalls, WithoutFixed,
 };
 use schema::{ATTRIBUTION, MIGRATIONS, SCHEMA, SCHEMA_VERSION};
 

@@ -1,4 +1,4 @@
-pub(super) const SCHEMA_VERSION: i32 = 7;
+pub(super) const SCHEMA_VERSION: i32 = 8;
 
 pub(super) const SCHEMA: &str = "
 CREATE TABLE calls (
@@ -21,9 +21,11 @@ CREATE TABLE calls (
     compaction INTEGER NOT NULL DEFAULT 0,
     context_input INTEGER,
     client_version TEXT,
+    agent_id TEXT,
     PRIMARY KEY (client, call_id)
 );
 CREATE INDEX calls_by_time ON calls (timestamp_ms);
+CREATE INDEX calls_by_thread ON calls (client, session_id, agent_id, timestamp_ms);
 CREATE TABLE files (
     client TEXT NOT NULL,
     path TEXT NOT NULL,
@@ -75,6 +77,17 @@ CREATE TABLE labels (
 /// output of the recorded compactions of the same client and model, over
 /// the whole ledger. A group with fewer than 30 recorded compactions gives
 /// no estimate, and a compaction without a previous call no input.
+///
+/// The `fixed` view, read through [`IN_RANGE_FIXED`] and
+/// [`IN_PROJECT_FIXED`], gives each call its fixed context `f`: the context
+/// (`uncached_input + cache_write + cache_read`) of the first call of its
+/// thread, up to its own. A thread is a session, or a subagent of one
+/// ([`crate::adapters::Call`]'s `agent_id`). Its first call is found over
+/// the whole ledger, so a range that begins within a session still finds
+/// it; of calls in the same millisecond, the smaller counts. A first call
+/// has no previous call to estimate a context from, so its logged tokens
+/// are its context. `r_cache_read` and `r_new_input` are the call's tokens
+/// without `f`, taken from the cache-read tokens first.
 pub(super) const ATTRIBUTION: &str = "
 CREATE TEMP TABLE attribution (
     a_client TEXT NOT NULL,
@@ -119,6 +132,21 @@ FROM (
         GROUP BY client HAVING count(*) >= 30
     ) ON c_client = client
 );
+CREATE TEMP VIEW fixed AS
+SELECT *, n_cache_read - min(f, n_cache_read) AS r_cache_read,
+       n_uncached_input + cache_write - (f - min(f, n_cache_read)) AS r_new_input
+FROM (
+    SELECT estimated.*, min(start, n_cache_read + n_uncached_input + cache_write) AS f
+    FROM estimated JOIN (
+        SELECT c.client AS t_client, c.session_id AS t_session, c.agent_id AS t_agent,
+               min(c.uncached_input + c.cache_write + c.cache_read) AS start
+        FROM (SELECT client, session_id, agent_id, min(timestamp_ms) AS first_ms
+              FROM calls GROUP BY client, session_id, agent_id) AS t
+        JOIN calls AS c ON c.client = t.client AND c.session_id = t.session_id
+            AND c.agent_id IS t.agent_id AND c.timestamp_ms = t.first_ms
+        GROUP BY c.client, c.session_id, c.agent_id
+    ) ON t_client = client AND t_session = session_id AND t_agent IS agent_id
+);
 ";
 
 pub(super) const IN_RANGE: &str = "estimated WHERE timestamp_ms >= ?1 AND timestamp_ms < ?2";
@@ -129,8 +157,14 @@ pub(super) const IN_PROJECT: &str = "estimated JOIN attribution
     ON a_client = client AND a_session = session_id AND a_cwd IS cwd
     WHERE timestamp_ms >= ?1 AND timestamp_ms < ?2 AND project = ?3";
 
+pub(super) const IN_RANGE_FIXED: &str = "fixed WHERE timestamp_ms >= ?1 AND timestamp_ms < ?2";
+
+pub(super) const IN_PROJECT_FIXED: &str = "fixed JOIN attribution
+    ON a_client = client AND a_session = session_id AND a_cwd IS cwd
+    WHERE timestamp_ms >= ?1 AND timestamp_ms < ?2 AND project = ?3";
+
 /// `MIGRATIONS[n]` takes schema version `n + 1` to `n + 2`.
-pub(super) const MIGRATIONS: [&str; 6] = [
+pub(super) const MIGRATIONS: [&str; 7] = [
     "ALTER TABLE files ADD COLUMN state TEXT;",
     "CREATE TABLE definitions (client TEXT PRIMARY KEY, definition TEXT NOT NULL);",
     "CREATE TABLE directories (path TEXT PRIMARY KEY, checkout TEXT NOT NULL,
@@ -158,6 +192,13 @@ pub(super) const MIGRATIONS: [&str; 6] = [
     // replaced files, to fill it; calls of logs deleted since keep none.
     "ALTER TABLE calls ADD COLUMN client_version TEXT;
      UPDATE files SET device = -1, inode = -1 WHERE client IN ('claude-code', 'codex');",
+    // Schema 8 records the subagent of each Claude Code subagent call, whose
+    // transcript carries its parent's session ID. Claude Code's logs are
+    // read again from the start, as replaced files, to fill it; calls of
+    // logs deleted since keep none, so their subagents share one thread.
+    "ALTER TABLE calls ADD COLUMN agent_id TEXT;
+     CREATE INDEX calls_by_thread ON calls (client, session_id, agent_id, timestamp_ms);
+     UPDATE files SET device = -1, inode = -1 WHERE client = 'claude-code';",
 ];
 
 // A copy of a call keeps the highest value per token field, because output
@@ -165,7 +206,10 @@ pub(super) const MIGRATIONS: [&str; 6] = [
 // copy's session, directory, role and client version, because resumed and
 // forked sessions copy earlier calls; a copy without a version takes any
 // other copy's until a copy as early as the call has one, as when a ledger
-// of schema 6 reads its logs again. The usage is final once a copy is; a call of unknown
+// of schema 6 reads its logs again. The agent follows the earliest copy
+// too; a copy as early fills a missing agent only from the same session, so
+// session and agent come from one copy, as when a ledger of schema 7 reads
+// its logs again. The usage is final once a copy is; a call of unknown
 // completion (read before schema 5) becomes partial only when a partial copy
 // accounts for all the output it kept, which may have come from a final copy
 // in a log deleted since. A call is a compaction once a copy is. SQLite
@@ -174,12 +218,16 @@ pub(super) const UPSERT_CALL: &str = "
 INSERT INTO calls (client, call_id, provider, model, timestamp_ms, session_id, cwd, role,
                    uncached_input, cache_write, cache_read, output, reasoning,
                    final_usage, stop_reason, first_output, compaction, context_input,
-                   client_version)
-VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?12, ?16, ?17, ?18)
+                   client_version, agent_id)
+VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?12, ?16, ?17, ?18, ?19)
 ON CONFLICT (client, call_id) DO UPDATE SET
     provider = iif(excluded.timestamp_ms < timestamp_ms, excluded.provider, provider),
     model = iif(excluded.timestamp_ms < timestamp_ms, excluded.model, model),
     session_id = iif(excluded.timestamp_ms < timestamp_ms, excluded.session_id, session_id),
+    agent_id = CASE WHEN excluded.timestamp_ms < timestamp_ms THEN excluded.agent_id
+                    WHEN excluded.timestamp_ms = timestamp_ms AND excluded.session_id = session_id
+                    THEN coalesce(agent_id, excluded.agent_id)
+                    ELSE agent_id END,
     cwd = iif(excluded.timestamp_ms < timestamp_ms, excluded.cwd, cwd),
     role = iif(excluded.timestamp_ms < timestamp_ms, excluded.role, role),
     client_version = iif(excluded.timestamp_ms <= timestamp_ms,

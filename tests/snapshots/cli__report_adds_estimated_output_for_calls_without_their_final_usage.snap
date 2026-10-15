@@ -36,3 +36,5 @@ list them with the labels that would assign them.
 Where the energy goes (base case)
   rereading the context               3%
   calls above 200,000 cached tokens   0%
+
+1 finding below 10% of the energy: `tokendraw findings`

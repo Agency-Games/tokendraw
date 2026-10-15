@@ -144,6 +144,7 @@ impl Reader for Records {
             session_id: record.session_id,
             cwd: record.cwd,
             role: record.role,
+            agent_id: None,
             client_version: None,
             tokens: TokenClasses {
                 uncached_input: Tokens(tokens.uncached_input),

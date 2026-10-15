@@ -216,6 +216,7 @@ impl SessionFile {
             session_id: session.id.clone(),
             cwd: session.cwd.clone(),
             role: Role::Interactive,
+            agent_id: None,
             client_version: None,
             tokens: TokenClasses {
                 uncached_input: Tokens(usage.input),

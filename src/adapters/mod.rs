@@ -43,6 +43,9 @@ pub struct Call {
     pub model: String,
     pub timestamp: Timestamp,
     pub session_id: String,
+    /// The subagent within the session, for a client whose subagents share
+    /// their parent's session ID; `None` otherwise.
+    pub agent_id: Option<String>,
     pub cwd: Option<String>,
     pub role: Role,
     pub client_version: Option<String>,

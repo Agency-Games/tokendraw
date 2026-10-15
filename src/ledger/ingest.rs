@@ -356,6 +356,7 @@ fn upsert_call(
             Completion::Final { .. } | Completion::Partial => None,
         },
         call.client_version,
+        call.agent_id,
     ])?;
     Ok(())
 }

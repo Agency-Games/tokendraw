@@ -1,7 +1,7 @@
 use std::io::{self, Write};
 
 use super::count;
-use super::report::{INDENT, header, percent, wrapped, write_wrapped};
+use super::report::{INDENT, header, percent, significant, wrapped, write_wrapped};
 use crate::commands::findings::FindingsReport;
 use crate::commands::report::Report;
 use crate::findings::{Facts, Finding};
@@ -90,6 +90,18 @@ fn write_finding(out: &mut impl Write, finding: &Finding) -> io::Result<()> {
             count(threshold_cached_tokens),
             percent(share_of_base_case)
         ),
+        Facts::FixedContext { calls: 0, .. } => {
+            "No call carried context from the start of its session.".to_owned()
+        }
+        Facts::FixedContext {
+            mean_fixed_tokens,
+            share_of_base_case,
+            ..
+        } => format!(
+            "Each call re-read on average {} tokens its session started with: the system prompt, tool definitions, instruction files and first prompt. That used {} of the energy.",
+            fixed_tokens(mean_fixed_tokens),
+            percent(share_of_base_case)
+        ),
     };
     let mut lines = wrapped(&facts, INDENT);
     // Without calls there is nothing to change; the JSON still names the
@@ -113,4 +125,14 @@ fn write_finding(out: &mut impl Write, finding: &Finding) -> io::Result<()> {
         writeln!(out, "{line}")?;
     }
     Ok(())
+}
+
+/// A mean of estimated sizes, to three significant figures.
+fn fixed_tokens(tokens: u64) -> String {
+    #[expect(
+        clippy::cast_precision_loss,
+        reason = "three significant figures are shown"
+    )]
+    let tokens = tokens as f64;
+    significant(tokens, 3)
 }

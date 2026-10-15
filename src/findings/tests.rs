@@ -2,16 +2,25 @@ use jiff::civil::date;
 
 use super::*;
 use crate::data::{self, ClientAction, Error, Five, Label};
-use crate::estimate::{Breakdown, Calls};
-use crate::quantity::{GramsCo2e, WattHours};
+use crate::estimate::{Breakdown, Calls, Fixed};
+use crate::quantity::{GramsCo2e, Tokens, WattHours};
 
-/// The shipped data with steps for exactly `clients`.
+/// The shipped data with steps for exactly `clients`, for `long-context`.
 fn data_with_steps(clients: &[&str]) -> Result<Data, Error> {
+    data_with_steps_for(LONG_CONTEXT, clients)
+}
+
+fn data_with_steps_for(finding: &str, clients: &[&str]) -> Result<Data, Error> {
     let mut data = data::load(None)?;
     data.actions.clear();
+    add_steps(&mut data, finding, clients);
+    Ok(data)
+}
+
+fn add_steps(data: &mut Data, finding: &str, clients: &[&str]) {
     for client in clients {
         let action = ClientAction {
-            finding: LONG_CONTEXT.to_owned(),
+            finding: finding.to_owned(),
             client: (*client).to_owned(),
             steps: vec![format!("/compact in {client}")],
             label: Label::C,
@@ -21,7 +30,6 @@ fn data_with_steps(clients: &[&str]) -> Result<Data, Error> {
         };
         data.actions.insert(action.id(), action);
     }
-    Ok(data)
 }
 
 /// `clients` holds each client's base case energy in Wh, and its calls and
@@ -77,7 +85,9 @@ fn long_context_counts_only_the_calls_of_clients_with_an_action() -> Result<(), 
     assert_eq!(finding.code, "long-context");
     assert_eq!(finding.facts.calls(), 10);
     assert!((finding.facts.share_of_base_case() - 0.3).abs() < 1e-12);
-    let Facts::LongContext { share_of_calls, .. } = finding.facts;
+    let Facts::LongContext { share_of_calls, .. } = finding.facts else {
+        panic!("expected long-context");
+    };
     assert!((share_of_calls - 0.1).abs() < 1e-12);
     assert_eq!(
         finding.actions.keys().collect::<Vec<_>>(),
@@ -133,5 +143,48 @@ fn a_finding_at_the_threshold_is_shown_and_one_below_is_counted() -> Result<(), 
     assert_eq!((at.len(), hidden), (1, 0));
     let (above, hidden) = shown(&findings, 0.26);
     assert_eq!((above.len(), hidden), (0, 1));
+    Ok(())
+}
+
+#[test]
+fn fixed_context_counts_only_clients_with_steps_and_sorts_with_long_context() -> Result<(), Error> {
+    let mut data = data_with_steps_for(FIXED_CONTEXT, &["claude-code", "codex"])?;
+    add_steps(&mut data, LONG_CONTEXT, &["claude-code"]);
+    let mut calls = l1(
+        100,
+        &[
+            ("claude-code", 60.0, long(10, 10.0)),
+            ("codex", 30.0, long(0, 0.0)),
+            ("example-agent", 10.0, long(0, 0.0)),
+        ],
+    );
+    let fixed = |calls, tokens, energy| Fixed {
+        calls,
+        tokens: Tokens(tokens),
+        energy: WattHours(energy),
+    };
+    calls.breakdown.fixed_by_client = [
+        ("claude-code".to_owned(), fixed(60, 2_400_000, 12.0)),
+        ("codex".to_owned(), fixed(30, 600_001, 3.0)),
+        ("example-agent".to_owned(), fixed(10, 100_000, 5.0)),
+    ]
+    .into();
+    let findings = every(&data, &calls).unwrap_or_default();
+    let codes: Vec<&str> = findings.iter().map(|finding| finding.code).collect();
+    assert_eq!(codes, [FIXED_CONTEXT, LONG_CONTEXT]);
+    let Facts::FixedContext {
+        calls,
+        mean_fixed_tokens,
+        share_of_base_case,
+    } = findings[0].facts
+    else {
+        panic!("expected fixed-context");
+    };
+    assert_eq!((calls, mean_fixed_tokens), (90, 33_333));
+    assert!((share_of_base_case - 0.15).abs() < 1e-12);
+    assert_eq!(
+        findings[0].actions.keys().collect::<Vec<_>>(),
+        ["claude-code", "codex"]
+    );
     Ok(())
 }

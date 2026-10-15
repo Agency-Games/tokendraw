@@ -59,6 +59,9 @@ struct Assistant {
     timestamp: Timestamp,
     #[serde(rename = "sessionId")]
     session_id: String,
+    /// In subagent transcripts, which carry their parent's session ID.
+    #[serde(rename = "agentId")]
+    agent_id: Option<String>,
     cwd: Option<String>,
     entrypoint: Option<String>,
     version: Option<String>,
@@ -163,6 +166,7 @@ impl Reader for Transcript {
             model: entry.message.model,
             timestamp: entry.timestamp,
             session_id: entry.session_id,
+            agent_id: entry.agent_id.filter(|_| self.subagent),
             cwd: entry.cwd,
             role,
             client_version: entry.version,

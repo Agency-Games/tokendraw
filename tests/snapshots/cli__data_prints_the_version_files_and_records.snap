@@ -2,7 +2,7 @@
 source: tests/cli.rs
 expression: without_stale(&stdout(&output))
 ---
-data 2026-10-15, shipped sha256 fa5d72cd1f1b4e952cf84746ed203fbc3f63d005f985064d32206ac64991fc10
+data 2026-10-15, shipped sha256 4cafbc5d054a72634a5e6c8090926e6c520e162d421f71aac7bac1e3db274382
 shipped files, sha256
   data/data.toml                      ca1ec78d8f75493706507ecb3a93e358ea54618f44bef301df0eafef49b3ab2b
   data/energy/parameter-sets.toml     a6d8f75c866880cfe1266283a1449ce01df46c327cf17acfd3dd27b6d93c516c
@@ -13,7 +13,7 @@ shipped files, sha256
   data/providers.toml                 9c64c2a958e27f8c87f705f71815dc1c56e7f46f397864ad5bccf8b7bd90f23f
   data/grid/ember.toml                3ddbe09b98b603d46a2354c71b6fb5983a7de374bfa1c0a61d6032656ebaf398
   data/discovery.toml                 d6e01b132e02c0ac5e8628f05a1cddae7b8e769ca55ccc5da19d50fbe07a2f06
-  data/findings.toml                  db81e333dd0a7a1fbe79ced7d4f3334a8994b291fd88de0cabf2d04f6b54c715
+  data/findings.toml                  e174825892be141dcaa1521e711ffabaabdcc889482257eef49292cf691261d0
 overrides: none
 stale: <depends on the date>
 
@@ -287,8 +287,11 @@ findings: parameters, label
   long-context   cached_tokens 200,000   D
 
 actions: steps, label
-  long-context/claude-code   /compact during a task, /clear between tasks   C
-  long-context/codex         /compact during a task, /new between tasks     C
-  long-context/pi            /compact during a task, /new between tasks     C
+  fixed-context/claude-code   /context to see what fills the context, /mcp disable for servers you do not use, /memory to shorten CLAUDE.md   C
+  fixed-context/codex         enabled = false in config.toml for MCP servers you do not use, shorten AGENTS.md                                C
+  fixed-context/pi            /mcp to disable servers you do not use, shorten AGENTS.md                                                       C
+  long-context/claude-code    /compact during a task, /clear between tasks                                                                    C
+  long-context/codex          /compact during a task, /new between tasks                                                                      C
+  long-context/pi             /compact during a task, /new between tasks                                                                      C
 
 geographies: 260; `tokendraw data --json` lists them with every source

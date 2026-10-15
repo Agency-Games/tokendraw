@@ -445,6 +445,7 @@ impl Rollout {
             session_id: session.id.clone(),
             cwd: self.cwd.clone(),
             role: session.role,
+            agent_id: None,
             client_version: session.version.clone(),
             tokens,
             completion,

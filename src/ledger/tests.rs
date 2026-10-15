@@ -7,6 +7,7 @@ use serde_json::json;
 use tempfile::TempDir;
 
 use super::ingest::snapshot;
+use super::schema::UPSERT_CALL;
 use super::*;
 use crate::adapters::Definition;
 use crate::adapters::claude_code::ClaudeCode;
@@ -410,6 +411,9 @@ fn saved_state_that_cannot_be_read_makes_the_file_be_read_again() -> TestResult 
     Ok(())
 }
 
+const SCHEMA_7_CALLS: &str = "DROP VIEW fixed; DROP INDEX calls_by_thread;
+    ALTER TABLE calls DROP COLUMN agent_id;";
+
 const SCHEMA_6_CALLS: &str = "DROP VIEW estimated; ALTER TABLE calls DROP COLUMN client_version;";
 
 const SCHEMA_5_CALLS: &str = "ALTER TABLE calls DROP COLUMN compaction;
@@ -425,7 +429,7 @@ fn a_schema_1_ledger_is_migrated_and_keeps_its_calls() -> TestResult {
     append(&log, &call("m1", "2026-09-01T10:00:00Z", "s", 5))?;
     let ledger = fixture.ingest()?;
     ledger.conn.execute_batch(&format!(
-        "{SCHEMA_6_CALLS} {SCHEMA_5_CALLS} {SCHEMA_4_CALLS} ALTER TABLE files DROP COLUMN state; DROP TABLE definitions;
+        "{SCHEMA_7_CALLS} {SCHEMA_6_CALLS} {SCHEMA_5_CALLS} {SCHEMA_4_CALLS} ALTER TABLE files DROP COLUMN state; DROP TABLE definitions;
              DROP TABLE directories; DROP TABLE labels; PRAGMA user_version = 1;"
     ))?;
     drop(ledger);
@@ -446,7 +450,7 @@ fn a_schema_2_ledger_is_migrated_and_keeps_its_calls() -> TestResult {
     append(&log, &call("m1", "2026-09-01T10:00:00Z", "s", 5))?;
     let ledger = fixture.ingest()?;
     ledger.conn.execute_batch(&format!(
-        "{SCHEMA_6_CALLS} {SCHEMA_5_CALLS} {SCHEMA_4_CALLS} DROP TABLE definitions; DROP TABLE directories; DROP TABLE labels;
+        "{SCHEMA_7_CALLS} {SCHEMA_6_CALLS} {SCHEMA_5_CALLS} {SCHEMA_4_CALLS} DROP TABLE definitions; DROP TABLE directories; DROP TABLE labels;
              PRAGMA user_version = 2;"
     ))?;
     drop(ledger);
@@ -471,7 +475,7 @@ fn a_schema_3_ledger_is_migrated_and_keeps_its_calls() -> TestResult {
     append(&log, &call("m1", "2026-09-01T10:00:00Z", "s", 5))?;
     let ledger = fixture.ingest()?;
     ledger.conn.execute_batch(&format!(
-        "{SCHEMA_6_CALLS} {SCHEMA_5_CALLS} {SCHEMA_4_CALLS} DROP TABLE directories; DROP TABLE labels; PRAGMA user_version = 3;"
+        "{SCHEMA_7_CALLS} {SCHEMA_6_CALLS} {SCHEMA_5_CALLS} {SCHEMA_4_CALLS} DROP TABLE directories; DROP TABLE labels; PRAGMA user_version = 3;"
     ))?;
     drop(ledger);
     let mut ledger = fixture.ingest()?;
@@ -956,6 +960,7 @@ fn prompt(thresholds: &[u64]) -> Split<'_> {
     Split {
         prompt_above: thresholds,
         cached_above: None,
+        fixed: false,
     }
 }
 
@@ -988,6 +993,7 @@ fn usage_splits_calls_by_role_and_by_cache_reads_above_a_threshold() -> TestResu
     let split = Split {
         prompt_above: &[],
         cached_above: Some(100),
+        fixed: false,
     };
     let rows: Vec<(String, bool, u64)> = ledger
         .usage(None, None, None, &split)?
@@ -1255,7 +1261,7 @@ fn a_schema_4_ledger_reads_claude_code_logs_again_and_keeps_what_it_cannot_tell(
     let before = ledger.calls(None, None, None)?;
     let sources = ledger.sources()?;
     ledger.conn.execute_batch(&format!(
-        "{SCHEMA_6_CALLS} {SCHEMA_5_CALLS} {SCHEMA_4_CALLS} PRAGMA user_version = 4;"
+        "{SCHEMA_7_CALLS} {SCHEMA_6_CALLS} {SCHEMA_5_CALLS} {SCHEMA_4_CALLS} PRAGMA user_version = 4;"
     ))?;
     drop(ledger);
     fs::remove_file(&deleted)?;
@@ -1493,6 +1499,7 @@ fn a_compaction_counts_above_the_cached_threshold_with_its_estimated_cache_read(
     let split = Split {
         prompt_above: &[],
         cached_above: Some(200_000),
+        fixed: false,
     };
     // The 400,000-token compaction reads an estimated 300,000 cached
     // tokens; the call before it read none, as its log records.
@@ -1536,7 +1543,7 @@ fn a_schema_5_ledger_reads_codex_logs_again_to_find_compactions() -> TestResult 
     let before = ledger.calls(None, None, None)?;
     let sources = ledger.sources()?;
     ledger.conn.execute_batch(&format!(
-        "DELETE FROM calls WHERE context_input IS NOT NULL; {SCHEMA_6_CALLS} {SCHEMA_5_CALLS} PRAGMA user_version = 5;"
+        "DELETE FROM calls WHERE context_input IS NOT NULL; {SCHEMA_7_CALLS} {SCHEMA_6_CALLS} {SCHEMA_5_CALLS} PRAGMA user_version = 5;"
     ))?;
     drop(ledger);
     let mut ledger = Ledger::open(&dir.path().join("ledger.sqlite"))?;
@@ -1689,9 +1696,9 @@ fn a_schema_6_ledger_reads_claude_code_and_codex_logs_again_for_their_versions()
     ledger.ingest(&codex)?;
     let before = ledger.calls(None, None, None)?;
     let sources = ledger.sources()?;
-    ledger
-        .conn
-        .execute_batch(&format!("{SCHEMA_6_CALLS} PRAGMA user_version = 6;"))?;
+    ledger.conn.execute_batch(&format!(
+        "{SCHEMA_7_CALLS} {SCHEMA_6_CALLS} PRAGMA user_version = 6;"
+    ))?;
     drop(ledger);
     fs::remove_file(&deleted)?;
     let mut ledger = fixture.ingest()?;
@@ -1734,9 +1741,9 @@ fn a_schema_6_call_takes_the_version_of_its_earliest_copy_in_either_order() -> T
         .concat(),
     )?;
     let ledger = fixture.ingest()?;
-    ledger
-        .conn
-        .execute_batch(&format!("{SCHEMA_6_CALLS} PRAGMA user_version = 6;"))?;
+    ledger.conn.execute_batch(&format!(
+        "{SCHEMA_7_CALLS} {SCHEMA_6_CALLS} PRAGMA user_version = 6;"
+    ))?;
     drop(ledger);
     let ledger = fixture.ingest()?;
     let version = || Some("2.0.0".to_owned());
@@ -1746,6 +1753,213 @@ fn a_schema_6_call_takes_the_version_of_its_earliest_copy_in_either_order() -> T
             ("earliest-first".to_owned(), version()),
             ("later-first".to_owned(), version()),
         ]
+    );
+    Ok(())
+}
+
+/// A Claude Code call of `session`, in the transcript of subagent `agent`
+/// when there is one, with `cache_read` cache-read and `cache_write`
+/// cache-write tokens and one uncached input token.
+fn thread_call(
+    id: &str,
+    timestamp: &str,
+    session: &str,
+    agent: Option<&str>,
+    [cache_read, cache_write]: [u64; 2],
+) -> TestResult<String> {
+    let mut line: serde_json::Value = serde_json::from_str(&call(id, timestamp, session, 5))?;
+    line["message"]["usage"]["cache_read_input_tokens"] = json!(cache_read);
+    line["message"]["usage"]["cache_creation_input_tokens"] = json!(cache_write);
+    if let Some(agent) = agent {
+        line["agentId"] = json!(agent);
+    }
+    Ok(format!("{line}\n"))
+}
+
+/// A call's ID and agent, its fixed context, and its cache-read and new
+/// input tokens without it.
+type FixedRow = (String, Option<String>, u64, u64, u64);
+
+/// Each call's [`FixedRow`], by call ID.
+fn fixed(ledger: &Ledger) -> TestResult<Vec<FixedRow>> {
+    let mut statement = ledger.conn.prepare(
+        "SELECT call_id, agent_id, f, r_cache_read, r_new_input FROM fixed ORDER BY call_id",
+    )?;
+    let rows = statement.query_map([], |row| {
+        Ok((
+            row.get(0)?,
+            row.get(1)?,
+            row.get(2)?,
+            row.get(3)?,
+            row.get(4)?,
+        ))
+    })?;
+    Ok(rows.collect::<rusqlite::Result<_>>()?)
+}
+
+/// A session `s` with two subagents, each a thread of its own: a call
+/// carries the context its thread started with, up to its own, taken from
+/// its cache-read tokens first.
+fn session_with_two_subagents(fixture: &Fixture) -> TestResult {
+    let subagents = fixture.log("s/subagents");
+    fs::create_dir_all(&subagents)?;
+    append(
+        &fixture.log("s.jsonl"),
+        &[
+            thread_call("p1", "2026-09-01T10:00:00Z", "s", None, [0, 999])?,
+            thread_call("p2", "2026-09-01T10:05:00Z", "s", None, [4000, 999])?,
+        ]
+        .concat(),
+    )?;
+    append(
+        &subagents.join("agent-a1.jsonl"),
+        &[
+            thread_call("a1-1", "2026-09-01T10:01:00Z", "s", Some("a1"), [0, 299])?,
+            thread_call("a1-2", "2026-09-01T10:02:00Z", "s", Some("a1"), [100, 1899])?,
+        ]
+        .concat(),
+    )?;
+    append(
+        &subagents.join("agent-a2.jsonl"),
+        &[
+            thread_call("a2-1", "2026-09-01T10:03:00Z", "s", Some("a2"), [0, 599])?,
+            thread_call("a2-2", "2026-09-01T10:04:00Z", "s", Some("a2"), [0, 399])?,
+        ]
+        .concat(),
+    )?;
+    Ok(())
+}
+
+fn two_subagents() -> Vec<FixedRow> {
+    let row = |id: &str, agent: Option<&str>, f, cache_read, new_input| {
+        (
+            id.to_owned(),
+            agent.map(str::to_owned),
+            f,
+            cache_read,
+            new_input,
+        )
+    };
+    vec![
+        row("a1-1", Some("a1"), 300, 0, 0),
+        row("a1-2", Some("a1"), 300, 0, 1700),
+        row("a2-1", Some("a2"), 600, 0, 0),
+        row("a2-2", Some("a2"), 400, 0, 0),
+        row("p1", None, 1000, 0, 0),
+        row("p2", None, 1000, 3000, 1000),
+    ]
+}
+
+#[test]
+fn each_subagent_is_a_thread_with_the_context_it_started_with() -> TestResult {
+    let fixture = Fixture::new()?;
+    session_with_two_subagents(&fixture)?;
+    let ledger = fixture.ingest()?;
+    assert_eq!(fixed(&ledger)?, two_subagents());
+    Ok(())
+}
+
+#[test]
+fn a_schema_7_ledger_reads_claude_code_logs_again_for_their_subagents() -> TestResult {
+    let fixture = Fixture::new()?;
+    session_with_two_subagents(&fixture)?;
+    let ledger = fixture.ingest()?;
+    let before = ledger.calls(None, None, None)?;
+    ledger
+        .conn
+        .execute_batch(&format!("{SCHEMA_7_CALLS} PRAGMA user_version = 7;"))?;
+    drop(ledger);
+    let ledger = fixture.ingest()?;
+    let version: i32 = ledger
+        .conn
+        .pragma_query_value(None, "user_version", |row| row.get(0))?;
+    assert_eq!(version, SCHEMA_VERSION);
+    assert_eq!(ledger.calls(None, None, None)?, before);
+    assert_eq!(fixed(&ledger)?, two_subagents());
+    drop(ledger);
+    let ledger = fixture.ingest()?;
+    assert_eq!(ledger.calls(None, None, None)?, before);
+    assert_eq!(fixed(&ledger)?, two_subagents());
+    Ok(())
+}
+
+#[test]
+fn a_range_that_begins_within_a_session_finds_the_context_it_started_with() -> TestResult {
+    let fixture = Fixture::new()?;
+    session_with_two_subagents(&fixture)?;
+    let ledger = fixture.ingest()?;
+    let split = Split {
+        prompt_above: &[],
+        cached_above: None,
+        fixed: true,
+    };
+    let since: jiff::Timestamp = "2026-09-01T10:04:30Z".parse()?;
+    let usage = ledger.usage(Some(since), None, None, &split)?;
+    assert_eq!(usage.len(), 1);
+    let without = &usage[0].without_fixed;
+    assert_eq!(
+        (without.fixed, without.cache_read, without.new_input),
+        (Tokens(1000), Tokens(3000), Tokens(1000))
+    );
+    // p2 without its fixed context: 1,000 new tokens after 3,000 cached,
+    // and 5 output tokens after both.
+    assert!((without.prefill_pairs - 1000.0 * 3500.0).abs() < 1e-9);
+    assert!((without.decode_pairs - 5.0 * 4002.5).abs() < 1e-9);
+    Ok(())
+}
+
+#[test]
+fn a_copy_in_another_session_never_gives_a_call_its_agent() -> TestResult {
+    let upsert = |ledger: &Ledger, session: &str, agent: Option<&str>| {
+        ledger.conn.execute(
+            UPSERT_CALL,
+            params![
+                "claude-code",
+                "c",
+                "anthropic",
+                "m",
+                1_000,
+                session,
+                None::<String>,
+                "subagent",
+                1,
+                0,
+                0,
+                1,
+                None::<u64>,
+                true,
+                None::<String>,
+                false,
+                None::<u64>,
+                None::<String>,
+                agent
+            ],
+        )
+    };
+    let owner = |ledger: &Ledger| {
+        ledger
+            .conn
+            .query_row("SELECT session_id, agent_id FROM calls", [], |row| {
+                Ok((row.get::<_, String>(0)?, row.get::<_, Option<String>>(1)?))
+            })
+    };
+    let parent_first = Ledger::in_memory()?;
+    upsert(&parent_first, "s", None)?;
+    upsert(&parent_first, "t", Some("a"))?;
+    assert_eq!(owner(&parent_first)?, ("s".to_owned(), None));
+    let subagent_first = Ledger::in_memory()?;
+    upsert(&subagent_first, "t", Some("a"))?;
+    upsert(&subagent_first, "s", None)?;
+    assert_eq!(
+        owner(&subagent_first)?,
+        ("t".to_owned(), Some("a".to_owned()))
+    );
+    let same_session = Ledger::in_memory()?;
+    upsert(&same_session, "t", None)?;
+    upsert(&same_session, "t", Some("a"))?;
+    assert_eq!(
+        owner(&same_session)?,
+        ("t".to_owned(), Some("a".to_owned()))
     );
     Ok(())
 }

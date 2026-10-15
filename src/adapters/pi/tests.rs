@@ -111,6 +111,7 @@ fn an_assistant_message_becomes_a_call_with_its_token_classes() -> Result<(), ji
             session_id: SESSION.to_owned(),
             cwd: Some("/work/alpha".to_owned()),
             role: Role::Interactive,
+            agent_id: None,
             client_version: None,
             tokens: TokenClasses {
                 uncached_input: Tokens(300),

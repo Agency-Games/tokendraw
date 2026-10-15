@@ -59,6 +59,29 @@ output from the compactions Codex did record, across the whole ledger:
 
 `report` uses these estimates the same way, with their own note.
 
+## The fixed context
+
+The `fixed-context` finding counts the context each call carries from the
+start of its thread. A thread is a session, or one Claude Code subagent,
+whose transcript carries its parent's session ID and its own agent ID. A
+call's fixed context is the input (uncached input, cache writes and cache
+reads) of the first call of its thread in the ledger, up to the call's
+own input. That first input holds the system prompt, the tool
+definitions, the instruction files and the first prompt, for a subagent
+its brief, which the logs do not separate, so the finding's share is an
+upper estimate of what removing tools and shortening instruction files
+can change.
+
+Its energy is the energy of the calls less that of the same calls with
+that many fewer tokens, taken from the cache-read tokens first, each at
+the price tier its prompt then falls under. Findings can count the same
+energy, such as the fixed context of a long-context call, so their shares
+do not add up.
+
+Tokendraw 0.2.0 and earlier did not record agent IDs. The first run of a
+later version reads Claude Code's logs again to add them; the subagents
+of logs deleted since count as one thread per session.
+
 ## JSON
 
 Every `--json` output has a `schema_version`, which changes only when a

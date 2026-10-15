@@ -294,6 +294,7 @@ impl Reader for LogFile {
             session_id: facts.session,
             cwd: facts.cwd,
             role: self.spec.role,
+            agent_id: None,
             client_version: None,
             tokens,
             completion: Completion::FINAL,

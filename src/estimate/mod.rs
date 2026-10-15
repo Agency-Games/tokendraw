@@ -10,8 +10,8 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::ops::Add;
 
 use crate::data::{Data, Factor, Five, Label, ParameterSet, ResolvedProvider};
-use crate::ledger::Usage;
-use crate::quantity::{GramsCo2e, WattHours};
+use crate::ledger::{Usage, WithoutFixed};
+use crate::quantity::{GramsCo2e, Tokens, WattHours};
 
 const JOULES_PER_WATT_HOUR: f64 = 3600.0;
 const JOULES_PER_MICROJOULE: f64 = 1e-6;
@@ -46,6 +46,10 @@ pub struct Breakdown {
     /// The same calls by client, for the findings, which count only the
     /// clients they have an action for.
     pub cached_above_by_client: BTreeMap<String, Calls>,
+    /// By client, the energy of the fixed context of the calls: their
+    /// energy less that of the same calls without it, each priced at the
+    /// prompt threshold it then falls under.
+    pub fixed_by_client: BTreeMap<String, Fixed>,
     pub by_client: BTreeMap<String, WattHours>,
     pub by_role: BTreeMap<String, WattHours>,
 }
@@ -53,6 +57,15 @@ pub struct Breakdown {
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub struct Calls {
     pub calls: u64,
+    /// Base case.
+    pub energy: WattHours,
+}
+
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct Fixed {
+    pub calls: u64,
+    /// The sum over calls.
+    pub tokens: Tokens,
     /// Base case.
     pub energy: WattHours,
 }
@@ -118,7 +131,7 @@ pub fn l1(data: &Data, usage: &[Usage]) -> L1 {
             .emissions_quality
             .max(Some(energy_label.max(grid_quality)));
         let pue = provider.provider.pue.five();
-        let (node, context) = node(set, row);
+        let (node, context) = node(set, &Load::of(row));
         let it = node.zip(&set.idle.five(), |node, idle| node * idle);
         let facility = it.zip(&pue, |it, pue| WattHours(it * (pue - 1.0)));
         let energy = it.zip(&pue, |it, pue| it * pue);
@@ -158,6 +171,7 @@ pub fn l1(data: &Data, usage: &[Usage]) -> L1 {
             client.calls += row.calls;
             client.energy = client.energy + base_case;
         }
+        add_fixed(data, row, base_case, pue.base_case, breakdown);
         total.calls += row.calls;
         for (part, key) in [
             (&mut breakdown.by_client, &row.client),
@@ -177,17 +191,64 @@ pub fn l1(data: &Data, usage: &[Usage]) -> L1 {
     total
 }
 
+/// Adds the energy of the fixed context of `row`, whose base case energy is
+/// `energy`: that less the energy of the calls without it, at the parameter
+/// set of the prompt threshold they then fall under.
+fn add_fixed(data: &Data, row: &Usage, energy: WattHours, pue: f64, breakdown: &mut Breakdown) {
+    let without: &WithoutFixed = &row.without_fixed;
+    if without.fixed.0 == 0 {
+        return;
+    }
+    let set = data.parameter_set(&row.model, without.prompt_above).record;
+    let (node, _) = node(set, &Load::without_fixed(row));
+    let fixed = breakdown
+        .fixed_by_client
+        .entry(row.client.clone())
+        .or_default();
+    fixed.calls += row.calls;
+    fixed.tokens = Tokens(fixed.tokens.0 + without.fixed.0);
+    fixed.energy = fixed.energy + WattHours(energy.0 - node.base_case * set.idle.base_case * pue);
+}
+
+/// The sums of calls the energy model reads.
+struct Load {
+    cache_read: f64,
+    new_input: f64,
+    output: f64,
+    prefill_pairs: f64,
+    decode_pairs: f64,
+}
+
+#[expect(
+    clippy::cast_precision_loss,
+    reason = "token counts stay far below 2^53"
+)]
+impl Load {
+    fn of(usage: &Usage) -> Self {
+        Self {
+            cache_read: usage.cache_read.0 as f64,
+            new_input: usage.new_input.0 as f64,
+            output: usage.output.0 as f64,
+            prefill_pairs: usage.prefill_pairs,
+            decode_pairs: usage.decode_pairs,
+        }
+    }
+
+    fn without_fixed(usage: &Usage) -> Self {
+        let without = &usage.without_fixed;
+        Self {
+            cache_read: without.cache_read.0 as f64,
+            new_input: without.new_input.0 as f64,
+            output: usage.output.0 as f64,
+            prefill_pairs: without.prefill_pairs,
+            decode_pairs: without.decode_pairs,
+        }
+    }
+}
+
 /// In Wh, with the base case value of the context terms.
-fn node(set: &ParameterSet, usage: &Usage) -> (Five<f64>, f64) {
-    #[expect(
-        clippy::cast_precision_loss,
-        reason = "token counts stay far below 2^53"
-    )]
-    let (cache_read, new_input, output) = (
-        usage.cache_read.0 as f64,
-        usage.new_input.0 as f64,
-        usage.output.0 as f64,
-    );
+fn node(set: &ParameterSet, usage: &Load) -> (Five<f64>, f64) {
+    let (cache_read, new_input, output) = (usage.cache_read, usage.new_input, usage.output);
     let term =
         |factor: &Factor, unit: f64, count: f64| factor.five().map(|value| value * unit * count);
     let terms = [

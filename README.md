@@ -124,7 +124,7 @@ command, which may.
 
 It keeps what it counts in a ledger, the file `tokendraw/ledger.sqlite`
 in your system's state directory (see [The
-ledger](docs/counting.md#the-ledger)): call and session identifiers, the
+ledger](docs/counting.md#the-ledger)): call, session and subagent identifiers, the
 paths of working directories and log files, the definitions of the
 adapters you add and your labels, never the content of a conversation. The ledger keeps them after your agents delete their logs.
 Delete the file to remove them; the next run reads the logs that remain.
@@ -154,7 +154,7 @@ platform.
 ## Reference
 
 - [docs/counting.md](docs/counting.md): the ledger, what the logs do not
-  show, estimated tokens and the JSON schema
+  show, estimated tokens, the fixed context and the JSON schema
 - [docs/adapters.md](docs/adapters.md): adapters for other agents
 - [data/README.md](data/README.md): the data and its sources
 - [docs/validation.md](docs/validation.md): the estimates against the

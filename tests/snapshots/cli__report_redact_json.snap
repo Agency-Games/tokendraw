@@ -11,7 +11,7 @@ expression: without_platform(&json)?
   },
   "data_version": {
     "id": "2026-10-15",
-    "shipped_sha256": "fa5d72cd1f1b4e952cf84746ed203fbc3f63d005f985064d32206ac64991fc10",
+    "shipped_sha256": "4cafbc5d054a72634a5e6c8090926e6c520e162d421f71aac7bac1e3db274382",
     "overrides": [
       {
         "path": "override 1",
@@ -463,7 +463,27 @@ expression: without_platform(&json)?
       "signal": "role of each call"
     }
   ],
-  "findings": [],
+  "findings": [
+    {
+      "code": "fixed-context",
+      "facts": {
+        "calls": 3,
+        "mean_fixed_tokens": 1100,
+        "share_of_base_case": 0.10691467749736329
+      },
+      "actions": {
+        "claude-code": [
+          "/context to see what fills the context",
+          "/mcp disable for servers you do not use",
+          "/memory to shorten CLAUDE.md"
+        ]
+      },
+      "measure": {
+        "command": "tokendraw findings --since <tomorrow>",
+        "compare": "share_of_base_case"
+      }
+    }
+  ],
   "hidden_findings": {
     "count": 0,
     "threshold_share_of_base_case": 0.1,

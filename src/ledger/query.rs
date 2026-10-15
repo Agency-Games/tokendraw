@@ -1,7 +1,7 @@
 use jiff::Timestamp;
 use serde::Serialize;
 
-use super::schema::{IN_PROJECT, IN_RANGE};
+use super::schema::{IN_PROJECT, IN_PROJECT_FIXED, IN_RANGE, IN_RANGE_FIXED};
 use super::{Error, Ledger};
 use crate::quantity::{TokenClasses, Tokens};
 
@@ -101,6 +101,23 @@ pub struct Usage {
     /// The sum over calls of `n_out * (L + n_new + n_out / 2)`, pairs of an
     /// output token and a token before it.
     pub decode_pairs: f64,
+    /// The same calls without their fixed context; zero without
+    /// [`Split::fixed`].
+    pub without_fixed: WithoutFixed,
+}
+
+/// Calls without their fixed context, as the `fixed` view of the schema
+/// defines it, and the sums the energy model needs for them.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct WithoutFixed {
+    /// As [`Usage::prompt_above`], for the prompt without the fixed context.
+    pub prompt_above: u64,
+    /// The sum of the fixed context removed.
+    pub fixed: Tokens,
+    pub cache_read: Tokens,
+    pub new_input: Tokens,
+    pub prefill_pairs: f64,
+    pub decode_pairs: f64,
 }
 
 /// How [`Ledger::usage`] splits the calls besides client, provider, model
@@ -111,6 +128,9 @@ pub struct Split<'a> {
     pub prompt_above: &'a [u64],
     /// A threshold of cache-read tokens, as [`Usage::cached_above`].
     pub cached_above: Option<u64>,
+    /// Whether to fill [`Usage::without_fixed`], which also splits the
+    /// calls by its prompt threshold.
+    pub fixed: bool,
 }
 
 /// The calls of one session in one working directory over a time range.
@@ -297,11 +317,16 @@ impl Ledger {
     }
 
     fn query_usage(&self, selection: &Selection, split: &Split) -> rusqlite::Result<Vec<Usage>> {
-        let mut statement = self.conn.prepare(&format!(
-            "SELECT {}, {USAGE_SUMS}
-             FROM {} GROUP BY {USAGE_GROUPS} ORDER BY {USAGE_GROUPS}",
-            usage_groups(split),
+        let from = if split.fixed {
+            selection.fixed_from()
+        } else {
             selection.from()
+        };
+        let mut statement = self.conn.prepare(&format!(
+            "SELECT {}, {USAGE_SUMS}, {}
+             FROM {from} GROUP BY {USAGE_GROUPS} ORDER BY {USAGE_GROUPS}",
+            usage_groups(split),
+            fixed_sums(split),
         ))?;
         let rows = statement.query_map(selection.params(), |row| usage(row, 0))?;
         rows.collect()
@@ -324,13 +349,15 @@ impl Ledger {
         split: &Split,
     ) -> rusqlite::Result<Vec<ProjectUsage>> {
         let mut statement = self.conn.prepare(&format!(
-            "SELECT project, resolution, {}, {USAGE_SUMS}
-             FROM estimated JOIN attribution
+            "SELECT project, resolution, {}, {USAGE_SUMS}, {}
+             FROM {} JOIN attribution
                  ON a_client = client AND a_session = session_id AND a_cwd IS cwd
              WHERE timestamp_ms >= ?1 AND timestamp_ms < ?2
              GROUP BY project, resolution, {USAGE_GROUPS}
              ORDER BY project, resolution, {USAGE_GROUPS}",
-            usage_groups(split)
+            usage_groups(split),
+            fixed_sums(split),
+            if split.fixed { "fixed" } else { "estimated" },
         ))?;
         let rows = statement.query_map(selection.params(), |row| {
             Ok(ProjectUsage {
@@ -418,7 +445,13 @@ const USAGE_SUMS: &str = "count(*),
     sum(n_uncached_input - uncached_input + n_cache_read - cache_read)";
 
 /// The columns [`usage_groups`] names.
-const USAGE_GROUPS: &str = "client, provider, model, role, prompt_above, cached_above";
+const USAGE_GROUPS: &str =
+    "client, provider, model, role, prompt_above, cached_above, fixed_prompt_above";
+
+/// The prompt of a call, and of a call of the `fixed` view without its
+/// fixed context.
+const PROMPT: &str = "n_cache_read + n_uncached_input + cache_write";
+const PROMPT_WITHOUT_FIXED: &str = "r_cache_read + r_new_input";
 
 /// The thresholds are numbers, so they are written into the query.
 fn usage_groups(split: &Split) -> String {
@@ -426,13 +459,30 @@ fn usage_groups(split: &Split) -> String {
         Some(threshold) => format!("n_cache_read > {threshold}"),
         None => "0".to_owned(),
     };
+    let fixed_prompt_above = if split.fixed {
+        prompt_above(split.prompt_above, PROMPT_WITHOUT_FIXED)
+    } else {
+        "0".to_owned()
+    };
     format!(
-        "client, provider, model, role, {} AS prompt_above, {cached_above} AS cached_above",
-        prompt_above(split.prompt_above)
+        "client, provider, model, role, {} AS prompt_above, {cached_above} AS cached_above,
+         {fixed_prompt_above} AS fixed_prompt_above",
+        prompt_above(split.prompt_above, PROMPT)
     )
 }
 
-fn prompt_above(thresholds: &[u64]) -> String {
+/// The sums of [`WithoutFixed`] after its prompt threshold.
+fn fixed_sums(split: &Split) -> &'static str {
+    if split.fixed {
+        "sum(f), sum(r_cache_read), sum(r_new_input),
+         total(r_new_input * (r_cache_read + r_new_input / 2.0)),
+         total(n_out * (r_cache_read + r_new_input + n_out / 2.0))"
+    } else {
+        "0, 0, 0, 0.0, 0.0"
+    }
+}
+
+fn prompt_above(thresholds: &[u64], prompt: &str) -> String {
     use std::fmt::Write as _;
     let mut thresholds = thresholds.to_vec();
     thresholds.sort_unstable();
@@ -442,17 +492,14 @@ fn prompt_above(thresholds: &[u64]) -> String {
     }
     let mut sql = "CASE".to_owned();
     for threshold in thresholds.iter().rev() {
-        let _ = write!(
-            sql,
-            " WHEN n_cache_read + n_uncached_input + cache_write > {threshold} THEN {threshold}"
-        );
+        let _ = write!(sql, " WHEN {prompt} > {threshold} THEN {threshold}");
     }
     sql.push_str(" ELSE 0 END");
     sql
 }
 
 /// A [`Usage`] from a row holding the columns of [`USAGE_GROUPS`] from
-/// column `first`, then [`USAGE_SUMS`].
+/// column `first`, then [`USAGE_SUMS`] and [`fixed_sums`].
 fn usage(row: &rusqlite::Row, first: usize) -> rusqlite::Result<Usage> {
     Ok(Usage {
         client: row.get(first)?,
@@ -461,14 +508,22 @@ fn usage(row: &rusqlite::Row, first: usize) -> rusqlite::Result<Usage> {
         role: row.get(first + 3)?,
         prompt_above: row.get(first + 4)?,
         cached_above: row.get(first + 5)?,
-        calls: row.get(first + 6)?,
-        cache_read: Tokens(row.get(first + 7)?),
-        new_input: Tokens(row.get(first + 8)?),
-        output: Tokens(row.get(first + 9)?),
-        prefill_pairs: row.get(first + 10)?,
-        decode_pairs: row.get(first + 11)?,
-        estimated_output: Tokens(row.get(first + 12)?),
-        estimated_input: Tokens(row.get(first + 13)?),
+        calls: row.get(first + 7)?,
+        cache_read: Tokens(row.get(first + 8)?),
+        new_input: Tokens(row.get(first + 9)?),
+        output: Tokens(row.get(first + 10)?),
+        prefill_pairs: row.get(first + 11)?,
+        decode_pairs: row.get(first + 12)?,
+        estimated_output: Tokens(row.get(first + 13)?),
+        estimated_input: Tokens(row.get(first + 14)?),
+        without_fixed: WithoutFixed {
+            prompt_above: row.get(first + 6)?,
+            fixed: Tokens(row.get(first + 15)?),
+            cache_read: Tokens(row.get(first + 16)?),
+            new_input: Tokens(row.get(first + 17)?),
+            prefill_pairs: row.get(first + 18)?,
+            decode_pairs: row.get(first + 19)?,
+        },
     })
 }
 
@@ -492,6 +547,14 @@ impl<'a> Selection<'a> {
             IN_PROJECT
         } else {
             IN_RANGE
+        }
+    }
+
+    fn fixed_from(&self) -> &'static str {
+        if self.project.is_some() {
+            IN_PROJECT_FIXED
+        } else {
+            IN_RANGE_FIXED
         }
     }
 

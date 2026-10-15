@@ -30,6 +30,7 @@ fn a_record_becomes_a_call() -> Result<(), jiff::Error> {
             session_id: "s1".to_owned(),
             cwd: Some("/work".to_owned()),
             role: Role::Subagent,
+            agent_id: None,
             client_version: None,
             tokens: TokenClasses {
                 uncached_input: Tokens(7),

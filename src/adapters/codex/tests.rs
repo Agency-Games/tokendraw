@@ -145,6 +145,7 @@ fn a_token_usage_record_becomes_a_call_with_its_token_classes() -> Result<(), ji
             session_id: SESSION.to_owned(),
             cwd: Some("/work/alpha/sub".to_owned()),
             role: Role::Headless,
+            agent_id: None,
             client_version: Some("0.200.0".to_owned()),
             tokens: TokenClasses {
                 uncached_input: Tokens(4000),

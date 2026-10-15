@@ -119,7 +119,7 @@ fn run(state: &Path, args: &[&str]) -> Result<Output, std::io::Error> {
 /// location, written `<fixtures>`, so snapshots hold on every machine.
 fn stdout(output: &Output) -> String {
     let fixtures = fixtures().to_string_lossy().replace('\\', "/");
-    String::from_utf8_lossy(&output.stdout).replace(&fixtures, "<fixtures>")
+    without_tomorrow(&String::from_utf8_lossy(&output.stdout).replace(&fixtures, "<fixtures>"))
 }
 
 #[test]
@@ -1783,7 +1783,7 @@ impl Marked {
             .env_remove("OPENCODE_DB")
             .output()?;
         assert_eq!(output.status.code(), Some(0), "{args:?}: {output:?}");
-        Ok(String::from_utf8(output.stdout)?)
+        Ok(without_tomorrow(&String::from_utf8(output.stdout)?))
     }
 }
 
@@ -2042,13 +2042,16 @@ fn write_config(state: &Path, text: &str) -> std::io::Result<PathBuf> {
 }
 
 /// The text with the UTC date after today, which the measurement step
-/// counts from, written `<tomorrow>`.
-fn without_tomorrow(text: &str) -> TestResult<String> {
-    let tomorrow = jiff::Timestamp::now()
+/// counts from, written `<tomorrow>` after `--since`.
+fn without_tomorrow(text: &str) -> String {
+    match jiff::Timestamp::now()
         .to_zoned(jiff::tz::TimeZone::UTC)
         .date()
-        .tomorrow()?;
-    Ok(text.replace(&tomorrow.to_string(), "<tomorrow>"))
+        .tomorrow()
+    {
+        Ok(tomorrow) => text.replace(&format!("--since {tomorrow}"), "--since <tomorrow>"),
+        Err(_) => text.to_owned(),
+    }
 }
 
 /// The lines from the one that is exactly `heading` to the next empty line.
@@ -2058,6 +2061,15 @@ fn section(text: &str, heading: &str) -> String {
         .take_while(|line| !line.is_empty())
         .collect::<Vec<_>>()
         .join("\n")
+}
+
+/// The finding with `code` in the `findings` of a report or of `tokendraw
+/// findings`, `null` when there is none.
+fn finding<'a>(json: &'a serde_json::Value, code: &str) -> &'a serde_json::Value {
+    json["findings"]
+        .as_array()
+        .and_then(|findings| findings.iter().find(|finding| finding["code"] == code))
+        .unwrap_or(&serde_json::Value::Null)
 }
 
 fn json_of(output: &Output) -> TestResult<serde_json::Value> {
@@ -2071,12 +2083,11 @@ fn report_shows_a_finding_above_the_threshold_with_the_steps_of_its_clients() ->
     long_context_above(state.path(), 1000)?;
     let output = run(state.path(), &["report"])?;
     assert_eq!(output.status.code(), Some(0), "{output:?}");
-    let text = without_tomorrow(&stdout(&output))?;
+    let text = stdout(&output);
     insta::assert_snapshot!(section(&text, "long-context"));
     assert!(!text.contains("below 10% of the energy"), "{text}");
     let json = json_of(&run(state.path(), &["report", "--json"])?)?;
-    assert_eq!(json["findings"][0]["code"], "long-context");
-    let finding = json["findings"][0]["facts"]["share_of_base_case"].as_f64();
+    let finding = finding(&json, "long-context")["facts"]["share_of_base_case"].as_f64();
     let breakdown = json["breakdown"][1]["share_of_base_case"].as_f64();
     assert!(
         finding
@@ -2106,7 +2117,7 @@ fn the_hidden_findings_command_shows_the_calls_of_the_report() -> TestResult {
     let text = run(state.path(), &[&["report"][..], &selection].concat())?;
     let text = stdout(&text);
     let expected = format!(
-        "1 finding below 100% of the energy:\n`tokendraw findings --since 2026-09-30 --until 2026-10-01 --project {alpha}`"
+        "2 findings below 100% of the energy:\n`tokendraw findings --since 2026-09-30 --until 2026-10-01 --project {alpha}`"
     );
     assert!(text.contains(&expected), "{text}");
     let report = json_of(&run(
@@ -2130,11 +2141,12 @@ fn the_hidden_findings_command_shows_the_calls_of_the_report() -> TestResult {
         state.path(),
         &[&["report", "--json"][..], &selection].concat(),
     )?)?;
-    assert_eq!(share(&shown["findings"][0]), share(&at_zero["findings"][0]));
+    let long = |json| finding(json, "long-context");
+    assert_eq!(share(long(&shown)), share(long(&at_zero)));
     let every_call = json_of(&run(state.path(), &["findings", "--json"])?)?;
     assert_ne!(
-        share(&every_call["findings"][0]),
-        share(&shown["findings"][0]),
+        share(long(&every_call)),
+        share(long(&shown)),
         "the selection must change the share for this test to show anything"
     );
     Ok(())
@@ -2147,13 +2159,13 @@ fn findings_lists_a_finding_without_calls_with_its_zero_share() -> TestResult {
     assert_eq!(output.status.code(), Some(0), "{output:?}");
     insta::assert_snapshot!(stdout(&output));
     let json = json_of(&run(state.path(), &["findings", "--json"])?)?;
-    let finding = &json["findings"][0];
-    assert_eq!(finding["facts"]["calls"], 0);
-    assert_eq!(finding["facts"]["share_of_base_case"], 0.0);
-    assert!(finding.get("measure").is_none(), "{finding}");
+    let long = finding(&json, "long-context");
+    assert_eq!(long["facts"]["calls"], 0);
+    assert_eq!(long["facts"]["share_of_base_case"], 0.0);
+    assert!(long.get("measure").is_none(), "{long}");
     assert_eq!(json["reason"], serde_json::Value::Null);
     let report = json_of(&run(state.path(), &["report", "--json"])?)?;
-    assert_eq!(report["findings"], serde_json::json!([]));
+    assert_eq!(finding(&report, "long-context"), &serde_json::Value::Null);
     assert_eq!(report["hidden_findings"]["count"], 0);
     Ok(())
 }
@@ -2184,12 +2196,11 @@ fn a_client_without_steps_is_left_out_until_an_override_adds_them() -> TestResul
     let state = TempDir::new()?;
     install_adapters(state.path())?;
     long_context_above(state.path(), 500)?;
-    let calls = |json: &serde_json::Value| json["findings"][0]["facts"]["calls"].as_u64();
+    let long = |json| finding(json, "long-context");
+    let calls = |json| long(json)["facts"]["calls"].as_u64();
     let without = json_of(&run(state.path(), &["findings", "--json"])?)?;
     assert!(
-        without["findings"][0]["actions"]
-            .get("example-agent")
-            .is_none(),
+        long(&without)["actions"].get("example-agent").is_none(),
         "{without}"
     );
     std::fs::write(
@@ -2198,12 +2209,12 @@ fn a_client_without_steps_is_left_out_until_an_override_adds_them() -> TestResul
     )?;
     let with = json_of(&run(state.path(), &["findings", "--json"])?)?;
     assert_eq!(
-        with["findings"][0]["actions"]["example-agent"],
+        long(&with)["actions"]["example-agent"],
         serde_json::json!(["/reset between tasks"])
     );
     assert!(calls(&with) > calls(&without), "{with}");
     let redacted = json_of(&run(state.path(), &["report", "--json", "--redact"])?)?;
-    let actions = &redacted["findings"][0]["actions"];
+    let actions = &long(&redacted)["actions"];
     assert_eq!(actions["example-agent"], serde_json::json!(["redacted"]));
     assert_eq!(
         actions["codex"],
@@ -2226,7 +2237,7 @@ fn the_configuration_file_named_by_the_variable_sets_the_threshold() -> TestResu
         json["hidden_findings"]["threshold_share_of_base_case"],
         0.99
     );
-    assert_eq!(json["hidden_findings"]["count"], 1);
+    assert_eq!(json["hidden_findings"]["count"], 2);
     let missing = tokendraw_with_state(state.path(), &["report"])
         .env("TOKENDRAW_CONFIG", state.path().join("missing.toml"))
         .output()?;

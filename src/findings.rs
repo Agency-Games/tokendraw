@@ -7,7 +7,7 @@ use std::collections::BTreeMap;
 
 use serde::Serialize;
 
-use crate::data::{Data, LONG_CONTEXT};
+use crate::data::{Data, FIXED_CONTEXT, LONG_CONTEXT};
 use crate::estimate::L1;
 
 #[derive(Clone, Debug, Serialize)]
@@ -32,6 +32,13 @@ pub enum Facts {
         share_of_base_case: f64,
         threshold_cached_tokens: u64,
     },
+    FixedContext {
+        calls: u64,
+        /// The mean over calls of the context their thread started with,
+        /// up to their own.
+        mean_fixed_tokens: u64,
+        share_of_base_case: f64,
+    },
 }
 
 impl Facts {
@@ -40,6 +47,9 @@ impl Facts {
         match self {
             Facts::LongContext {
                 share_of_base_case, ..
+            }
+            | Facts::FixedContext {
+                share_of_base_case, ..
             } => *share_of_base_case,
         }
     }
@@ -47,7 +57,7 @@ impl Facts {
     #[must_use]
     pub fn calls(&self) -> u64 {
         match self {
-            Facts::LongContext { calls, .. } => *calls,
+            Facts::LongContext { calls, .. } | Facts::FixedContext { calls, .. } => *calls,
         }
     }
 }
@@ -70,10 +80,13 @@ pub fn every(data: &Data, l1: &L1) -> Option<Vec<Finding>> {
     if total <= 0.0 {
         return None;
     }
-    let mut findings: Vec<Finding> = [long_context(data, l1, total)]
-        .into_iter()
-        .flatten()
-        .collect();
+    let mut findings: Vec<Finding> = [
+        long_context(data, l1, total),
+        fixed_context(data, l1, total),
+    ]
+    .into_iter()
+    .flatten()
+    .collect();
     findings.sort_by(|a, b| {
         b.facts
             .share_of_base_case()
@@ -100,19 +113,24 @@ pub fn shown(findings: &[Finding], threshold: f64) -> (Vec<Finding>, u64) {
     (shown, hidden)
 }
 
-fn long_context(data: &Data, l1: &L1, total: f64) -> Option<Finding> {
-    let parts = &l1.breakdown;
-    let applicable: BTreeMap<String, Vec<String>> = parts
+/// The steps of `finding` by client, for the clients with calls; `None`
+/// when no such client has any.
+fn applicable(data: &Data, l1: &L1, finding: &str) -> Option<BTreeMap<String, Vec<String>>> {
+    let applicable: BTreeMap<String, Vec<String>> = l1
+        .breakdown
         .by_client
         .keys()
         .filter_map(|client| {
-            data.steps(LONG_CONTEXT, client)
+            data.steps(finding, client)
                 .map(|steps| (client.clone(), steps.to_vec()))
         })
         .collect();
-    if applicable.is_empty() {
-        return None;
-    }
+    (!applicable.is_empty()).then_some(applicable)
+}
+
+fn long_context(data: &Data, l1: &L1, total: f64) -> Option<Finding> {
+    let parts = &l1.breakdown;
+    let applicable = applicable(data, l1, LONG_CONTEXT)?;
     let long: Vec<_> = parts
         .cached_above_by_client
         .iter()
@@ -140,6 +158,32 @@ fn long_context(data: &Data, l1: &L1, total: f64) -> Option<Finding> {
             share_of_calls,
             share_of_base_case: energy / total,
             threshold_cached_tokens: data.long_context_tokens(),
+        },
+        actions,
+        measure: None,
+    })
+}
+
+/// Every call carries the context its thread started with, so the
+/// finding has the calls of every client it has steps for.
+fn fixed_context(data: &Data, l1: &L1, total: f64) -> Option<Finding> {
+    let actions = applicable(data, l1, FIXED_CONTEXT)?;
+    let fixed: Vec<_> = l1
+        .breakdown
+        .fixed_by_client
+        .iter()
+        .filter(|(client, _)| actions.contains_key(*client))
+        .map(|(_, fixed)| fixed)
+        .collect();
+    let calls: u64 = fixed.iter().map(|fixed| fixed.calls).sum();
+    let tokens: u64 = fixed.iter().map(|fixed| fixed.tokens.0).sum();
+    let energy: f64 = fixed.iter().map(|fixed| fixed.energy.0).sum();
+    Some(Finding {
+        code: FIXED_CONTEXT,
+        facts: Facts::FixedContext {
+            calls,
+            mean_fixed_tokens: (tokens + calls / 2).checked_div(calls).unwrap_or(0),
+            share_of_base_case: energy / total,
         },
         actions,
         measure: None,

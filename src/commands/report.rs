@@ -346,6 +346,7 @@ pub fn run(args: &ReportArgs, data: &Data, config: Config, today: Date) -> Resul
     let split = Split {
         prompt_above: &thresholds,
         cached_above: Some(data.long_context_tokens()),
+        fixed: true,
     };
     let usage = ledger.usage(args.since, args.until, scope, &split)?;
     let by_project = match scope {
@@ -356,6 +357,7 @@ pub fn run(args: &ReportArgs, data: &Data, config: Config, today: Date) -> Resul
             &Split {
                 prompt_above: &thresholds,
                 cached_above: None,
+                fixed: false,
             },
         )?),
     };

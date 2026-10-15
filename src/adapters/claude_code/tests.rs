@@ -57,6 +57,7 @@ fn an_assistant_message_becomes_a_call_with_its_token_classes() -> Result<(), ji
             model: "claude-opus-5-5".to_owned(),
             timestamp: "2026-09-30T12:00:00.250Z".parse()?,
             session_id: "session-a".to_owned(),
+            agent_id: None,
             cwd: Some("/work/alpha".to_owned()),
             role: Role::Interactive,
             client_version: Some("2.1.0".to_owned()),
@@ -126,12 +127,25 @@ fn print_mode_and_sdk_sessions_are_headless() {
 }
 
 #[test]
-fn transcripts_in_a_subagents_directory_are_subagent_calls() {
+fn transcripts_in_a_subagents_directory_are_subagent_calls_with_their_agent() {
     let file = PathBuf::from("/logs/projects/-work-alpha/session/subagents/agent-1.jsonl");
-    let Line::Call(call) = parse(&assistant("claude-opus-5-5", "cli"), &file) else {
+    let mut line = assistant("claude-opus-5-5", "cli");
+    line["agentId"] = "a1".into();
+    let Line::Call(call) = parse(&line, &file) else {
         panic!("expected a call");
     };
     assert_eq!(call.role, Role::Subagent);
+    assert_eq!(call.agent_id.as_deref(), Some("a1"));
+}
+
+#[test]
+fn an_agent_id_outside_a_subagent_transcript_is_not_kept() {
+    let mut line = assistant("claude-opus-5-5", "cli");
+    line["agentId"] = "a1".into();
+    let Line::Call(call) = parse(&line, &session_file()) else {
+        panic!("expected a call");
+    };
+    assert_eq!(call.agent_id, None);
 }
 
 #[test]

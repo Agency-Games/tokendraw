@@ -32,6 +32,7 @@ fn usage(client: &str, provider: &str, model: &str, sums: [f64; 6]) -> Usage {
         decode_pairs,
         estimated_output: Tokens(0),
         estimated_input: Tokens(0),
+        without_fixed: WithoutFixed::default(),
     }
 }
 
@@ -253,6 +254,53 @@ fn the_breakdown_splits_the_base_case_energy_by_terms_threshold_client_and_role(
     }
     assert!(near(parts.by_client["claude-code"].0, long_energy));
     assert!(near(parts.by_role["subagent"].0, total - long_energy));
+    Ok(())
+}
+
+// A call of 280,000 cache-read, 2,000 new and 500 output tokens whose
+// thread started with 20,000 tokens: without them its prompt of 262,000
+// tokens falls below the 272,000-token tier of its price.
+#[test]
+fn the_fixed_context_is_the_energy_less_that_of_the_call_without_it_at_its_own_tier()
+-> Result<(), Error> {
+    let data = data::load(None)?;
+    let model = "gpt-6-astra";
+    assert_ne!(
+        data.parameter_set(model, 272_000).record.id,
+        data.parameter_set(model, 0).record.id,
+        "the tiers have their own parameter sets"
+    );
+    let pairs = |cached: f64, new: f64, out: f64| {
+        [new * (cached + new / 2.0), out * (cached + new + out / 2.0)]
+    };
+    let [prefill, decode] = pairs(280_000.0, 2_000.0, 500.0);
+    let mut call = usage(
+        "codex",
+        "openai",
+        model,
+        [1.0, 280_000.0, 2_000.0, 500.0, prefill, decode],
+    );
+    call.prompt_above = 272_000;
+    let [prefill, decode] = pairs(260_000.0, 2_000.0, 500.0);
+    let without = usage(
+        "codex",
+        "openai",
+        model,
+        [1.0, 260_000.0, 2_000.0, 500.0, prefill, decode],
+    );
+    call.without_fixed.prompt_above = 0;
+    call.without_fixed.fixed = Tokens(20_000);
+    call.without_fixed.cache_read = without.cache_read;
+    call.without_fixed.new_input = without.new_input;
+    call.without_fixed.prefill_pairs = without.prefill_pairs;
+    call.without_fixed.decode_pairs = without.decode_pairs;
+    let expected = l1(&data, std::slice::from_ref(&call)).energy.base_case.0
+        - l1(&data, &[without]).energy.base_case.0;
+    let estimate = l1(&data, &[call]);
+    let fixed = estimate.breakdown.fixed_by_client["codex"];
+    assert_eq!((fixed.calls, fixed.tokens), (1, Tokens(20_000)));
+    assert!(expected > 0.0);
+    assert!((fixed.energy.0 - expected).abs() < 1e-9);
     Ok(())
 }
 

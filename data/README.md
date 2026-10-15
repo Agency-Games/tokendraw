@@ -120,7 +120,7 @@ its own location.
 A `[[finding]]` record holds the parameters of one finding of the report,
 by its `id`. `long-context` has `cached_tokens`: a call whose cache-read
 tokens exceed it is long-context, which the report's "Where the energy
-goes" counts.
+goes" counts. `fixed-context` has no parameters.
 
 An `[[action]]` record holds the `steps` a user of one `client` can take
 about one `finding`, each naming the client's command or setting. It has

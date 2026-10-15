@@ -61,8 +61,10 @@ pub const FALLBACK_PROVIDER: &str = "unknown";
 /// The finding whose `cached_tokens` the report's breakdown uses.
 pub const LONG_CONTEXT: &str = "long-context";
 
+pub const FIXED_CONTEXT: &str = "fixed-context";
+
 /// The findings the tool knows; a record with another id is an error.
-pub const FINDINGS: [&str; 1] = [LONG_CONTEXT];
+pub const FINDINGS: [&str; 2] = [LONG_CONTEXT, FIXED_CONTEXT];
 
 #[derive(Debug, Error)]
 pub enum Error {
