@@ -105,6 +105,24 @@ which is a list, `"listed"` (every geography a shipped provider lists) or
 data only, so a provider or geography you add changes no other record;
 a shipped geography you replace reaches every provider that uses it.
 
+Grid intensity is location-based: the emissions of the electricity
+generated where a provider's sites are, from Ember (`grid/README.md`).
+Renewable energy certificates and power purchase agreements, which
+market-based accounting subtracts, are not used: they do not change the
+electricity a call drew from the grid where it ran, and one physical
+basis keeps every provider's figures comparable. The standards
+disagree. SCI for AI does not let market-based instruments reduce its
+score (https://github.com/Green-Software-Foundation/sci-ai), ITU-T
+L.1801 prefers market-based figures
+(https://www.itu.int/rec/T-REC-L.1801), and the GHG Protocol's ICT
+Sector Guidance calls reporting both best practice
+(https://ghgprotocol.org/guidance-0). The difference can be large:
+Google reports Gemini's emissions market-based only, at 94 g CO2e per
+kWh against 345 location-based (https://arxiv.org/abs/2508.15734). A
+market-based figure would be a separate column, from a factor a
+provider publishes with how it is allocated, never subtracted from the
+location-based one. The shipped data has none.
+
 ## Locations
 
 A `[[location]]` record names a client without an adapter (`id`, as the

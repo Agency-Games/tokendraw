@@ -6,9 +6,11 @@ emissions of LLM coding agent use.
 Tokendraw currently supports Claude Code, Codex, pi, as well as custom
 adapters for other tools. It reviews the logs of these tools, counts
 the tokens of model calls, estimates the electricity used to serve
-those calls, and the emissions from producing that electricity. The
-embodied emissions of hardware, training or water use are not estimated
-yet.
+those calls, and the emissions from producing that electricity on
+the grids where the calls ran, not reduced by the renewable energy
+contracts providers report ([data/README.md](data/README.md#providers)).
+The embodied emissions of hardware, training or water use are not
+estimated yet.
 
 ## Getting started
 
