@@ -11,7 +11,7 @@ expression: without_platform(&stdout(&output))?
   },
   "data_version": {
     "id": "2026-10-15",
-    "shipped_sha256": "4cafbc5d054a72634a5e6c8090926e6c520e162d421f71aac7bac1e3db274382",
+    "shipped_sha256": "4f05923efe3a46dd47170589d7ee029b03283e899ef004b9e88333fd89cf8759",
     "overrides": []
   },
   "period": {
@@ -552,6 +552,38 @@ expression: without_platform(&stdout(&output))?
         "pi": [
           "/mcp to disable servers you do not use",
           "shorten AGENTS.md"
+        ]
+      },
+      "measure": {
+        "command": "tokendraw findings --since <tomorrow>",
+        "compare": "share_of_base_case"
+      }
+    },
+    {
+      "code": "model-choice",
+      "facts": {
+        "calls": 4,
+        "calls_share_of_base_case": 0.11388913628512508,
+        "share_of_base_case": 0.10039658119598559,
+        "roles": [
+          "subagent",
+          "headless"
+        ],
+        "models": {
+          "claude-code": "claude-haiku-5-5",
+          "codex": "gpt-6-luna"
+        }
+      },
+      "actions": {
+        "claude-code": [
+          "model: haiku in a subagent's definition",
+          "CLAUDE_CODE_SUBAGENT_MODEL=haiku",
+          "claude -p --model haiku",
+          "model=\"haiku\" in the Agent SDK's options"
+        ],
+        "codex": [
+          "agents.default_subagent_model = \"gpt-6-luna\" in config.toml",
+          "codex exec --model gpt-6-luna"
         ]
       },
       "measure": {

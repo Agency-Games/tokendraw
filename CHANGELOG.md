@@ -17,6 +17,10 @@ and tokendraw follows Semantic Versioning (https://semver.org/).
 - The `fixed-context` finding: the context each call carries from the
   start of its session or subagent, such as the system prompt, tool
   definitions and instruction files.
+- The `model-choice` finding: subagent and headless calls of Claude Code
+  and Codex on models pricier than the lowest-priced model the client's
+  docs list, and how much lower the total would have been on that model
+  with the same tokens.
 
 ### Changed
 

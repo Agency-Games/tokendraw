@@ -43,7 +43,19 @@ fixed-context
   system prompt, tool definitions, instruction files and first prompt. That
   used 99% of the energy.
   What you can do:
-    codex: enabled = false in config.toml for MCP servers you do not use,
-    shorten AGENTS.md
+    codex:
+      enabled = false in config.toml for MCP servers you do not use
+      shorten AGENTS.md
+  To see the effect, run this after the change:
+  `tokendraw findings --since <tomorrow>`
+
+model-choice
+  Subagents and headless runs on models pricier than gpt-6-luna (codex) used
+  100% of the energy. On those models, the same tokens would have made the
+  total 80% lower.
+  What you can do:
+    codex:
+      agents.default_subagent_model = "gpt-6-luna" in config.toml
+      codex exec --model gpt-6-luna
   To see the effect, run this after the change:
   `tokendraw findings --since <tomorrow>`

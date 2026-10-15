@@ -37,4 +37,17 @@ Where the energy goes (base case)
   rereading the context               3%
   calls above 200,000 cached tokens   0%
 
-1 finding below 10% of the energy: `tokendraw findings`
+model-choice
+  Subagents and headless runs on models pricier than claude-haiku-5-5
+  (claude-code) used 100% of the energy. On those models, the same tokens
+  would have made the total 95% lower.
+  What you can do:
+    claude-code:
+      model: haiku in a subagent's definition
+      CLAUDE_CODE_SUBAGENT_MODEL=haiku
+      claude -p --model haiku
+      model="haiku" in the Agent SDK's options
+  To see the effect, run this after the change:
+  `tokendraw findings --since <tomorrow>`
+
+1 more finding below 10% of the energy: `tokendraw findings`

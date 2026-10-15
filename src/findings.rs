@@ -7,7 +7,7 @@ use std::collections::BTreeMap;
 
 use serde::Serialize;
 
-use crate::data::{Data, FIXED_CONTEXT, LONG_CONTEXT};
+use crate::data::{Data, FIXED_CONTEXT, LONG_CONTEXT, MODEL_CHOICE};
 use crate::estimate::L1;
 
 #[derive(Clone, Debug, Serialize)]
@@ -22,7 +22,7 @@ pub struct Finding {
     pub measure: Option<Measure>,
 }
 
-#[derive(Clone, Copy, Debug, Serialize)]
+#[derive(Clone, Debug, Serialize)]
 #[serde(untagged)]
 pub enum Facts {
     LongContext {
@@ -39,6 +39,17 @@ pub enum Facts {
         mean_fixed_tokens: u64,
         share_of_base_case: f64,
     },
+    ModelChoice {
+        calls: u64,
+        /// The base case energy of the calls.
+        calls_share_of_base_case: f64,
+        /// The energy of their per-token terms above the compared model's.
+        share_of_base_case: f64,
+        /// As the ledger stores them.
+        roles: Vec<String>,
+        /// By client, the model record the calls are compared with.
+        models: BTreeMap<String, String>,
+    },
 }
 
 impl Facts {
@@ -50,6 +61,9 @@ impl Facts {
             }
             | Facts::FixedContext {
                 share_of_base_case, ..
+            }
+            | Facts::ModelChoice {
+                share_of_base_case, ..
             } => *share_of_base_case,
         }
     }
@@ -57,7 +71,9 @@ impl Facts {
     #[must_use]
     pub fn calls(&self) -> u64 {
         match self {
-            Facts::LongContext { calls, .. } | Facts::FixedContext { calls, .. } => *calls,
+            Facts::LongContext { calls, .. }
+            | Facts::FixedContext { calls, .. }
+            | Facts::ModelChoice { calls, .. } => *calls,
         }
     }
 }
@@ -83,6 +99,7 @@ pub fn every(data: &Data, l1: &L1) -> Option<Vec<Finding>> {
     let mut findings: Vec<Finding> = [
         long_context(data, l1, total),
         fixed_context(data, l1, total),
+        model_choice(data, l1, total),
     ]
     .into_iter()
     .flatten()
@@ -184,6 +201,63 @@ fn fixed_context(data: &Data, l1: &L1, total: f64) -> Option<Finding> {
             calls,
             mean_fixed_tokens: (tokens + calls / 2).checked_div(calls).unwrap_or(0),
             share_of_base_case: energy / total,
+        },
+        actions,
+        measure: None,
+    })
+}
+
+/// Counts the calls of the clients with steps whose data names the model to
+/// compare with; the clients named are those with such calls, or, without
+/// any, every such client with calls in the period.
+fn model_choice(data: &Data, l1: &L1, total: f64) -> Option<Finding> {
+    let applicable: BTreeMap<String, Vec<String>> = applicable(data, l1, MODEL_CHOICE)?
+        .into_iter()
+        .filter(|(client, _)| data.model_choice(client).is_some())
+        .collect();
+    if applicable.is_empty() {
+        return None;
+    }
+    let larger: Vec<_> = l1
+        .breakdown
+        .larger_model_by_client
+        .iter()
+        .filter(|(client, larger)| larger.calls > 0 && applicable.contains_key(*client))
+        .collect();
+    let calls: u64 = larger.iter().map(|(_, larger)| larger.calls).sum();
+    let energy: f64 = larger.iter().map(|(_, larger)| larger.energy.0).sum();
+    let difference: f64 = larger.iter().map(|(_, larger)| larger.difference.0).sum();
+    let actions: BTreeMap<String, Vec<String>> = if calls == 0 {
+        applicable
+    } else {
+        applicable
+            .into_iter()
+            .filter(|(client, _)| larger.iter().any(|(id, _)| *id == client))
+            .collect()
+    };
+    let models = actions
+        .keys()
+        .filter_map(|client| {
+            data.model_choice(client)
+                .map(|(model, _)| (client.clone(), model.to_owned()))
+        })
+        .collect();
+    let roles = data
+        .findings
+        .get(MODEL_CHOICE)
+        .and_then(|finding| finding.roles.as_deref())
+        .unwrap_or_default()
+        .iter()
+        .map(|role| role.as_str().to_owned())
+        .collect();
+    Some(Finding {
+        code: MODEL_CHOICE,
+        facts: Facts::ModelChoice {
+            calls,
+            calls_share_of_base_case: energy / total,
+            share_of_base_case: difference / total,
+            roles,
+            models,
         },
         actions,
         measure: None,

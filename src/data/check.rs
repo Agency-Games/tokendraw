@@ -1,6 +1,8 @@
 use super::load::{Merged, Origin, Records, SHIPPED_RECOVERY, invalid};
-use super::records::{Five, Label, Source};
-use super::{Error, FALLBACK_PARAMETER_SET, FALLBACK_PROVIDER, FINDINGS, Kind, LONG_CONTEXT};
+use super::records::{ClientAction, Five, Label, Source};
+use super::{
+    Error, FALLBACK_PARAMETER_SET, FALLBACK_PROVIDER, FINDINGS, Kind, LONG_CONTEXT, MODEL_CHOICE,
+};
 
 pub(super) fn check(merged: &Merged, origins: &[Origin]) -> Result<(), Error> {
     let sources = &merged.sources;
@@ -110,6 +112,18 @@ fn check_findings(merged: &Merged, origins: &[Origin]) -> Result<(), Error> {
                 format!("{what} needs cached_tokens above 0"),
             ));
         }
+        match (id == MODEL_CHOICE, &finding.roles) {
+            (true, roles) if roles.as_ref().is_none_or(Vec::is_empty) => {
+                return Err(invalid(origin, format!("{what} needs at least one role")));
+            }
+            (false, Some(_)) => {
+                return Err(invalid(
+                    origin,
+                    format!("{what} has roles; only {MODEL_CHOICE} takes them"),
+                ));
+            }
+            _ => {}
+        }
     }
     for (id, (action, origin)) in &merged.actions {
         let origin = &origins[*origin];
@@ -135,6 +149,7 @@ fn check_findings(merged: &Merged, origins: &[Origin]) -> Result<(), Error> {
         }
         check_sources(&merged.sources, origin, &what, &action.sources)?;
         check_label(origin, &what, action.label)?;
+        check_action_model(merged, origin, &what, action)?;
     }
     if !merged.findings.contains_key(LONG_CONTEXT) {
         return Err(Error::Invalid {
@@ -144,6 +159,35 @@ fn check_findings(merged: &Merged, origins: &[Origin]) -> Result<(), Error> {
         });
     }
     Ok(())
+}
+
+/// A `model-choice` action compares the calls with a priced model, whose
+/// weight terms its price sets; no other action names a model.
+fn check_action_model(
+    merged: &Merged,
+    origin: &Origin,
+    what: &str,
+    action: &ClientAction,
+) -> Result<(), Error> {
+    match (action.finding == MODEL_CHOICE, &action.model) {
+        (true, None) => Err(invalid(origin, format!("{what} needs a model"))),
+        (false, Some(_)) => Err(invalid(
+            origin,
+            format!("{what} has a model; only {MODEL_CHOICE} actions take one"),
+        )),
+        (true, Some(model)) => match merged.models.get(model) {
+            None => Err(invalid(
+                origin,
+                format!("{what} names the model {model}, which no data file defines"),
+            )),
+            Some((record, _)) if record.price.is_none() => Err(invalid(
+                origin,
+                format!("{what} names the model {model}, which has no price; name a priced model"),
+            )),
+            Some(_) => Ok(()),
+        },
+        (false, None) => Ok(()),
+    }
 }
 
 fn check_models(merged: &Merged, origins: &[Origin]) -> Result<(), Error> {

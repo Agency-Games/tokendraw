@@ -1041,6 +1041,80 @@ fn an_action_is_identified_by_its_finding_and_client() -> Result<(), Error> {
     Ok(())
 }
 
+const MODEL_CHOICE_TOML: &str = r#"
+[[finding]]
+id = "model-choice"
+roles = ["subagent", "headless"]
+label = "D"
+sources = ["study"]
+basis = "The roles"
+reviewed = 2026-10-06
+
+[[action]]
+finding = "model-choice"
+client = "claude-code"
+model = "priced"
+steps = ["model: haiku in a subagent's definition"]
+label = "C"
+sources = ["study"]
+basis = "The setting"
+reviewed = 2026-10-06
+"#;
+
+#[test]
+fn model_choice_names_its_roles_and_the_model_of_each_client() -> Result<(), Error> {
+    let shipped = Shipped::new();
+    assert_eq!(shipped.load(&[])?.model_choice("claude-code"), None);
+    let data = shipped.load(&[("a.toml", &(priced() + MODEL_CHOICE_TOML))])?;
+    assert_eq!(
+        data.model_choice("claude-code"),
+        Some(("priced", &[Role::Subagent, Role::Headless][..]))
+    );
+    assert_eq!(data.model_choice("codex"), None);
+    assert_eq!(
+        data.set_of_model("priced", 100).map(|set| set.id.as_str()),
+        Some(data.parameter_set("priced-model", 100).record.id.as_str())
+    );
+    Ok(())
+}
+
+#[test]
+fn model_choice_without_roles_or_a_priced_model_is_refused() {
+    let shipped = Shipped::new();
+    let with = |text: &str| shipped.load(&[("a.toml", &(priced() + text))]);
+    let without = MODEL_CHOICE_TOML.replacen("roles = [\"subagent\", \"headless\"]\n", "", 1);
+    let empty = MODEL_CHOICE_TOML.replacen("[\"subagent\", \"headless\"]", "[]", 1);
+    for roles in [without, empty] {
+        assert!(problem(with(&roles)).contains("finding model-choice needs at least one role"));
+    }
+    let unknown_role = MODEL_CHOICE_TOML.replacen("\"headless\"", "\"batch\"", 1);
+    assert!(problem(with(&unknown_role)).contains("batch"));
+    let roles_elsewhere = FINDINGS_TOML.replacen(
+        "cached_tokens = 200000\n",
+        "cached_tokens = 200000\nroles = [\"subagent\"]\n",
+        1,
+    );
+    assert!(
+        problem(with(&roles_elsewhere))
+            .contains("finding long-context has roles; only model-choice takes them")
+    );
+    let no_model = MODEL_CHOICE_TOML.replacen("model = \"priced\"\n", "", 1);
+    assert!(problem(with(&no_model)).contains("action model-choice/claude-code needs a model"));
+    let unknown_model = MODEL_CHOICE_TOML.replacen("\"priced\"", "\"nowhere\"", 1);
+    assert!(
+        problem(with(&unknown_model))
+            .contains("names the model nowhere, which no data file defines")
+    );
+    let unpriced = MODEL_CHOICE_TOML.replacen("\"priced\"", "\"claude\"", 1);
+    assert!(problem(with(&unpriced)).contains("names the model claude, which has no price"));
+    let model_elsewhere = AGENT_ACTION_TOML.replacen("steps =", "model = \"priced\"\nsteps =", 1);
+    assert!(
+        problem(with(&model_elsewhere)).contains(
+            "action long-context/my-agent has a model; only model-choice actions take one"
+        )
+    );
+}
+
 #[test]
 fn an_action_for_an_unknown_finding_or_without_steps_is_refused() {
     let shipped = Shipped::new();

@@ -515,6 +515,10 @@ fn write_findings(out: &mut impl Write, data: &Data) -> io::Result<()> {
         if let Some(tokens) = finding.cached_tokens {
             parameters.push(format!("cached_tokens {}", count(tokens)));
         }
+        if let Some(roles) = &finding.roles {
+            let roles: Vec<&str> = roles.iter().map(|role| role.as_str()).collect();
+            parameters.push(format!("roles {}", roles.join(", ")));
+        }
         writeln!(
             out,
             "  {}   {}   {:?}",
@@ -524,7 +528,7 @@ fn write_findings(out: &mut impl Write, data: &Data) -> io::Result<()> {
         )?;
     }
     writeln!(out)?;
-    writeln!(out, "actions: steps, label")?;
+    writeln!(out, "actions: steps, compared model, label")?;
     let rows: Vec<Vec<String>> = data
         .actions
         .iter()
@@ -532,6 +536,7 @@ fn write_findings(out: &mut impl Write, data: &Data) -> io::Result<()> {
             vec![
                 id.clone(),
                 action.steps.join(", "),
+                action.model.clone().unwrap_or_default(),
                 format!("{:?}", action.label),
             ]
         })
@@ -540,6 +545,7 @@ fn write_findings(out: &mut impl Write, data: &Data) -> io::Result<()> {
         out,
         "  ",
         &[
+            report::Align::Left,
             report::Align::Left,
             report::Align::Left,
             report::Align::Left,

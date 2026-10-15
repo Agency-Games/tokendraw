@@ -120,14 +120,18 @@ its own location.
 A `[[finding]]` record holds the parameters of one finding of the report,
 by its `id`. `long-context` has `cached_tokens`: a call whose cache-read
 tokens exceed it is long-context, which the report's "Where the energy
-goes" counts. `fixed-context` has no parameters.
+goes" counts. `fixed-context` has no parameters. `model-choice` has
+`roles`, the roles whose calls it counts (`interactive`, `subagent`,
+`headless`).
 
 An `[[action]]` record holds the `steps` a user of one `client` can take
 about one `finding`, each naming the client's command or setting. It has
 no `id`: the finding and the client identify it, so a record for a shipped
 pair replaces that record, and a record for another client adds its
-steps. A finding counts only the calls of clients it has steps for. For
-example, for a user adapter's client:
+steps. A finding counts only the calls of clients it has steps for. A
+`model-choice` record also names the `model` record the client's calls
+are compared with, which must have a price. For example, for a user
+adapter's client:
 
 ```toml
 [sources.my-agent-docs]

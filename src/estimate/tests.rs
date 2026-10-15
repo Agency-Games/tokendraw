@@ -447,3 +447,111 @@ fn the_shipped_data_gives_tool_default_quality() -> Result<(), Error> {
     assert_eq!(qualities(&data), (Some(Label::D), Some(Label::D)));
     Ok(())
 }
+
+/// One call of `client` in `role` on `model`, with 150,000 cache-read,
+/// 2,000 new and 500 output tokens.
+fn one_call(client: &str, role: &str, model: &str) -> Usage {
+    let provider = if client == "codex" {
+        "openai"
+    } else {
+        "anthropic"
+    };
+    let (cached, new, out) = (150_000.0, 2_000.0, 500.0);
+    let mut call = usage(
+        client,
+        provider,
+        model,
+        [
+            1.0,
+            cached,
+            new,
+            out,
+            new * (cached + new / 2.0),
+            out * (cached + new + out / 2.0),
+        ],
+    );
+    call.role = role.to_owned();
+    call.prompt_above = 100_000;
+    call
+}
+
+fn larger(data: &Data, calls: &[Usage]) -> BTreeMap<String, LargerModel> {
+    l1(data, calls).breakdown.larger_model_by_client
+}
+
+#[test]
+fn a_larger_model_counts_its_energy_above_the_compared_model_at_its_tier() -> Result<(), Error> {
+    let data = data::load(None)?;
+    let call = one_call("claude-code", "subagent", "claude-opus-5-5");
+    let mut on_haiku = call.clone();
+    on_haiku.model = "claude-haiku-5-5".to_owned();
+    assert_ne!(
+        data.parameter_set("claude-haiku-5-5", 100_000).record.id,
+        data.parameter_set("claude-haiku-5-5", 0).record.id,
+        "the compared model's own tier applies"
+    );
+    // Closed models share every term but `b_in` and `b_out`, so the
+    // difference is that of the whole calls.
+    let energy = l1(&data, std::slice::from_ref(&call)).energy.base_case.0;
+    let expected = energy - l1(&data, &[on_haiku]).energy.base_case.0;
+    let counted = larger(&data, &[call])["claude-code"];
+    assert_eq!(counted.calls, 1);
+    assert!((counted.energy.0 - energy).abs() < 1e-12);
+    assert!(expected > 0.0);
+    assert!((counted.difference.0 - expected).abs() < 1e-9 * expected);
+    Ok(())
+}
+
+#[test]
+fn only_the_roles_and_clients_of_the_finding_count() -> Result<(), Error> {
+    let data = data::load(None)?;
+    let calls = [
+        one_call("claude-code", "interactive", "claude-opus-5-5"),
+        one_call("claude-code", "headless", "claude-haiku-5-5"),
+        one_call("codex", "headless", "gpt-6-luna"),
+        one_call("pi", "subagent", "claude-opus-5-5"),
+        one_call("claude-code", "subagent", "unnamed-model"),
+        one_call("codex", "headless", "gpt-6-astra"),
+    ];
+    let counted = larger(&data, &calls);
+    assert_eq!(counted.keys().collect::<Vec<_>>(), ["codex"]);
+    assert_eq!(counted["codex"].calls, 1);
+    Ok(())
+}
+
+#[test]
+fn a_model_without_a_price_is_not_counted() -> Result<(), Error> {
+    let data = data::load(None)?;
+    let call = one_call("claude-code", "subagent", "claude-unpriced-9");
+    let set = data.parameter_set(&call.model, call.prompt_above);
+    assert!(set.matched && set.record.id == "frontier");
+    assert!(larger(&data, &[call]).is_empty());
+    Ok(())
+}
+
+#[test]
+fn only_the_per_token_terms_decide_and_size_the_difference() -> Result<(), Error> {
+    let data = data::load(None)?;
+    let call = one_call("claude-code", "subagent", "claude-opus-5-5");
+    let before = larger(&data, std::slice::from_ref(&call))["claude-code"].difference;
+    let id = data
+        .parameter_set(&call.model, call.prompt_above)
+        .record
+        .id
+        .clone();
+    let mut attention = data.clone();
+    if let Some(set) = attention.priced_sets.get_mut(&id) {
+        set.a_p_uj_per_pair.base_case *= 3.0;
+        set.a_d_uj_per_pair.base_case *= 3.0;
+        set.c0_mj_per_cached_token.base_case *= 3.0;
+    }
+    let after = larger(&attention, std::slice::from_ref(&call))["claude-code"].difference;
+    assert!((after.0 - before.0).abs() < 1e-12);
+    let mut cheaper = data.clone();
+    if let Some(set) = cheaper.priced_sets.get_mut(&id) {
+        set.b_in_j_per_token.base_case = 0.0;
+        set.b_out_j_per_token.base_case = 0.0;
+    }
+    assert!(larger(&cheaper, &[call]).is_empty());
+    Ok(())
+}

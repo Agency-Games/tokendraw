@@ -2117,7 +2117,7 @@ fn the_hidden_findings_command_shows_the_calls_of_the_report() -> TestResult {
     let text = run(state.path(), &[&["report"][..], &selection].concat())?;
     let text = stdout(&text);
     let expected = format!(
-        "2 findings below 100% of the energy:\n`tokendraw findings --since 2026-09-30 --until 2026-10-01 --project {alpha}`"
+        "3 findings below 100% of the energy:\n`tokendraw findings --since 2026-09-30 --until 2026-10-01 --project {alpha}`"
     );
     assert!(text.contains(&expected), "{text}");
     let report = json_of(&run(
@@ -2237,7 +2237,7 @@ fn the_configuration_file_named_by_the_variable_sets_the_threshold() -> TestResu
         json["hidden_findings"]["threshold_share_of_base_case"],
         0.99
     );
-    assert_eq!(json["hidden_findings"]["count"], 2);
+    assert_eq!(json["hidden_findings"]["count"], 3);
     let missing = tokendraw_with_state(state.path(), &["report"])
         .env("TOKENDRAW_CONFIG", state.path().join("missing.toml"))
         .output()?;

@@ -44,8 +44,10 @@ fixed-context
   system prompt, tool definitions, instruction files and first prompt. That
   used 11% of the energy.
   What you can do:
-    claude-code: /context to see what fills the context, /mcp disable for
-    servers you do not use, /memory to shorten CLAUDE.md
+    claude-code:
+      /context to see what fills the context
+      /mcp disable for servers you do not use
+      /memory to shorten CLAUDE.md
   To see the effect, run this after the change:
   `tokendraw findings --since <tomorrow>`
 

@@ -50,6 +50,9 @@ pub struct Breakdown {
     /// calls: their energy less that of the same calls without it, each
     /// priced at the prompt threshold it then falls under.
     pub fixed_by_client: BTreeMap<String, Fixed>,
+    /// By client, the calls in the roles of `model-choice` whose per-token
+    /// terms exceed those of the model the data compares them with.
+    pub larger_model_by_client: BTreeMap<String, LargerModel>,
     pub by_client: BTreeMap<String, WattHours>,
     pub by_role: BTreeMap<String, WattHours>,
 }
@@ -68,6 +71,16 @@ pub struct Fixed {
     pub tokens: Tokens,
     /// Base case.
     pub energy: WattHours,
+}
+
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct LargerModel {
+    pub calls: u64,
+    /// Base case.
+    pub energy: WattHours,
+    /// The base case energy of the per-token terms (`b_in`, `b_out`) above
+    /// those of the compared model, with the same tokens.
+    pub difference: WattHours,
 }
 
 /// Excludes the cache residency term `R`, which the data does not hold.
@@ -172,6 +185,7 @@ pub fn l1(data: &Data, usage: &[Usage]) -> L1 {
             client.energy = client.energy + base_case;
         }
         add_fixed(data, row, base_case, pue.base_case, breakdown);
+        add_larger_model(data, row, set, base_case, pue.base_case, breakdown);
         total.calls += row.calls;
         for (part, key) in [
             (&mut breakdown.by_client, &row.client),
@@ -210,6 +224,50 @@ fn add_fixed(data: &Data, row: &Usage, energy: WattHours, pue: f64, breakdown: &
     let (node, _) = node(set, &Load::without_fixed(row));
     fixed.tokens = Tokens(fixed.tokens.0 + without.fixed.0);
     fixed.energy = fixed.energy + WattHours(energy.0 - node.base_case * set.idle.base_case * pue);
+}
+
+/// Adds the calls of `row` when its client has a `model-choice` action,
+/// its role is one the finding counts, its model has a list price and its
+/// set's per-token terms give more energy than the compared model's at the
+/// same tokens and prompt tier, so the finding can call the model
+/// pricier. The other terms are the row's own on both sides, so only `b_in`
+/// and `b_out` differ.
+fn add_larger_model(
+    data: &Data,
+    row: &Usage,
+    set: &ParameterSet,
+    energy: WattHours,
+    pue: f64,
+    breakdown: &mut Breakdown,
+) {
+    let Some((model, roles)) = data.model_choice(&row.client) else {
+        return;
+    };
+    if !roles.iter().any(|role| role.as_str() == row.role)
+        || data
+            .model(&row.model)
+            .is_none_or(|record| record.price.is_none())
+    {
+        return;
+    }
+    let Some(compared) = data.set_of_model(model, row.prompt_above) else {
+        return;
+    };
+    let load = Load::of(row);
+    let joules = (set.b_in_j_per_token.base_case - compared.b_in_j_per_token.base_case)
+        * load.new_input
+        + (set.b_out_j_per_token.base_case - compared.b_out_j_per_token.base_case) * load.output;
+    let difference = joules / JOULES_PER_WATT_HOUR * set.idle.base_case * pue;
+    if difference <= 0.0 {
+        return;
+    }
+    let larger = breakdown
+        .larger_model_by_client
+        .entry(row.client.clone())
+        .or_default();
+    larger.calls += row.calls;
+    larger.energy = larger.energy + energy;
+    larger.difference = larger.difference + WattHours(difference);
 }
 
 /// The sums of calls the energy model reads.

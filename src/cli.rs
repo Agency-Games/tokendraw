@@ -285,6 +285,14 @@ fixed-context  the context each call's session or subagent started with,
                up to the call's own: system prompt, tool definitions,
                instruction files and the first prompt, which the logs do
                not separate, so its share is an upper estimate
+model-choice   subagent and headless calls on models with a list price
+               above the model it compares each client with, the
+               lowest-priced its docs list; the share is the energy of
+               the per-token terms above that model's, for closed models
+               the weights, with the same tokens. The data gives closed
+               models the same attention energy, so this leaves attention
+               out, and another model may need more turns or tokens.
+               tokendraw data names the roles and models
 
 tokendraw report shows only the findings with at least 10% of the energy
 by default; this command shows them all.";

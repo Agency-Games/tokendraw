@@ -1,6 +1,7 @@
 use jiff::civil::Date;
 use serde::{Deserialize, Deserializer, Serialize};
 
+use crate::adapters::Role;
 use crate::quantity::GramsCo2ePerKwh;
 
 /// Best first, so the weakest of several labels is their maximum.
@@ -299,6 +300,10 @@ pub struct Finding {
     /// `long-context`: the cache-read tokens a call must exceed.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub cached_tokens: Option<u64>,
+    /// `model-choice`: the roles whose model one setting of the client
+    /// chooses.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub roles: Option<Vec<Role>>,
     pub label: Label,
     pub sources: Vec<String>,
     pub basis: String,
@@ -316,6 +321,10 @@ pub struct ClientAction {
     pub client: String,
     /// Each names the client's command or setting as the client names it.
     pub steps: Vec<String>,
+    /// `model-choice`: the id of the model record the calls are compared
+    /// with, the lowest-priced model the client's docs list for the roles.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub model: Option<String>,
     pub label: Label,
     pub sources: Vec<String>,
     pub basis: String,

@@ -82,6 +82,28 @@ Tokendraw 0.2.0 and earlier did not record agent IDs. The first run of a
 later version reads Claude Code's logs again to add them; the subagents
 of logs deleted since count as one thread per session.
 
+## The model choice
+
+The `model-choice` finding counts the subagent and headless calls of the
+clients whose data names a model to compare them with: for Claude Code
+`claude-haiku-5-5`, for Codex `gpt-6-luna`, the lowest-priced model each
+client's docs list. `tokendraw data` names the roles and the models. A
+call counts when its model has a list price in the data and its
+per-token terms (`b_in` per new input token, `b_out` per output token)
+give more energy than the compared model's, at the price tier each
+model's prompt falls under. Priced models take those terms from their
+price, so these are the models pricier than the compared one. A model
+without a price is left out.
+
+Its energy is the difference of those terms, with the same tokens and the
+call's own attention, reload and idle terms. For a closed model the
+per-token terms are the energy of its weights, taken from its list price,
+and its attention terms are the same as every other closed model's, since
+no provider publishes them. So the finding leaves attention out. It is
+what the data's per-token terms give if every counted call had run on the
+compared model with the same tokens; another model may need more turns or
+tokens.
+
 ## JSON
 
 Every `--json` output has a `schema_version`, which changes only when a

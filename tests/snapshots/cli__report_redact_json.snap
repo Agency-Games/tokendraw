@@ -11,7 +11,7 @@ expression: without_platform(&json)?
   },
   "data_version": {
     "id": "2026-10-15",
-    "shipped_sha256": "4cafbc5d054a72634a5e6c8090926e6c520e162d421f71aac7bac1e3db274382",
+    "shipped_sha256": "4f05923efe3a46dd47170589d7ee029b03283e899ef004b9e88333fd89cf8759",
     "overrides": [
       {
         "path": "override 1",

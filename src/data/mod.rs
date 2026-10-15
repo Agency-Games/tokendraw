@@ -11,6 +11,7 @@ use jiff::civil::Date;
 use serde::Serialize;
 use thiserror::Error;
 
+use crate::adapters::Role;
 use crate::quantity::GramsCo2ePerKwh;
 
 mod check;
@@ -63,8 +64,11 @@ pub const LONG_CONTEXT: &str = "long-context";
 
 pub const FIXED_CONTEXT: &str = "fixed-context";
 
+/// The finding whose `roles` and whose actions' `model` the estimate uses.
+pub const MODEL_CHOICE: &str = "model-choice";
+
 /// The findings the tool knows; a record with another id is an error.
-pub const FINDINGS: [&str; 2] = [LONG_CONTEXT, FIXED_CONTEXT];
+pub const FINDINGS: [&str; 3] = [LONG_CONTEXT, FIXED_CONTEXT, MODEL_CHOICE];
 
 #[derive(Debug, Error)]
 pub enum Error {
@@ -190,21 +194,48 @@ impl Data {
         let model = self.model(name);
         let record = match model {
             None => &self.parameter_sets[FALLBACK_PARAMETER_SET],
-            Some(model) => match &model.price {
-                None => &self.parameter_sets[&model.parameter_set],
-                Some(price) => {
-                    let tier = self.prices[price]
-                        .tier
-                        .iter()
-                        .rfind(|tier| tier.above_prompt_tokens <= prompt_above);
-                    &self.priced_sets[&priced_set_id(&model.parameter_set, price, tier)]
-                }
-            },
+            Some(model) => self.model_set(model, prompt_above),
         };
         Match {
             record,
             matched: model.is_some(),
         }
+    }
+
+    /// The set of the model record `id`, as [`Data::parameter_set`] gives it
+    /// for a call; `None` when no record has that id.
+    #[must_use]
+    pub fn set_of_model(&self, id: &str, prompt_above: u64) -> Option<&ParameterSet> {
+        self.models
+            .get(id)
+            .map(|model| self.model_set(model, prompt_above))
+    }
+
+    fn model_set(&self, model: &Model, prompt_above: u64) -> &ParameterSet {
+        match &model.price {
+            None => &self.parameter_sets[&model.parameter_set],
+            Some(price) => {
+                let tier = self.prices[price]
+                    .tier
+                    .iter()
+                    .rfind(|tier| tier.above_prompt_tokens <= prompt_above);
+                &self.priced_sets[&priced_set_id(&model.parameter_set, price, tier)]
+            }
+        }
+    }
+
+    /// The model record the calls of `client` are compared with for
+    /// `model-choice`, and the roles the finding counts; `None` when the
+    /// data names no such action.
+    #[must_use]
+    pub fn model_choice(&self, client: &str) -> Option<(&str, &[Role])> {
+        let model = self
+            .actions
+            .get(&action_id(MODEL_CHOICE, client))?
+            .model
+            .as_deref()?;
+        let roles = self.findings.get(MODEL_CHOICE)?.roles.as_deref()?;
+        Some((model, roles))
     }
 
     #[must_use]
