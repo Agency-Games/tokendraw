@@ -46,9 +46,9 @@ pub struct Breakdown {
     /// The same calls by client, for the findings, which count only the
     /// clients they have an action for.
     pub cached_above_by_client: BTreeMap<String, Calls>,
-    /// By client, the energy of the fixed context of the calls: their
-    /// energy less that of the same calls without it, each priced at the
-    /// prompt threshold it then falls under.
+    /// By client, every call and the energy of the fixed context of the
+    /// calls: their energy less that of the same calls without it, each
+    /// priced at the prompt threshold it then falls under.
     pub fixed_by_client: BTreeMap<String, Fixed>,
     pub by_client: BTreeMap<String, WattHours>,
     pub by_role: BTreeMap<String, WattHours>,
@@ -191,21 +191,23 @@ pub fn l1(data: &Data, usage: &[Usage]) -> L1 {
     total
 }
 
-/// Adds the energy of the fixed context of `row`, whose base case energy is
-/// `energy`: that less the energy of the calls without it, at the parameter
-/// set of the prompt threshold they then fall under.
+/// Adds the calls of `row`, also those without fixed context, so the mean
+/// does not depend on how calls are grouped, and the energy of their fixed
+/// context: `energy`, their base case energy, less that of the calls
+/// without it, at the parameter set of the prompt threshold they then fall
+/// under.
 fn add_fixed(data: &Data, row: &Usage, energy: WattHours, pue: f64, breakdown: &mut Breakdown) {
     let without: &WithoutFixed = &row.without_fixed;
-    if without.fixed.0 == 0 {
-        return;
-    }
-    let set = data.parameter_set(&row.model, without.prompt_above).record;
-    let (node, _) = node(set, &Load::without_fixed(row));
     let fixed = breakdown
         .fixed_by_client
         .entry(row.client.clone())
         .or_default();
     fixed.calls += row.calls;
+    if without.fixed.0 == 0 {
+        return;
+    }
+    let set = data.parameter_set(&row.model, without.prompt_above).record;
+    let (node, _) = node(set, &Load::without_fixed(row));
     fixed.tokens = Tokens(fixed.tokens.0 + without.fixed.0);
     fixed.energy = fixed.energy + WattHours(energy.0 - node.base_case * set.idle.base_case * pue);
 }

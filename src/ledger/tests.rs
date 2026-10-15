@@ -1963,3 +1963,52 @@ fn a_copy_in_another_session_never_gives_a_call_its_agent() -> TestResult {
     );
     Ok(())
 }
+
+#[test]
+fn a_thread_that_begins_with_an_unrecorded_compaction_starts_with_its_estimated_input() -> TestResult
+{
+    let dir = tempfile::tempdir()?;
+    let ledger = codex_compactions(dir.path(), 30)?;
+    // A fork whose first call compacts the 40,000 tokens it copied, then a
+    // call of 50,000 tokens.
+    for (id, timestamp, tokens, context_input) in [
+        ("fork#c", 2_000_000_000_000_i64, 0, Some(40_000)),
+        ("fork#1", 2_000_000_001_000, 50_000, None),
+    ] {
+        ledger.conn.execute(
+            UPSERT_CALL,
+            params![
+                "codex",
+                id,
+                "openai",
+                "gpt-6-astra",
+                timestamp,
+                "fork",
+                None::<String>,
+                "interactive",
+                tokens,
+                0,
+                0,
+                1,
+                None::<u64>,
+                true,
+                None::<String>,
+                context_input.is_some(),
+                context_input,
+                None::<String>,
+                None::<String>
+            ],
+        )?;
+    }
+    let mut statement = ledger
+        .conn
+        .prepare("SELECT call_id, f FROM fixed WHERE session_id = 'fork' ORDER BY call_id")?;
+    let rows: Vec<(String, u64)> = statement
+        .query_map([], |row| Ok((row.get(0)?, row.get(1)?)))?
+        .collect::<rusqlite::Result<_>>()?;
+    assert_eq!(
+        rows,
+        [("fork#1".to_owned(), 40_000), ("fork#c".to_owned(), 40_000)]
+    );
+    Ok(())
+}

@@ -305,6 +305,27 @@ fn the_fixed_context_is_the_energy_less_that_of_the_call_without_it_at_its_own_t
 }
 
 #[test]
+fn calls_without_fixed_context_count_toward_the_finding() -> Result<(), Error> {
+    let data = data::load(None)?;
+    let mut carrying = usage(
+        "claude-code",
+        "anthropic",
+        "claude-sonnet-4-5",
+        [1.0, 100.0, 0.0, 10.0, 0.0, 1_500.0],
+    );
+    carrying.without_fixed.fixed = Tokens(100);
+    carrying.without_fixed.decode_pairs = 50.0;
+    let mut without = carrying.clone();
+    without.role = "subagent".to_owned();
+    without.without_fixed = WithoutFixed::default();
+    let estimate = l1(&data, &[carrying, without]);
+    let fixed = estimate.breakdown.fixed_by_client["claude-code"];
+    assert_eq!((fixed.calls, fixed.tokens), (2, Tokens(100)));
+    assert!(fixed.energy.0 > 0.0);
+    Ok(())
+}
+
+#[test]
 fn an_unmatched_model_and_provider_use_the_fallbacks_and_are_counted() -> Result<(), Error> {
     let data = data::load(None)?;
     let rows = [

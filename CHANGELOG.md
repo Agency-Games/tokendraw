@@ -4,6 +4,25 @@ All notable changes to tokendraw are recorded in this file. The format is
 based on Keep a Changelog 1.1.0 (https://keepachangelog.com/en/1.1.0/),
 and tokendraw follows Semantic Versioning (https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- `report` shows the findings with at least 10% of the energy, set by
+  `threshold_percent` in the new configuration file, with the steps for
+  each client and a command to see the effect; `tokendraw findings` lists
+  them all.
+- The `long-context` finding: calls that carry more than 200,000 cached
+  tokens.
+- The `fixed-context` finding: the context each call carries from the
+  start of its session or subagent, such as the system prompt, tool
+  definitions and instruction files.
+
+### Changed
+
+- The first run reads Claude Code's logs again to record which subagent
+  made each call.
+
 ## [0.2.0] - 2026-10-12
 
 ### Changed

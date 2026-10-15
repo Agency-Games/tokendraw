@@ -80,14 +80,15 @@ CREATE TABLE labels (
 ///
 /// The `fixed` view, read through [`IN_RANGE_FIXED`] and
 /// [`IN_PROJECT_FIXED`], gives each call its fixed context `f`: the context
-/// (`uncached_input + cache_write + cache_read`) of the first call of its
-/// thread, up to its own. A thread is a session, or a subagent of one
+/// (`n_uncached_input + cache_write + n_cache_read`) of the first call of
+/// its thread, up to its own. A thread is a session, or a subagent of one
 /// ([`crate::adapters::Call`]'s `agent_id`). Its first call is found over
 /// the whole ledger, so a range that begins within a session still finds
-/// it; of calls in the same millisecond, the smaller counts. A first call
-/// has no previous call to estimate a context from, so its logged tokens
-/// are its context. `r_cache_read` and `r_new_input` are the call's tokens
-/// without `f`, taken from the cache-read tokens first.
+/// it; of calls in the same millisecond, the smaller counts. Only a first
+/// call without recorded usage, such as a fork's compaction, reads its
+/// estimate, which is slow to compute for every call. `r_cache_read` and
+/// `r_new_input` are the call's tokens without `f`, taken from the
+/// cache-read tokens first.
 pub(super) const ATTRIBUTION: &str = "
 CREATE TEMP TABLE attribution (
     a_client TEXT NOT NULL,
@@ -139,7 +140,11 @@ FROM (
     SELECT estimated.*, min(start, n_cache_read + n_uncached_input + cache_write) AS f
     FROM estimated JOIN (
         SELECT c.client AS t_client, c.session_id AS t_session, c.agent_id AS t_agent,
-               min(c.uncached_input + c.cache_write + c.cache_read) AS start
+               min(CASE WHEN c.context_input IS NULL
+                        THEN c.uncached_input + c.cache_write + c.cache_read
+                        ELSE (SELECT n_uncached_input + cache_write + n_cache_read
+                              FROM estimated AS e
+                              WHERE e.client = c.client AND e.call_id = c.call_id) END) AS start
         FROM (SELECT client, session_id, agent_id, min(timestamp_ms) AS first_ms
               FROM calls GROUP BY client, session_id, agent_id) AS t
         JOIN calls AS c ON c.client = t.client AND c.session_id = t.session_id
