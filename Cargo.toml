@@ -20,7 +20,7 @@ clap = { version = "4.6.7", features = ["derive"] }
 # Timestamps in the logs, the ledger and the time range
 jiff = { version = "0.2.37", default-features = false, features = ["std", "serde"] }
 # The ledger; bundled SQLite, so no system library is needed on any platform
-rusqlite = { version = "0.40.2", default-features = false, features = ["bundled", "fallible_uint"] }
+rusqlite = { version = "0.41.1", default-features = false, features = ["bundled", "fallible_uint"] }
 # Typed reading of log lines and writing of output
 serde = { version = "1", features = ["derive"] }
 # The JSON of the logs and of --json
