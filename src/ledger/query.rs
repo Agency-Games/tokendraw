@@ -171,9 +171,9 @@ impl Ledger {
         &self,
         since: Option<Timestamp>,
         until: Option<Timestamp>,
-        project: Option<&str>,
+        scope: Option<Scope>,
     ) -> Result<Vec<ClientCalls>, Error> {
-        self.query_calls(&Selection::new(since, until, project))
+        self.query_calls(&Selection::new(since, until, scope))
             .map_err(|error| self.database(error))
     }
 
@@ -238,9 +238,9 @@ impl Ledger {
         &self,
         since: Option<Timestamp>,
         until: Option<Timestamp>,
-        project: Option<&str>,
+        scope: Option<Scope>,
     ) -> Result<Vec<VersionCalls>, Error> {
-        self.query_client_versions(&Selection::new(since, until, project))
+        self.query_client_versions(&Selection::new(since, until, scope))
             .map_err(|error| self.database(error))
     }
 
@@ -266,9 +266,9 @@ impl Ledger {
         &self,
         since: Option<Timestamp>,
         until: Option<Timestamp>,
-        project: Option<&str>,
+        scope: Option<Scope>,
     ) -> Result<Vec<ProviderCalls>, Error> {
-        self.query_providers(&Selection::new(since, until, project))
+        self.query_providers(&Selection::new(since, until, scope))
             .map_err(|error| self.database(error))
     }
 
@@ -309,10 +309,10 @@ impl Ledger {
         &self,
         since: Option<Timestamp>,
         until: Option<Timestamp>,
-        project: Option<&str>,
+        scope: Option<Scope>,
         split: &Split,
     ) -> Result<Vec<Usage>, Error> {
-        self.query_usage(&Selection::new(since, until, project), split)
+        self.query_usage(&Selection::new(since, until, scope), split)
             .map_err(|error| self.database(error))
     }
 
@@ -527,23 +527,34 @@ fn usage(row: &rusqlite::Row, first: usize) -> rusqlite::Result<Usage> {
     })
 }
 
+/// The calls a scoped query reads. An unresolved directory is named by its
+/// path, which a label can also give a project, so the two are told apart
+/// by the calls' resolution.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Scope<'a> {
+    /// The calls attributed to the project by a checkout or a label.
+    Project(&'a str),
+    /// The calls of the directory that no checkout or label assigns.
+    Unresolved(&'a str),
+}
+
 struct Selection<'a> {
     since: i64,
     until: i64,
-    project: Option<&'a str>,
+    scope: Option<Scope<'a>>,
 }
 
 impl<'a> Selection<'a> {
-    fn new(since: Option<Timestamp>, until: Option<Timestamp>, project: Option<&'a str>) -> Self {
+    fn new(since: Option<Timestamp>, until: Option<Timestamp>, scope: Option<Scope<'a>>) -> Self {
         Self {
             since: since.map_or(i64::MIN, ceil_millisecond),
             until: until.map_or(i64::MAX, ceil_millisecond),
-            project,
+            scope,
         }
     }
 
     fn from(&self) -> &'static str {
-        if self.project.is_some() {
+        if self.scope.is_some() {
             IN_PROJECT
         } else {
             IN_RANGE
@@ -551,7 +562,7 @@ impl<'a> Selection<'a> {
     }
 
     fn fixed_from(&self) -> &'static str {
-        if self.project.is_some() {
+        if self.scope.is_some() {
             IN_PROJECT_FIXED
         } else {
             IN_RANGE_FIXED
@@ -563,8 +574,13 @@ impl<'a> Selection<'a> {
             rusqlite::types::Value::Integer(self.since),
             rusqlite::types::Value::Integer(self.until),
         ];
-        if let Some(project) = self.project {
-            values.push(rusqlite::types::Value::Text(project.to_owned()));
+        if let Some(scope) = self.scope {
+            let (name, unresolved) = match scope {
+                Scope::Project(name) => (name, false),
+                Scope::Unresolved(name) => (name, true),
+            };
+            values.push(rusqlite::types::Value::Text(name.to_owned()));
+            values.push(rusqlite::types::Value::Integer(i64::from(unresolved)));
         }
         rusqlite::params_from_iter(values)
     }

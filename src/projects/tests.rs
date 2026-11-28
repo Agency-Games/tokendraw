@@ -6,7 +6,7 @@ use tempfile::TempDir;
 use super::*;
 use crate::adapters::Definition;
 use crate::adapters::user::external;
-use crate::ledger::Split;
+use crate::ledger::{Scope, Split};
 
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 
@@ -310,19 +310,27 @@ fn a_project_is_named_by_its_checkout_and_labels_do_not_rename_it() -> TestResul
     )?;
     let mut resolver = Resolver::new(&ledger)?;
     attribute(&mut ledger, &mut resolver, None, None)?;
-    let calls = |project: &str| -> TestResult<u64> {
+    let calls = |scope: Scope| -> TestResult<u64> {
         Ok(ledger
-            .calls(None, None, Some(project))?
+            .calls(None, None, Some(scope))?
             .iter()
             .map(|client| client.calls)
             .sum())
     };
     let a_name = resolver.project(&a);
     assert_eq!(a_name, s(&a));
-    assert_eq!(calls(&a_name)?, 1, "only the session labelled a");
-    assert_eq!(calls(&resolver.project(&b))?, 1, "the calls under a");
     assert_eq!(
-        calls(&resolver.project(&gone))?,
+        calls(Scope::Project(&a_name))?,
+        1,
+        "only the session labelled a"
+    );
+    assert_eq!(
+        calls(Scope::Project(&resolver.project(&b)))?,
+        1,
+        "the calls under a"
+    );
+    assert_eq!(
+        calls(Scope::Unresolved(&resolver.project(&gone)))?,
         1,
         "an unresolved directory"
     );
@@ -504,7 +512,7 @@ fn a_removed_nested_checkout_stays_selectable_by_its_path() -> TestResult {
     let name = select(&ledger, &mut resolver, &inner)?.name;
     assert_eq!(name, s(&inner));
     let calls: u64 = ledger
-        .calls(None, None, Some(&name))?
+        .calls(None, None, Some(Scope::Project(&name)))?
         .iter()
         .map(|client| client.calls)
         .sum();
@@ -648,6 +656,45 @@ fn a_path_selects_a_project_unresolved_calls_or_nothing() -> TestResult {
             })
         ),
         "an exact label above wins over a deeper pattern label"
+    );
+    Ok(())
+}
+
+#[test]
+fn a_project_and_an_unresolved_directory_of_the_same_name_stay_apart() -> TestResult {
+    let tree = Tree::new()?;
+    let alpha = tree.dir("alpha")?;
+    let beta = tree.dir("beta")?;
+    let mut ledger = Ledger::open(&tree.path("state/ledger.sqlite"))?;
+    let mut resolver = labelled(&mut ledger, &[(&s(&beta), &s(&alpha))])?;
+    ingest(
+        &mut ledger,
+        &tree.root,
+        &[
+            call("r1", "in-alpha", Some(&alpha)),
+            call("r2", "in-alpha", Some(&alpha)),
+            call("r3", "in-beta", Some(&beta)),
+        ],
+    )?;
+    attribute(&mut ledger, &mut resolver, None, None)?;
+    let selection = select(&ledger, &mut resolver, &alpha)?;
+    assert_eq!(selection.selected, Selected::Project);
+    let calls = |scope: Scope| -> TestResult<u64> {
+        Ok(ledger
+            .calls(None, None, Some(scope))?
+            .iter()
+            .map(|client| client.calls)
+            .sum())
+    };
+    assert_eq!(
+        calls(Scope::Project(&selection.name))?,
+        1,
+        "only the labelled call of beta"
+    );
+    assert_eq!(
+        calls(Scope::Unresolved(&selection.name))?,
+        2,
+        "the calls made in alpha"
     );
     Ok(())
 }

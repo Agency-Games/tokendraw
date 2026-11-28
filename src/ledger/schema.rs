@@ -157,16 +157,19 @@ FROM (
 pub(super) const IN_RANGE: &str = "estimated WHERE timestamp_ms >= ?1 AND timestamp_ms < ?2";
 
 /// A working directory matches with `IS`, so calls without one are
-/// attributed too.
+/// attributed too. `?4` is 1 for an unresolved directory's calls and 0 for
+/// a project's ([`super::Scope`]).
 pub(super) const IN_PROJECT: &str = "estimated JOIN attribution
     ON a_client = client AND a_session = session_id AND a_cwd IS cwd
-    WHERE timestamp_ms >= ?1 AND timestamp_ms < ?2 AND project = ?3";
+    WHERE timestamp_ms >= ?1 AND timestamp_ms < ?2 AND project = ?3
+        AND (resolution = 'unresolved') = ?4";
 
 pub(super) const IN_RANGE_FIXED: &str = "fixed WHERE timestamp_ms >= ?1 AND timestamp_ms < ?2";
 
 pub(super) const IN_PROJECT_FIXED: &str = "fixed JOIN attribution
     ON a_client = client AND a_session = session_id AND a_cwd IS cwd
-    WHERE timestamp_ms >= ?1 AND timestamp_ms < ?2 AND project = ?3";
+    WHERE timestamp_ms >= ?1 AND timestamp_ms < ?2 AND project = ?3
+        AND (resolution = 'unresolved') = ?4";
 
 /// `MIGRATIONS[n]` takes schema version `n + 1` to `n + 2`.
 pub(super) const MIGRATIONS: [&str; 7] = [

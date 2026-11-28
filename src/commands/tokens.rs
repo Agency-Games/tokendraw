@@ -14,7 +14,7 @@ use crate::adapters::user::{self, UserAdapter};
 use crate::adapters::walk::Walk;
 use crate::cli::TokensArgs;
 use crate::dirs;
-use crate::ledger::{ClientCalls, FinalUsage, Ledger, Sources, Unrecorded, VersionCalls};
+use crate::ledger::{ClientCalls, FinalUsage, Ledger, Scope, Sources, Unrecorded, VersionCalls};
 use crate::projects;
 use crate::quantity::TokenClasses;
 
@@ -164,7 +164,7 @@ pub fn report<'a>(
     names: impl Iterator<Item = &'a str>,
     since: Option<Timestamp>,
     until: Option<Timestamp>,
-    project: Option<&str>,
+    scope: Option<Scope>,
 ) -> Result<Report> {
     Ok(Report {
         schema_version: SCHEMA_VERSION,
@@ -172,8 +172,8 @@ pub fn report<'a>(
         until,
         clients: combine(
             names,
-            &ledger.calls(since, until, project)?,
-            &ledger.client_versions(since, until, project)?,
+            &ledger.calls(since, until, scope)?,
+            &ledger.client_versions(since, until, scope)?,
             &ledger.sources()?,
         ),
     })

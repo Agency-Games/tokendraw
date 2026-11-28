@@ -15,7 +15,7 @@ use crate::config::Config;
 use crate::data::{Data, Five, Label, Override};
 use crate::estimate::{self, L1};
 use crate::findings::{self, Finding, Measure};
-use crate::ledger::{FinalUsage, ProjectUsage, ProviderCalls, Split, Unrecorded, Usage};
+use crate::ledger::{FinalUsage, ProjectUsage, ProviderCalls, Scope, Split, Unrecorded, Usage};
 use crate::output::{self, redact};
 use crate::projects::{self, Resolution, ResolvedBy, Resolver, Selected};
 use crate::quantity::{GramsCo2e, GramsCo2ePerKwh, TokenClasses, Tokens, WattHours};
@@ -333,7 +333,11 @@ pub fn run(args: &ReportArgs, data: &Data, config: Config, today: Date) -> Resul
             }
         }
     };
-    let scope = project.as_deref().or(directory.as_deref());
+    let scope = match (&project, &directory) {
+        (Some(project), _) => Some(Scope::Project(project)),
+        (None, Some(directory)) => Some(Scope::Unresolved(directory)),
+        (None, None) => None,
+    };
     let counts = tokens::report(
         &ledger,
         adapters.iter().map(|entry| entry.client.as_str()),

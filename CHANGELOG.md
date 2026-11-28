@@ -15,6 +15,13 @@ and tokendraw follows Semantic Versioning (https://semver.org/).
   its own ledger, so only someone who can write files beside the ledger
   could cause it. A ledger written by 0.3.0 reads the same.
 
+### Fixed
+
+- `report --project` and `findings --project` count only a project's
+  calls when unresolved calls were made in a directory of the same name,
+  as when a label names a project by the path of such a directory. They
+  counted both.
+
 ## [0.3.0] - 2026-10-15
 
 ### Added
