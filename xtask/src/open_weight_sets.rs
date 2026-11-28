@@ -26,6 +26,7 @@ use crate::price_calibration::{self, Factor, Source};
 #[serde(deny_unknown_fields)]
 pub struct Input {
     hardware: Hardware,
+    frontier: frontier::Rule,
     #[serde(default)]
     sources: BTreeMap<String, Source>,
     model: Vec<Model>,
@@ -131,7 +132,8 @@ struct Parts {
 }
 
 /// A parameter set in the schema of the data files.
-#[derive(Serialize)]
+#[derive(Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 struct Record {
     id: String,
     description: String,
@@ -208,12 +210,12 @@ impl Group {
     }
 }
 
-fn check(model: &Model) -> anyhow::Result<()> {
-    if model.group.is_empty() {
-        bail!("model {} has no attention layers", model.id);
+fn check(what: &str, groups: &[Group]) -> anyhow::Result<()> {
+    if groups.is_empty() {
+        bail!("{what} has no attention layers");
     }
-    for (index, group) in model.group.iter().enumerate() {
-        check_group(group).with_context(|| format!("model {}, group {}", model.id, index + 1))?;
+    for (index, group) in groups.iter().enumerate() {
+        check_group(group).with_context(|| format!("{what}, group {}", index + 1))?;
     }
     Ok(())
 }
@@ -305,11 +307,28 @@ fn values(
     scenario: &Scenario,
     weight_factor: f64,
 ) -> anyhow::Result<Parts> {
+    let (mut v, stored) = attention(&model.group, scenario)?;
+    let factor = weight_factor / anchor.active_b;
+    let weights_in = anchor.in_j * weights.active_prefill_b.unwrap_or(weights.active_b) * factor;
+    let weights_out = anchor.out_j * weights.active_b * factor;
+    v.b_in += weights_in;
+    v.b_out += weights_out;
+    Ok(Parts {
+        values: v.in_file_units(),
+        weights_in,
+        weights_out,
+        stored_bytes: stored,
+    })
+}
+
+/// The attention and reload energy of `groups` on one scenario, in joules,
+/// and the key-value bytes a token stores over all layers.
+fn attention(groups: &[Group], scenario: &Scenario) -> anyhow::Result<(Values, f64)> {
     let e_flop = scenario.e_flop_pj * PJ;
     let e_byte = scenario.e_byte_pj * PJ;
     let mut v = Values::default();
     let mut stored = 0.0;
-    for group in &model.group {
+    for group in groups {
         let layers = f64::from(group.layers);
         if group.kind == Kind::Linear {
             let state = f64::from(group.heads)
@@ -375,21 +394,19 @@ fn values(
         stored += layers * entry / ratio;
     }
     v.c0 += stored * scenario.reload_nj_per_byte * NJ;
-    let factor = weight_factor / anchor.active_b;
-    let weights_in = anchor.in_j * weights.active_prefill_b.unwrap_or(weights.active_b) * factor;
-    let weights_out = anchor.out_j * weights.active_b * factor;
-    v.b_in += weights_in;
-    v.b_out += weights_out;
-    // To the units of the data files.
-    v.a_p *= 1e6;
-    v.a_d *= 1e6;
-    v.c0 *= 1e3;
-    Ok(Parts {
-        values: v,
-        weights_in,
-        weights_out,
-        stored_bytes: stored,
-    })
+    Ok((v, stored))
+}
+
+impl Values {
+    /// From joules to the units of the data files.
+    fn in_file_units(self) -> Self {
+        Self {
+            a_p: self.a_p * 1e6,
+            a_d: self.a_d * 1e6,
+            c0: self.c0 * 1e3,
+            ..self
+        }
+    }
 }
 
 pub struct Set {
@@ -423,7 +440,7 @@ pub fn compute(input: &Input, weights: &price_calibration::Input) -> anyhow::Res
         .model
         .iter()
         .map(|model| {
-            check(model)?;
+            check(&format!("model {}", model.id), &model.group)?;
             let active = weights
                 .model
                 .iter()
@@ -665,6 +682,9 @@ pub fn render(
 pub fn parse_input(text: &str) -> anyhow::Result<Input> {
     toml::from_str(text).context("`xtask/open-weight-sets.toml` does not fit its schema")
 }
+
+mod frontier;
+pub use frontier::render_parameter_sets;
 
 #[cfg(test)]
 mod tests;

@@ -49,7 +49,7 @@ enum Task {
         #[arg(long)]
         accessed: Date,
     },
-    /// Write data/energy/open-weight-sets.toml from the attention layouts in xtask/open-weight-sets.toml
+    /// Write data/energy/open-weight-sets.toml from the attention layouts in xtask/open-weight-sets.toml, and the frontier set's attention terms in data/energy/parameter-sets.toml from those sets
     OpenWeightSets {
         /// The date the inputs were last reviewed, YYYY-MM-DD; the review date of every set
         #[arg(long)]
@@ -82,9 +82,17 @@ fn run_open_weight_sets(reviewed: Date) -> anyhow::Result<()> {
     let parameter_sets = read("../data/energy/parameter-sets.toml")?;
     let sets = open_weight_sets::compute(&input, &weights)?;
     let text = open_weight_sets::render(&input, &weights, &sets, &parameter_sets, reviewed)?;
+    let frontier =
+        open_weight_sets::render_parameter_sets(&input, &weights, &sets, &parameter_sets)?;
     let out = workspace.join("../data/energy/open-weight-sets.toml");
     fs::write(&out, text).with_context(|| format!("cannot write {}", out.display()))?;
     eprintln!("wrote {} parameter sets to {}", sets.len(), out.display());
+    let out = workspace.join("../data/energy/parameter-sets.toml");
+    fs::write(&out, frontier).with_context(|| format!("cannot write {}", out.display()))?;
+    eprintln!(
+        "wrote the frontier set's a_p, a_d and c0 to {}",
+        out.display()
+    );
     for set in &sets {
         let v = &set.base;
         eprintln!(

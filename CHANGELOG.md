@@ -4,6 +4,48 @@ All notable changes to tokendraw are recorded in this file. The format is
 based on Keep a Changelog 1.1.0 (https://keepachangelog.com/en/1.1.0/),
 and tokendraw follows Semantic Versioning (https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+
+- Data version 2026-11-28. The attention and cache reload terms of the
+  `frontier` set (`a_p`, `a_d` and `c0`), which every closed model uses,
+  now come from the open-weight models whose configurations the data
+  holds. The low case, base case and high case are the lowest, the median
+  and the highest of the models with at least 40 billion active
+  parameters, and the bounds span every documented design, from DeepSeek
+  V4.1 Flash to Llama 3.1 405B on H100. Before, they were a hand estimate
+  for a large model with full attention, whose base case was above every
+  documented large model's in `a_p` and above their median in `a_d` and
+  `c0`. No lab discloses the attention of its closed models, so the
+  estimate now assumes they are no less efficient than the median
+  documented large open-weight model. `cargo xtask open-weight-sets`
+  writes these terms.
+- Long-context price tiers no longer raise the weight energy of a call
+  above their threshold. They stay in the data as listed prices: the labs
+  do not say what the surcharge pays for, and the attention terms already
+  grow with the context.
+- The low and high case of the price markup are 1.351 and 2.465, the
+  geometric means of the base case and each bound, instead of the bounds
+  1 and 3.33.
+- OpenAI's PUE runs from a low case of 1.12, Microsoft's design PUE for
+  its newest datacenters, to a high case of 1.22, its design goal for the
+  Americas, instead of 1.17 throughout.
+- The `frontier` set's `b_out` base case is 0.67 J per output token, as
+  its derivation gives, instead of 0.6.
+- `claude-fable-5-2`, `claude-opus-4-8`, `claude-opus-4-7`,
+  `gpt-6.2-astra` and `gpt-6.2-sol` have their list prices, so their
+  weight terms come from them instead of the `frontier` set. Every list
+  price was reviewed on 2026-11-28.
+
+Together, on one user's Claude Code and Codex logs for September and
+November 2026, these changes lower the base case by 37 and 41 percent,
+the low case by 58 and 65 percent and the high case by 13 and 3 percent,
+and raise the upper bound by 23 and 39 percent. Attention over the
+context is a smaller share of the estimate, so the report's "rereading
+the context" share falls and the `model-choice` finding's estimated
+saving rises.
+
 ## [0.3.1] - 2026-11-28
 
 ### Security

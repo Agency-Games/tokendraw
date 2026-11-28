@@ -73,10 +73,9 @@ upper estimate of what removing tools and shortening instruction files
 can change.
 
 Its energy is the energy of the calls less that of the same calls with
-that many fewer tokens, taken from the cache-read tokens first, each at
-the price tier its prompt then falls under. Findings can count the same
-energy, such as the fixed context of a long-context call, so their shares
-do not add up.
+that many fewer tokens, taken from the cache-read tokens first. Findings
+can count the same energy, such as the fixed context of a long-context
+call, so their shares do not add up.
 
 Tokendraw 0.2.0 and earlier did not record agent IDs. The first run of a
 later version reads Claude Code's logs again to add them; the subagents
@@ -90,9 +89,8 @@ clients whose data names a model to compare them with: for Claude Code
 client's docs list. `tokendraw data` names the roles and the models. A
 call counts when its model has a list price in the data and its
 per-token terms (`b_in` per new input token, `b_out` per output token)
-give more energy than the compared model's, at the price tier each
-model's prompt falls under. Priced models take those terms from their
-price, so these are the models pricier than the compared one. A model
+give more energy than the compared model's. Priced models take those
+terms from their price, so these are the models pricier than the compared one. A model
 without a price is left out.
 
 Its energy is the difference of those terms, with the same tokens and the

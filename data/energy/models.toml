@@ -117,6 +117,17 @@ basis = "Google serves its Gemini models through its APIs and publishes no weigh
 reviewed = 2026-10-07
 
 [[model]]
+id = "claude-fable-5-2"
+pattern = "claude-fable-5-2"
+parameter_set = "frontier"
+price = "claude-fable-5-2"
+weights = "closed"
+label = "C"
+sources = ["anthropic-models"]
+basis = "Anthropic publishes no weights for this model; its weight terms come from its list price."
+reviewed = 2026-11-28
+
+[[model]]
 id = "claude-fable-5-1"
 pattern = "claude-fable-5-1"
 parameter_set = "frontier"
@@ -148,6 +159,28 @@ label = "C"
 sources = ["anthropic-models"]
 basis = "Anthropic publishes no weights for this model; its weight terms come from its list price."
 reviewed = 2026-10-08
+
+[[model]]
+id = "claude-opus-4-8"
+pattern = "claude-opus-4-8"
+parameter_set = "frontier"
+price = "claude-opus-4-8"
+weights = "closed"
+label = "C"
+sources = ["anthropic-models"]
+basis = "Anthropic publishes no weights for this model; its weight terms come from its list price."
+reviewed = 2026-11-28
+
+[[model]]
+id = "claude-opus-4-7"
+pattern = "claude-opus-4-7"
+parameter_set = "frontier"
+price = "claude-opus-4-7"
+weights = "closed"
+label = "C"
+sources = ["anthropic-models"]
+basis = "Anthropic publishes no weights for this model; its weight terms come from its list price."
+reviewed = 2026-11-28
 
 [[model]]
 id = "claude-sonnet-5-5"
@@ -192,6 +225,28 @@ label = "C"
 sources = ["anthropic-models"]
 basis = "Anthropic publishes no weights for this model; its weight terms come from its list price."
 reviewed = 2026-10-08
+
+[[model]]
+id = "gpt-6.2-astra"
+pattern = "gpt-6.2-astra"
+parameter_set = "frontier"
+price = "gpt-6.2-astra"
+weights = "closed"
+label = "C"
+sources = ["openai-models"]
+basis = "OpenAI publishes no weights for this model; its weight terms come from its list price."
+reviewed = 2026-11-28
+
+[[model]]
+id = "gpt-6.2-sol"
+pattern = "gpt-6.2-sol"
+parameter_set = "frontier"
+price = "gpt-6.2-sol"
+weights = "closed"
+label = "C"
+sources = ["openai-models"]
+basis = "OpenAI publishes no weights for this model; its weight terms come from its list price."
+reviewed = 2026-11-28
 
 [[model]]
 id = "gpt-6-astra"

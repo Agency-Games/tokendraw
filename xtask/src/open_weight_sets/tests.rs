@@ -449,3 +449,78 @@ fn the_shipped_file_is_what_the_command_writes() -> anyhow::Result<()> {
     );
     Ok(())
 }
+
+#[test]
+fn the_shipped_parameter_sets_hold_the_frontier_attention_the_command_writes() -> anyhow::Result<()>
+{
+    let (input, weights) = shipped()?;
+    let sets = compute(&input, &weights)?;
+    let text = render_parameter_sets(&input, &weights, &sets, PARAMETER_SETS)?;
+    assert!(
+        text == PARAMETER_SETS,
+        "`data/energy/parameter-sets.toml` is out of date; run `cargo xtask open-weight-sets --reviewed <date>`"
+    );
+    Ok(())
+}
+
+#[test]
+fn frontier_attention_spans_the_large_sets_and_the_reference_designs() -> anyhow::Result<()> {
+    let (input, weights) = shipped()?;
+    let sets = compute(&input, &weights)?;
+    let text = render_parameter_sets(&input, &weights, &sets, PARAMETER_SETS)?;
+    let file: toml::Table = toml::from_str(&text)?;
+    let frontier = file["parameter_set"]
+        .as_array()
+        .and_then(|records| records.first())
+        .and_then(toml::Value::as_table)
+        .context("the frontier set")?;
+    let a_p = frontier["a_p_uj_per_pair"].as_table().context("a_p")?;
+    let value = |band: &str| a_p[band].as_float().context("a value");
+    let set = |id: &str| sets.iter().find(|set| set.id == id).context("a set");
+    // Five sets have at least 40 billion active parameters; GLM 5.3 has
+    // the lowest base case of them, Kimi K3 the median and Llama 3.3 70B
+    // the highest.
+    assert_eq!(value("low_case")?, set("glm-5.3")?.base.a_p);
+    assert_eq!(value("base_case")?, set("kimi-k3")?.base.a_p);
+    assert_eq!(value("high_case")?, set("llama-3.3-70b-instruct")?.base.a_p);
+    assert_eq!(value("lower_bound")?, set("deepseek-v4.1-flash")?.low.a_p);
+    // Llama 3.1 405B on the high scenario: 126 layers x 2 x 128 heads x
+    // (128 + 128) FLOPs per pair at 1.6 pJ.
+    let expected = 126.0 * 2.0 * 128.0 * 256.0 * 1.6e-12 * 1e6;
+    assert!((value("upper_bound")? - expected).abs() < 1e-9);
+    // Every set a value comes from is cited, the small one of the lower
+    // bound too.
+    let sources: Vec<&str> = a_p["sources"]
+        .as_array()
+        .context("sources")?
+        .iter()
+        .filter_map(toml::Value::as_str)
+        .collect();
+    for id in [
+        "config-glm-5-3",
+        "config-kimi-k3",
+        "config-deepseek-v4-1-flash",
+        "llama-3-herd",
+    ] {
+        assert!(sources.contains(&id), "{id}");
+    }
+    Ok(())
+}
+
+#[test]
+fn regenerating_keeps_the_sources_the_parameter_file_defines() -> anyhow::Result<()> {
+    let (input, weights) = shipped()?;
+    let sets = compute(&input, &weights)?;
+    let file = format!(
+        "{PARAMETER_SETS}\n[sources.example]\ntitle = \"t\"\npublisher = \"p\"\naccessed = 2026-11-28\n"
+    );
+    let text = render_parameter_sets(&input, &weights, &sets, &file)?;
+    let value: toml::Table = toml::from_str(&text)?;
+    assert!(
+        value["sources"]
+            .as_table()
+            .context("sources")?
+            .contains_key("example")
+    );
+    Ok(())
+}

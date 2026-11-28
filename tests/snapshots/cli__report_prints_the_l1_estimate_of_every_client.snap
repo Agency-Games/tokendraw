@@ -1,5 +1,6 @@
 ---
 source: tests/cli.rs
+assertion_line: 617
 expression: stdout(&output)
 ---
 tokendraw report, all calls
@@ -21,17 +22,17 @@ Coverage        status   location
   pi            read     <fixtures>/pi/sessions (1 unreadable line)
 
 Emissions, g CO2e     base case   low to high case   bounds
-  anthropic               0.132   0.025 to 1.3       0.0017 to 6.3
-  litellm (unknown)      0.0463   0.0021 to 0.18     0.00039 to 0.98
+  anthropic               0.132   0.033 to 0.93      0.0017 to 6.3
+  litellm (unknown)      0.0459   0.0020 to 0.18     0.00038 to 0.99
   nebius                 0.0225   0.011 to 0.042     0.0052 to 0.69
-  openai                   3.05   0.74 to 24         0.038 to 140
+  openai                   2.97   0.89 to 19         0.037 to 140
 
-  total                    3.25   0.78 to 26         0.045 to 150
+  total                    3.17   0.94 to 20         0.045 to 150
 
 These are cases, not confidence intervals: see `tokendraw report --help`.
 
 Projects, g CO2e   calls   base case   low to high case   bounds
-  unresolved          16        3.25   0.78 to 26         0.045 to 150
+  unresolved          16        3.17   0.94 to 20         0.045 to 150
 
 These are cases, not confidence intervals: see `tokendraw report --help`.
 
@@ -39,15 +40,15 @@ These are cases, not confidence intervals: see `tokendraw report --help`.
 list them with the labels that would assign them.
 
 Where the energy goes (base case)
-  rereading the context               4%
+  rereading the context               1%
   calls above 200,000 cached tokens   0%
-  claude-code / codex / pi            4% / 91% / 6%
+  claude-code / codex / pi            4% / 90% / 6%
   interactive / subagent / headless   84% / 1% / 15%
 
 fixed-context
   Each call re-read on average 4,840 tokens its session or subagent started
   with: the system prompt, tool definitions, instruction files and first
-  prompt or brief. That used 81% of the energy.
+  prompt or brief. That used 80% of the energy.
   What you can do:
     claude-code:
       /context to see what fills the context
@@ -65,7 +66,7 @@ fixed-context
 model-choice
   Subagents and headless runs on models pricier than claude-haiku-5-5
   (claude-code) or gpt-6-luna (codex) used 16% of the energy. On those
-  models, the same tokens would have made the total 14% lower.
+  models, the same tokens would have made the total 15% lower.
   What you can do:
     claude-code:
       model: haiku in a subagent's definition

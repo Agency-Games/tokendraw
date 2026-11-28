@@ -44,17 +44,17 @@ bounds_sites = "listed"
 label = "D"
 sources = ["stargate", "crusoe-abilene", "microsoft-fairwater", "openai-models"]
 basis = "Announced sites: Stargate in Texas (Abilene and others), Microsoft Fairwater in Wisconsin, and Azure capacity assumed in Virginia, Iowa and Arizona, each assumed to serve an equal share. Abilene's on-site backup gas turbines are not included. Where OpenAI serves each call from is not published, so the bounds cover every geography a shipped provider lists."
-reviewed = 2026-10-06
+reviewed = 2026-11-28
 
 [provider.pue]
 lower_bound = 1.09
-low_case = 1.17
+low_case = 1.12
 base_case = 1.17
-high_case = 1.17
+high_case = 1.22
 upper_bound = 1.56
 label = "D"
-sources = ["microsoft-pue", "google-pue", "uptime-2024"]
-basis = "OpenAI publishes no PUE. Microsoft's fleet PUE, 1.17 (fiscal 2025, the sites it fully owns and controls), assumed for OpenAI's calls; Oracle and Crusoe publish none. Bounds from Google's fleet, 1.09, to the industry average, 1.56 (Uptime 2024)."
+sources = ["microsoft-pue", "microsoft-pue-design", "google-pue", "uptime-2024"]
+basis = "OpenAI publishes no PUE; Oracle and Crusoe publish none either. Base case: Microsoft's fleet PUE, 1.17 (fiscal 2025, the sites it fully owns and controls). Low case: Microsoft's design PUE for its newest datacenters, 1.12. High case: Microsoft's design goal for its Americas datacenters, 1.22, in a chart of its 2022 report. Bounds from Google's fleet, 1.09, to the industry average, 1.56 (Uptime 2024)."
 
 [[provider]]
 id = "nebius"

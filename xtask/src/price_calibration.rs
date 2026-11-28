@@ -651,4 +651,40 @@ basis = "b"
         );
         Ok(())
     }
+
+    /// Regenerating needs `OpenRouter`'s files, which are not committed, so
+    /// a change to the markup alone, which no cell uses, reaches the
+    /// shipped file by hand; this keeps the fields the two share equal.
+    #[test]
+    fn the_shipped_calibration_holds_the_values_of_its_input() -> anyhow::Result<()> {
+        let input = parse_input(include_str!("../price-calibration.toml"))?;
+        let shipped: toml::Table =
+            toml::from_str(include_str!("../../data/energy/price-calibration.toml"))?;
+        let record = shipped["price_calibration"]
+            .as_array()
+            .and_then(|records| records.first())
+            .and_then(toml::Value::as_table)
+            .context("one record")?;
+        assert_eq!(record["id"].as_str(), Some(input.id.as_str()));
+        assert_eq!(
+            record["description"].as_str(),
+            Some(input.description.as_str())
+        );
+        assert_eq!(
+            record["chat_input_tokens"].as_integer(),
+            Some(i64::try_from(input.chat_input_tokens)?)
+        );
+        assert_eq!(
+            record["chat_output_tokens"].as_integer(),
+            Some(i64::try_from(input.chat_output_tokens)?)
+        );
+        assert_eq!(record["anchor_in_j"].as_float(), Some(input.anchor.in_j));
+        assert_eq!(record["anchor_out_j"].as_float(), Some(input.anchor.out_j));
+        assert_eq!(record["markup"], toml::Value::try_from(&input.markup)?);
+        assert!(
+            include_str!("../../data/energy/price-calibration.toml").starts_with(&header(&input)),
+            "the shipped header does not list the input's models"
+        );
+        Ok(())
+    }
 }

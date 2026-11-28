@@ -35,6 +35,38 @@ fn usage(client: &str, provider: &str, model: &str, sums: [f64; 6]) -> Usage {
     }
 }
 
+/// The shipped data with the round values the hand-worked examples below
+/// use for the `frontier` set and the `openai` provider's PUE, so the
+/// examples check the calculation and stay valid when the shipped values
+/// are revised.
+fn hand_data() -> Result<Data, Error> {
+    let mut data = data::load(None)?;
+    let set = |factor: &mut data::Factor, values: [f64; 5]| {
+        [
+            factor.lower_bound,
+            factor.low_case,
+            factor.base_case,
+            factor.high_case,
+            factor.upper_bound,
+        ] = values;
+    };
+    if let Some(frontier) = data.parameter_sets.get_mut("frontier") {
+        set(&mut frontier.a_p_uj_per_pair, [0.5, 2.5, 4.0, 8.0, 12.0]);
+        set(&mut frontier.a_d_uj_per_pair, [2.0, 10.0, 20.0, 45.0, 80.0]);
+        set(&mut frontier.b_in_j_per_token, [0.1, 0.2, 0.4, 0.8, 1.5]);
+        set(&mut frontier.b_out_j_per_token, [0.15, 0.3, 0.6, 1.0, 2.0]);
+        set(
+            &mut frontier.c0_mj_per_cached_token,
+            [0.02, 0.03, 0.3, 1.0, 3.0],
+        );
+        set(&mut frontier.idle, [1.0, 1.0, 1.12, 1.35, 1.9]);
+    }
+    if let Some(openai) = data.providers.get_mut("openai") {
+        set(&mut openai.provider.pue, [1.09, 1.17, 1.17, 1.17, 1.56]);
+    }
+    Ok(data)
+}
+
 fn kwh(values: &Five<WattHours>) -> [f64; 5] {
     let values = values.map(|value| value.0 / 1000.0);
     [
@@ -60,7 +92,7 @@ fn assert_near(actual: [f64; 5], expected: [f64; 5], tolerance: f64) {
 }
 
 // A month of Claude Code and Codex use, 104,831 calls, worked by hand
-// with the shipped frontier parameter set and the Anthropic and OpenAI
+// with the frontier values of `hand_data` and the Anthropic and OpenAI
 // provider records.
 //
 // The sums per client (calls, `L`, `n_new`, `n_out`, the prefill pairs
@@ -99,7 +131,7 @@ fn assert_near(actual: [f64; 5], expected: [f64; 5], tolerance: f64) {
 // significant figures, so values agree to within 0.01.
 #[test]
 fn a_hand_worked_month_gives_its_energy_facility_and_emissions() -> Result<(), Error> {
-    let data = data::load(None)?;
+    let data = hand_data()?;
     let usage = [
         usage(
             "claude-code",
@@ -182,7 +214,7 @@ fn a_hand_worked_month_gives_its_energy_facility_and_emissions() -> Result<(), E
 }
 
 // One call with `L` = 100,000, `n_new` = 1,000 and `n_out` = 500 on the
-// base case frontier parameters at Anthropic:
+// base case frontier values of `hand_data` at Anthropic:
 //
 // - prefill pairs 1,000 x (100,000 + 1,000 / 2) = 100,500,000, times 4 uJ
 //   = 402 J;
@@ -197,7 +229,7 @@ fn a_hand_worked_month_gives_its_energy_facility_and_emissions() -> Result<(), E
 //   four sites (642.875 + 312.815 + 379.354 + 267.563) / 4, = 0.29804631 g.
 #[test]
 fn one_call_worked_by_hand() -> Result<(), Error> {
-    let data = data::load(None)?;
+    let data = hand_data()?;
     let call = usage(
         "claude-code",
         "anthropic",
@@ -221,7 +253,7 @@ fn one_call_worked_by_hand() -> Result<(), Error> {
 #[test]
 fn the_breakdown_splits_the_base_case_energy_by_terms_threshold_client_and_role()
 -> Result<(), Error> {
-    let data = data::load(None)?;
+    let data = hand_data()?;
     let mut long = usage(
         "claude-code",
         "anthropic",

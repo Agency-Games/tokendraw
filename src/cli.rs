@@ -230,13 +230,13 @@ serving hardware, so every figure is given in three cases. Each case
 computes the calls with every value in the data at the same point of its
 range. They are scenarios, not a mean with confidence intervals:
 
-  base case          if a closed model is a mixture-of-experts model with
-                     about 100 billion active parameters and full attention
-                     on B200-class accelerators; for a closed model with a
-                     list price, its weight energy is what its price buys at
-                     open-weight hosts' prices; for an open-weight model with
-                     a published configuration, that model on B200
-                     accelerators
+  base case          for a closed model, attention as efficient as the
+                     median documented large open-weight model's and weights
+                     of about 100 billion active parameters on B200-class
+                     accelerators, or for one with a list price, the weight
+                     energy its price buys at open-weight hosts' prices; for
+                     an open-weight model with a published configuration,
+                     that model on B200 accelerators
   low to high case   the spread across documented architectures, hardware
                      and, for priced models, host prices and markups; for an
                      open-weight model with a published configuration,

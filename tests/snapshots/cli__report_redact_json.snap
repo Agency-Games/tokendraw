@@ -1,5 +1,6 @@
 ---
 source: tests/cli.rs
+assertion_line: 1803
 expression: without_platform(&json)?
 ---
 {
@@ -10,8 +11,8 @@ expression: without_platform(&json)?
     "arch": "<arch>"
   },
   "data_version": {
-    "id": "2026-10-15",
-    "shipped_sha256": "4f05923efe3a46dd47170589d7ee029b03283e899ef004b9e88333fd89cf8759",
+    "id": "2026-11-28",
+    "shipped_sha256": "3acaf4c0e2ce1eca98a0a938edf9b3b6899b7b67a961b1ef169a03ded898fa54",
     "overrides": [
       {
         "path": "override 1",
@@ -272,11 +273,11 @@ expression: without_platform(&json)?
       "basis": "energy model per call, parameter sets frontier, frontier@claude-opus-5-5: node energy times idle times the provider's PUE; cache residency R not included",
       "activity_quality": "P",
       "factor_quality": "D",
-      "lower_bound": 0.09348542250909841,
-      "low_case": 0.1673774959954324,
-      "base_case": 0.46690069684408986,
-      "high_case": 1.9877810565878382,
-      "upper_bound": 6.535792855939271
+      "lower_bound": 0.09255104572715396,
+      "low_case": 0.18857213964811198,
+      "base_case": 0.4633538797489788,
+      "high_case": 1.611946799495249,
+      "upper_bound": 6.606685123419094
     },
     {
       "layer": "L1",
@@ -298,11 +299,11 @@ expression: without_platform(&json)?
       "basis": "location-based, region unknown; anthropic: anthropic default, g/kWh 400/400/400/400/400; grid: redacted, redacted, data year 2026",
       "activity_quality": "P",
       "factor_quality": "D",
-      "lower_bound": 0.037394169003639365,
-      "low_case": 0.06695099839817295,
-      "base_case": 0.18676027873763595,
-      "high_case": 0.7951124226351353,
-      "upper_bound": 2.6143171423757083
+      "lower_bound": 0.037020418290861584,
+      "low_case": 0.07542885585924479,
+      "base_case": 0.18534155189959148,
+      "high_case": 0.6447787197980996,
+      "upper_bound": 2.6426740493676375
     }
   ],
   "sums": [],
@@ -312,11 +313,11 @@ expression: without_platform(&json)?
       "record": "anthropic",
       "calls": 6,
       "energy_wh": {
-        "lower_bound": 0.09348542250909841,
-        "low_case": 0.1673774959954324,
-        "base_case": 0.46690069684408986,
-        "high_case": 1.9877810565878382,
-        "upper_bound": 6.535792855939271
+        "lower_bound": 0.09255104572715396,
+        "low_case": 0.18857213964811198,
+        "base_case": 0.4633538797489788,
+        "high_case": 1.611946799495249,
+        "upper_bound": 6.606685123419094
       },
       "energy_facility_wh": {
         "lower_bound": 0.0,
@@ -326,11 +327,11 @@ expression: without_platform(&json)?
         "upper_bound": 0.0
       },
       "emissions_g": {
-        "lower_bound": 0.037394169003639365,
-        "low_case": 0.06695099839817295,
-        "base_case": 0.18676027873763595,
-        "high_case": 0.7951124226351353,
-        "upper_bound": 2.6143171423757083
+        "lower_bound": 0.037020418290861584,
+        "low_case": 0.07542885585924479,
+        "base_case": 0.18534155189959148,
+        "high_case": 0.6447787197980996,
+        "upper_bound": 2.6426740493676375
       },
       "energy_quality": "D",
       "emissions_quality": "D",
@@ -398,11 +399,11 @@ expression: without_platform(&json)?
         "ancestor": 0
       },
       "emissions_g": {
-        "lower_bound": 0.016577692920103807,
-        "low_case": 0.026260610625640664,
-        "base_case": 0.09018960443999817,
-        "high_case": 0.5152296576576578,
-        "upper_bound": 1.795396088532977
+        "lower_bound": 0.016337874506770475,
+        "low_case": 0.0338494191813212,
+        "base_case": 0.08827222114684259,
+        "high_case": 0.3875445500391112,
+        "upper_bound": 1.8178224637885858
       }
     },
     {
@@ -415,11 +416,11 @@ expression: without_platform(&json)?
         "ancestor": 0
       },
       "emissions_g": {
-        "lower_bound": 0.0028797788613133305,
-        "low_case": 0.004524401661421183,
-        "base_case": 0.01561222096430444,
-        "high_case": 0.0895297274774775,
-        "upper_bound": 0.31237873162050933
+        "lower_bound": 0.002847061654646664,
+        "low_case": 0.005898935316470266,
+        "base_case": 0.015348000997726666,
+        "high_case": 0.06690147714586842,
+        "upper_bound": 0.3145464843683137
       }
     }
   ],
@@ -428,17 +429,17 @@ expression: without_platform(&json)?
     "directories": 2,
     "calls_without_directory": 0,
     "emissions_g": {
-      "lower_bound": 0.01793669722222222,
-      "low_case": 0.03616598611111111,
-      "base_case": 0.08095845333333335,
-      "high_case": 0.19035303750000002,
-      "upper_bound": 0.5065423222222222
+      "lower_bound": 0.01783548212944444,
+      "low_case": 0.03568050136145333,
+      "base_case": 0.08172132975502223,
+      "high_case": 0.19033269261312002,
+      "upper_bound": 0.5103051012107378
     }
   },
   "breakdown": [
     {
       "name": "context_terms",
-      "share_of_base_case": 0.022534699000845686,
+      "share_of_base_case": 0.007062479656167259,
       "signal": "model terms a_p, a_d, c0"
     },
     {
@@ -450,8 +451,8 @@ expression: without_platform(&json)?
     {
       "name": "client",
       "shares_of_base_case": {
-        "claude-code": 0.5665113916055717,
-        "example-agent": 0.43348860839442827
+        "claude-code": 0.5590771258929857,
+        "example-agent": 0.44092287410701414
       },
       "signal": "client of each call"
     },
@@ -463,29 +464,9 @@ expression: without_platform(&json)?
       "signal": "role of each call"
     }
   ],
-  "findings": [
-    {
-      "code": "fixed-context",
-      "facts": {
-        "calls": 3,
-        "mean_fixed_tokens": 1100,
-        "share_of_base_case": 0.10691467749736329
-      },
-      "actions": {
-        "claude-code": [
-          "/context to see what fills the context",
-          "/mcp disable for servers you do not use",
-          "/memory to shorten CLAUDE.md"
-        ]
-      },
-      "measure": {
-        "command": "tokendraw findings --since <tomorrow>",
-        "compare": "share_of_base_case"
-      }
-    }
-  ],
+  "findings": [],
   "hidden_findings": {
-    "count": 0,
+    "count": 1,
     "threshold_share_of_base_case": 0.1,
     "command": "tokendraw findings"
   }

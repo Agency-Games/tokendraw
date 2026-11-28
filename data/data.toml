@@ -6,7 +6,7 @@
 # tool default with a range, S spend-based.
 
 # The date of the last change to any shipped data file.
-id = "2026-10-15"
+id = "2026-11-28"
 
 # Values last reviewed longer ago than this are flagged as stale.
 review_interval_days = 90
@@ -71,7 +71,14 @@ accessed = 2026-10-06
 title = "Microsoft datacenter efficiency (fleet PUE 1.17 in fiscal 2025)"
 url = "https://datacenters.microsoft.com/sustainability/efficiency/"
 publisher = "Microsoft"
-accessed = 2026-10-06
+accessed = 2026-11-28
+
+[sources.microsoft-pue-design]
+title = "How Microsoft measures datacenter water and energy use to improve Azure cloud sustainability (design PUE 1.12 for the newest datacenters; chart of PUE design goal against actual PUE, Americas 1.22 and 1.17)"
+url = "https://azure.microsoft.com/en-us/blog/how-microsoft-measures-datacenter-water-and-energy-use-to-improve-azure-cloud-sustainability/"
+publisher = "Microsoft"
+published = "2022-04-22"
+accessed = 2026-11-28
 
 [sources.uptime-2024]
 title = "Uptime Institute Global Data Center Survey 2024 (industry average PUE 1.56)"
@@ -206,24 +213,24 @@ accessed = 2026-10-12
 
 [sources.anthropic-pricing]
 title = "Claude API pricing"
-url = "https://platform.claude.com/docs/en/about-claude/pricing"
+url = "https://platform.claude.com/docs/en/about-claude/pricing.md"
 publisher = "Anthropic"
-accessed = 2026-10-07
-sha256 = "578902a2a4b4f38dfaabb6a9676a3c51d2d7ca2907d408cf44c24a8d9647d572"
+accessed = 2026-11-28
+sha256 = "0f6deb28aacef431995b73e5eb024c86823df8189750045a86f9846e2dcaa2df"
 
 [sources.openai-pricing]
 title = "OpenAI API pricing"
 url = "https://developers.openai.com/api/docs/pricing.md"
 publisher = "OpenAI"
-accessed = 2026-10-07
-sha256 = "0d9fb6b240209bb7b5a05d1d6ce0b8a796e0924b7e34c5ab183a3f1f890febe6"
+accessed = 2026-11-28
+sha256 = "6ebbb366b72d25dbe6e77bd24ad09e5063f4872589b81b5a77b1b172d68da8d7"
 
 [sources.google-pricing]
 title = "Gemini Developer API pricing"
-url = "https://ai.google.dev/gemini-api/docs/pricing"
+url = "https://ai.google.dev/gemini-api/docs/pricing.md.txt"
 publisher = "Google"
-accessed = 2026-10-07
-sha256 = "2c18e5c6b3bc1b63ab767ae0a4970ddad838ee7ffc97a10d32fa81240f4097f6"
+accessed = 2026-11-28
+sha256 = "25c38f04bee177640f35fa4dc8b88bdd5c140574bd500fd91110d18b476160db"
 
 [sources.google-models]
 title = "Gemini models (served through Google's APIs; no weights published)"

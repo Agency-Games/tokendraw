@@ -1,16 +1,17 @@
 ---
 source: tests/cli.rs
+assertion_line: 484
 expression: without_stale(&stdout(&output))
 ---
-data 2026-10-15, shipped sha256 4f05923efe3a46dd47170589d7ee029b03283e899ef004b9e88333fd89cf8759
+data 2026-11-28, shipped sha256 3acaf4c0e2ce1eca98a0a938edf9b3b6899b7b67a961b1ef169a03ded898fa54
 shipped files, sha256
-  data/data.toml                      ca1ec78d8f75493706507ecb3a93e358ea54618f44bef301df0eafef49b3ab2b
-  data/energy/parameter-sets.toml     a6d8f75c866880cfe1266283a1449ce01df46c327cf17acfd3dd27b6d93c516c
-  data/energy/open-weight-sets.toml   16c4d397ad6d42cfb2ec2e8255742918c239d717f8e6f03cf385cca66e218f96
-  data/energy/price-calibration.toml  f495d1dcb6e900679b8cb067191271db5372116ae86921c883b6545889b45400
-  data/energy/prices.toml             868e3f440043cea2a8d9dc18ca0a0704799ab0c6b6b5d0ccf0f1634a2f508cab
-  data/energy/models.toml             5e9076cc6ee525db8c1f0a05586788ba0858360c58dd461c7e4a1e4044af1850
-  data/providers.toml                 9c64c2a958e27f8c87f705f71815dc1c56e7f46f397864ad5bccf8b7bd90f23f
+  data/data.toml                      55164ade0262e40c348f4129e274f18846b9a1e9422cafe1e1801c90f03381d0
+  data/energy/parameter-sets.toml     5d7ae5ced225e6eedf471555bf3657ec7e675ee85d7639d95931736dc5aeb012
+  data/energy/open-weight-sets.toml   febd3b991b1c362ccb49c4b429bd3ab80ad890f64ccfdcc24c06de1a8069d8d0
+  data/energy/price-calibration.toml  2d15a1ac59eb51e70f88335074ff340f577031a7ab2bfb508542784e034d715a
+  data/energy/prices.toml             7d14d82ed10dc963332a669ee9a8433a8dc02328166bc315e5f82d5611c5c025
+  data/energy/models.toml             cec9d4bf7012815bfe855f55249f2775f137fda66e9ddaf96fd418993a9cf99c
+  data/providers.toml                 eeaabbb01f5db1fa15f24f60ef46dbc91655fe1aab6ba4729c3f48cd41134cf9
   data/grid/ember.toml                3ddbe09b98b603d46a2354c71b6fb5983a7de374bfa1c0a61d6032656ebaf398
   data/discovery.toml                 d6e01b132e02c0ac5e8628f05a1cddae7b8e769ca55ccc5da19d50fbe07a2f06
   data/findings.toml                  0e0a1f2230373cf118d8078ad325daa78bbe0eba9c069e27a0bbdb68f1a2d24a
@@ -37,13 +38,13 @@ parameter set deepseek-v4.1-flash, reviewed 2026-10-08
   c0, mJ per token    0.0001703 / 0.0001703 / 0.0003405 / 0.0005108 / 0.0005108  D
   idle                1 / 1 / 1.12 / 1.35 / 1.9  D
 
-parameter set frontier, reviewed 2026-10-07
+parameter set frontier, reviewed 2026-11-28
   A closed frontier model served on 2024 to 2026 data-centre accelerators, for models without a set of their own
-  a_p, uJ per pair    0.5 / 2.5 / 4 / 8 / 12  D
-  a_d, uJ per pair    2 / 10 / 20 / 45 / 80  D
+  a_p, uJ per pair    0.006656 / 0.09032 / 1.548 / 2.753 / 13.21  D
+  a_d, uJ per pair    0.0624 / 0.1747 / 6.221 / 73.73 / 185.8  D
   b_in, J per token   0.1 / 0.2 / 0.4 / 0.8 / 1.5  D
-  b_out, J per token  0.15 / 0.3 / 0.6 / 1 / 2  D
-  c0, mJ per token    0.02 / 0.03 / 0.3 / 1 / 3  D
+  b_out, J per token  0.15 / 0.3 / 0.67 / 1 / 2  D
+  c0, mJ per token    0.0001703 / 0.0008919 / 0.01884 / 0.6397 / 0.9747  D
   idle                1 / 1 / 1.12 / 1.35 / 1.9  D
 
 parameter set glm-5.3, reviewed 2026-10-08
@@ -121,12 +122,15 @@ parameter set qwen3.8-2.4t-a95b, reviewed 2026-10-08
 price calibration open-weight-hosts, reviewed 2026-10-08
   Weight energy per USD that hosts of open-weight models sell, from their prices on OpenRouter
   Wh per USD          11.65 / 17.87 / 30.53 / 80.58 / 200.3  D
-  markup              1 / 1 / 1.825 / 3.33 / 3.33  D
+  markup              1 / 1.351 / 1.825 / 2.465 / 3.33  D
 
 prices: input / output USD per million tokens, label; above a prompt of N tokens
   claude-fable-5-1            10 / 50  C
+  claude-fable-5-2            8 / 40  C
   claude-haiku-4-5-20251001   1 / 5  C
   claude-haiku-5-5            0.1 / 0.5  C; above 100,000: 0.5 / 2.5
+  claude-opus-4-7             5 / 25  C
+  claude-opus-4-8             5 / 25  C
   claude-opus-5               5 / 25  C
   claude-opus-5-5             4 / 20  C
   claude-sonnet-5             2 / 10  C
@@ -143,11 +147,16 @@ prices: input / output USD per million tokens, label; above a prompt of N tokens
   gpt-6-luna                  0.1 / 0.5  C; above 272,000: 0.2 / 0.75
   gpt-6-sol                   2 / 10  C; above 272,000: 4 / 15
   gpt-6.1-sol                 2 / 10  C; above 272,000: 4 / 15
+  gpt-6.2-astra               8 / 40  C; above 272,000: 16 / 60
+  gpt-6.2-sol                 2 / 10  C; above 272,000: 4 / 15
 
 parameter sets from prices: b_in / b_out base case, J per token; the other values as their base set
   frontier@claude-fable-5-1                   1.15 / 1.91  D
+  frontier@claude-fable-5-2                   0.923 / 1.53  D
   frontier@claude-haiku-4-5-20251001          0.115 / 0.191  D
   frontier@claude-haiku-5-5                   0.0115 / 0.0191  D
+  frontier@claude-opus-4-7                    0.577 / 0.953  D
+  frontier@claude-opus-4-8                    0.577 / 0.953  D
   frontier@claude-opus-5                      0.577 / 0.953  D
   frontier@claude-opus-5-5                    0.462 / 0.763  D
   frontier@claude-sonnet-5                    0.231 / 0.381  D
@@ -164,12 +173,17 @@ parameter sets from prices: b_in / b_out base case, J per token; the other value
   frontier@gpt-6-luna                         0.0115 / 0.0191  D
   frontier@gpt-6-sol                          0.231 / 0.381  D
   frontier@gpt-6.1-sol                        0.231 / 0.381  D
+  frontier@gpt-6.2-astra                      0.923 / 1.53  D
+  frontier@gpt-6.2-sol                        0.231 / 0.381  D
 
 models: pattern, parameter set, price, weights, label
   claude-*                           frontier                -                          closed  C
   claude-fable-5-1                   frontier                claude-fable-5-1           closed  C
+  claude-fable-5-2                   frontier                claude-fable-5-2           closed  C
   claude-haiku-4-5*                  frontier                claude-haiku-4-5-20251001  closed  C
   claude-haiku-5-5                   frontier                claude-haiku-5-5           closed  C
+  claude-opus-4-7                    frontier                claude-opus-4-7            closed  C
+  claude-opus-4-8                    frontier                claude-opus-4-8            closed  C
   claude-opus-5                      frontier                claude-opus-5              closed  C
   claude-opus-5-5                    frontier                claude-opus-5-5            closed  C
   claude-sonnet-5                    frontier                claude-sonnet-5            closed  C
@@ -197,6 +211,8 @@ models: pattern, parameter set, price, weights, label
   gpt-6-luna                         frontier                gpt-6-luna                 closed  C
   gpt-6-sol                          frontier                gpt-6-sol                  closed  C
   gpt-6.1-sol                        frontier                gpt-6.1-sol                closed  C
+  gpt-6.2-astra                      frontier                gpt-6.2-astra              closed  C
+  gpt-6.2-sol                        frontier                gpt-6.2-sol                closed  C
   gpt-oss*                           frontier                -                          open    C
   gpt-oss-120b                       gpt-oss-120b            -                          open    C
   openai/gpt-oss-120b                gpt-oss-120b            -                          open    C
@@ -228,7 +244,7 @@ providers: grid g CO2e per kWh, PUE
                  PUE  1.09 / 1.09 / 1.56 / 1.56 / 1.56  D
                  sites ember:FIN
   openai         grid 27.8 / 311.4 / 378.0 / 529.9 / 674.3  D
-                 PUE  1.09 / 1.17 / 1.17 / 1.17 / 1.56  D
+                 PUE  1.09 / 1.12 / 1.17 / 1.22 / 1.56  D
                  sites ember:US-VA, ember:US-IA, ember:US-TX, ember:US-AZ, ember:US-WI
   unknown        grid 21.4 / 57.2 / 388.3 / 642.9 / 1306.2  D
                  PUE  1.09 / 1.09 / 1.56 / 1.56 / 1.56  D

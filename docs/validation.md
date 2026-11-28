@@ -79,17 +79,17 @@ Google, energy in Wh:
 
 | Input tokens | Parameter set | Lower bound | Low case | Base case | High case | Upper bound | 0.24 Wh is |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 100 | `frontier` | 0.0258 | 0.0520 | 0.116 | 0.240 | 0.670 | base case to high case |
-| 1000 | `frontier` | 0.0534 | 0.108 | 0.242 | 0.545 | 1.47 | low case to base case |
-| 10000 | `frontier` | 0.336 | 0.704 | 1.56 | 3.73 | 9.79 | below the lower bound |
-| 100 | `frontier@gemini-2.5-flash` | 0.00311 | 0.00513 | 0.0172 | 0.0964 | 0.334 | between high case and upper bound |
-| 1000 | `frontier@gemini-2.5-flash` | 0.00637 | 0.0113 | 0.0366 | 0.197 | 0.675 | between high case and upper bound |
-| 10000 | `frontier@gemini-2.5-flash` | 0.0457 | 0.107 | 0.290 | 1.35 | 4.39 | low case to base case |
-| 100 | `frontier@gemini-2.5-pro` | 0.0122 | 0.0191 | 0.0659 | 0.379 | 1.32 | base case to high case |
-| 1000 | `frontier@gemini-2.5-pro` | 0.0243 | 0.0388 | 0.133 | 0.754 | 2.62 | base case to high case |
-| 10000 | `frontier@gemini-2.5-pro` | 0.152 | 0.270 | 0.859 | 4.65 | 16.0 | between lower bound and low case |
+| 100 | `frontier` | 0.0257 | 0.0515 | 0.128 | 0.242 | 0.680 | base case to high case |
+| 1000 | `frontier` | 0.0530 | 0.106 | 0.251 | 0.551 | 1.51 | low case to base case |
+| 10000 | `frontier` | 0.326 | 0.653 | 1.51 | 3.69 | 10.1 | below the lower bound |
+| 100 | `frontier@gemini-2.5-flash` | 0.00300 | 0.00622 | 0.0164 | 0.0743 | 0.345 | between high case and upper bound |
+| 1000 | `frontier@gemini-2.5-flash` | 0.00593 | 0.0123 | 0.0332 | 0.155 | 0.714 | between high case and upper bound |
+| 10000 | `frontier@gemini-2.5-flash` | 0.0352 | 0.0742 | 0.225 | 1.02 | 4.74 | base case to high case |
+| 100 | `frontier@gemini-2.5-pro` | 0.0121 | 0.0251 | 0.0651 | 0.283 | 1.33 | base case to high case |
+| 1000 | `frontier@gemini-2.5-pro` | 0.0239 | 0.0494 | 0.129 | 0.568 | 2.66 | base case to high case |
+| 10000 | `frontier@gemini-2.5-pro` | 0.142 | 0.294 | 0.794 | 3.46 | 16.3 | between lower bound and low case |
 
-At 1,000 input tokens the `frontier` base case, 0.242 Wh, is close
+At 1,000 input tokens the `frontier` base case, 0.251 Wh, is close
 to Google's figure. At 10,000 input tokens Google's figure is below the
 `frontier` lower bound: with that set's assumptions, no values tokendraw
 allows serve such a prompt for 0.24 Wh. The figure is consistent with
@@ -102,28 +102,28 @@ OpenAI, energy in Wh:
 
 | Input tokens | Parameter set | Lower bound | Low case | Base case | High case | Upper bound | 0.34 Wh is |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 100 | `frontier` | 0.0258 | 0.0558 | 0.125 | 0.258 | 0.958 | between high case and upper bound |
-| 1000 | `frontier` | 0.0534 | 0.116 | 0.260 | 0.584 | 2.10 | base case to high case |
-| 10000 | `frontier` | 0.336 | 0.756 | 1.68 | 4.01 | 14.0 | between lower bound and low case |
-| 100 | `frontier@gpt-4o` | 0.0146 | 0.0245 | 0.0846 | 0.488 | 2.27 | base case to high case |
-| 1000 | `frontier@gpt-4o` | 0.0291 | 0.0495 | 0.170 | 0.969 | 4.50 | base case to high case |
-| 10000 | `frontier@gpt-4o` | 0.180 | 0.336 | 1.08 | 5.94 | 27.2 | low case to base case |
+| 100 | `frontier` | 0.0257 | 0.0529 | 0.137 | 0.271 | 0.974 | between high case and upper bound |
+| 1000 | `frontier` | 0.0530 | 0.109 | 0.269 | 0.616 | 2.16 | base case to high case |
+| 10000 | `frontier` | 0.326 | 0.671 | 1.62 | 4.12 | 14.5 | between lower bound and low case |
+| 100 | `frontier@gpt-4o` | 0.0145 | 0.0309 | 0.0838 | 0.380 | 2.29 | base case to high case |
+| 1000 | `frontier@gpt-4o` | 0.0286 | 0.0609 | 0.166 | 0.758 | 4.55 | base case to high case |
+| 10000 | `frontier@gpt-4o` | 0.170 | 0.363 | 1.01 | 4.60 | 27.7 | between lower bound and low case |
 
 OpenAI's figure is inside every set of bounds, and between the low and
-the high case except with `frontier` at 100 and 10,000 input tokens. Since OpenAI does
-not say what its figure includes, this comparison is the weakest of the
-three.
+the high case except with `frontier` at 100 and 10,000 input tokens and
+with GPT-4o's price at 10,000. Since OpenAI does not say what its figure
+includes, this comparison is the weakest of the three.
 
 Mistral, emissions in g CO2e:
 
 | Input tokens | Parameter set | Lower bound | Low case | Base case | High case | Upper bound | 1.14 g CO2e is |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 100 | `frontier` | 0.000456 | 0.00245 | 0.0532 | 0.183 | 1.03 | above the upper bound |
-| 1000 | `frontier` | 0.00105 | 0.00565 | 0.123 | 0.461 | 2.52 | between high case and upper bound |
-| 10000 | `frontier` | 0.00709 | 0.0396 | 0.852 | 3.38 | 18.0 | base case to high case |
-| 100 | `frontier@mistral-large-2` | 0.000172 | 0.000718 | 0.0241 | 0.229 | 1.63 | between high case and upper bound |
-| 1000 | `frontier@mistral-large-2` | 0.000380 | 0.00163 | 0.0538 | 0.506 | 3.57 | between high case and upper bound |
-| 10000 | `frontier@mistral-large-2` | 0.00260 | 0.0126 | 0.384 | 3.40 | 23.6 | base case to high case |
+| 100 | `frontier` | 0.000454 | 0.00243 | 0.0582 | 0.184 | 1.05 | above the upper bound |
+| 1000 | `frontier` | 0.00104 | 0.00555 | 0.127 | 0.465 | 2.58 | between high case and upper bound |
+| 10000 | `frontier` | 0.00688 | 0.0368 | 0.824 | 3.32 | 18.5 | base case to high case |
+| 100 | `frontier@mistral-large-2` | 0.000170 | 0.000943 | 0.0238 | 0.172 | 1.64 | between high case and upper bound |
+| 1000 | `frontier@mistral-large-2` | 0.000372 | 0.00206 | 0.0523 | 0.381 | 3.63 | between high case and upper bound |
+| 10000 | `frontier@mistral-large-2` | 0.00239 | 0.0133 | 0.351 | 2.52 | 24.2 | base case to high case |
 
 At 100 input tokens Mistral's figure is above the `frontier` upper
 bound, and up to 1,000 input tokens it is above every high case. Possible

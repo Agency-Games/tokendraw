@@ -2,31 +2,35 @@
 # values: lower bound, low case, base case, high case and upper bound.
 # The bounds are what non-disclosure leaves open, the low and high case
 # the spread across documented architectures and hardware.
+#
+# `cargo xtask open-weight-sets` writes the frontier set's a_p, a_d and
+# c0 from the open-weight sets. Every other value is edited here, and
+# the command keeps it.
 
 [[parameter_set]]
 id = "frontier"
 description = "A closed frontier model served on 2024 to 2026 data-centre accelerators, for models without a set of their own"
-reviewed = 2026-10-07
+reviewed = 2026-11-28
 
 [parameter_set.a_p_uj_per_pair]
-lower_bound = 0.5
-low_case = 2.5
-base_case = 4
-high_case = 8
-upper_bound = 12
+lower_bound = 0.0066560000000000005
+low_case = 0.0903168
+base_case = 1.548288
+high_case = 2.752512
+upper_bound = 13.2120576
 label = "D"
-sources = ["deepseek-v3-hardware", "mlenergy-v3"]
-basis = "Attention FLOPs per pair of a new token and a context token in documented models (0.15 to 8.3 million) times energy per FLOP (0.5 to 1.7 pJ). Base case: full-attention mixture of experts on B200-class hardware. Low: sparse or hybrid attention. High: Llama-3.1-405B attention width on H100."
+sources = ["config-deepseek-v4-pro", "card-deepseek-v4-pro", "config-glm-5-3", "config-kimi-k3", "config-qwen3-8-2-4t-a95b", "config-llama-3-3-70b-instruct", "config-deepseek-v4-1-flash", "card-deepseek-v4-1-flash", "llama-3-herd", "deepseek-v3-hardware", "mlenergy-v3", "flashmla"]
+basis = "Prefill attention per pair of a new token and an earlier token, as the open-weight sets derive it from their configurations. Low case, base case and high case: the lowest, the median and the highest base case of the open-weight sets with at least 40 billion active parameters: DeepSeek V4 Pro, GLM 5.3, Kimi K3, Qwen3.8-2.4T-A95B, Llama 3.3 70B Instruct. Lower bound: the lowest lower bound of every open-weight set. Upper bound: the highest upper bound of those sets and of Llama 3.1 405B on the high scenario. No lab discloses the attention design of its closed models, so this assumes a closed model's attention is no less efficient than the median documented large open-weight model. Llama 3.1 405B: 126 full grouped-query attention layers, 128 query heads, 8 key-value heads, head width 128; dense. KV in BF16, 516,096 bytes per token. The lower bound is DeepSeek V4.1 Flash's."
 
 [parameter_set.a_d_uj_per_pair]
-lower_bound = 2
-low_case = 10
-base_case = 20
-high_case = 45
-upper_bound = 80
+lower_bound = 0.062400000000000004
+low_case = 0.1746624
+base_case = 6.2208
+high_case = 73.728
+upper_bound = 185.79456
 label = "D"
-sources = ["deepseek-v3-hardware", "mlenergy-v3"]
-basis = "KV cache bytes per context token (8 to 516 KB) times node energy per HBM byte read (150 to 330 pJ) for each output token. Measured anchor: about 30 uJ, GPU only, for Qwen3-32B in the ML.ENERGY Leaderboard v3.0."
+sources = ["config-deepseek-v4-pro", "card-deepseek-v4-pro", "config-glm-5-3", "config-kimi-k3", "config-qwen3-8-2-4t-a95b", "config-llama-3-3-70b-instruct", "config-deepseek-v4-1-flash", "card-deepseek-v4-1-flash", "llama-3-herd", "deepseek-v3-hardware", "mlenergy-v3", "flashmla"]
+basis = "Decode attention per pair of an output token and an earlier token, as the open-weight sets derive it from their configurations. Low case, base case and high case: the lowest, the median and the highest base case of the open-weight sets with at least 40 billion active parameters: DeepSeek V4 Pro, GLM 5.3, Kimi K3, Qwen3.8-2.4T-A95B, Llama 3.3 70B Instruct. Lower bound: the lowest lower bound of every open-weight set. Upper bound: the highest upper bound of those sets and of Llama 3.1 405B on the high scenario. No lab discloses the attention design of its closed models, so this assumes a closed model's attention is no less efficient than the median documented large open-weight model. Llama 3.1 405B: 126 full grouped-query attention layers, 128 query heads, 8 key-value heads, head width 128; dense. KV in BF16, 516,096 bytes per token. The lower bound is DeepSeek V4.1 Flash's."
 
 [parameter_set.b_in_j_per_token]
 lower_bound = 0.1
@@ -36,27 +40,27 @@ high_case = 0.8
 upper_bound = 1.5
 label = "D"
 sources = ["deepseek-fleet", "mlenergy-v3"]
-basis = "DeepSeek-V3/R1 fleet statistics: 0.23 J per cache-miss input token at 37 billion active parameters on H800, scaled to about 100 billion active parameters (base case; not disclosed for closed models) and to B200, 35 percent less energy per token in the ML.ENERGY Leaderboard v3.0. Taken as energy at load, because DeepSeek scales its inference nodes to the load; had its fleet carried Google's measured reserve, 0.23 J would be 0.205 J at load."
+basis = "DeepSeek-V3/R1 fleet statistics: 0.23 J per cache-miss input token at 37 billion active parameters on H800, scaled to about 100 billion active parameters (base case; not disclosed for closed models) and to B200, 35 percent less energy per token in the ML.ENERGY Leaderboard v3.0. Taken as energy at load, because DeepSeek scales its inference nodes to the load; had its fleet carried Google's measured reserve, 0.23 J would be 0.205 J at load. The 0.23 J includes each new token's attention over its context, at a context length DeepSeek does not publish, which a_p counts again: at 7.8 uJ per pair (DeepSeek-V3 on H800) and an assumed mean context of 2,500 to 10,000 tokens, 8.5 to 34 percent of it. The low case covers that overlap."
 
 [parameter_set.b_out_j_per_token]
 lower_bound = 0.15
 low_case = 0.3
-base_case = 0.6
+base_case = 0.67
 high_case = 1.0
 upper_bound = 2.0
 label = "D"
 sources = ["deepseek-fleet", "mlenergy-v3"]
-basis = "DeepSeek-V3/R1 fleet statistics: about 0.38 J per output token excluding attention over the context, with the same scaling as b_in, taken as energy at load like b_in; had DeepSeek's fleet carried Google's measured reserve, 0.38 J would be 0.325 J at load."
+basis = "DeepSeek-V3/R1 fleet statistics: about 0.38 J per output token excluding attention over the context, with the same scaling as b_in, 0.38 x 100 / 37 x 0.65 = 0.67 J, taken as energy at load like b_in; had DeepSeek's fleet carried Google's measured reserve, 0.38 J would be 0.325 J at load."
 
 [parameter_set.c0_mj_per_cached_token]
-lower_bound = 0.02
-low_case = 0.03
-base_case = 0.3
-high_case = 1
-upper_bound = 3
+lower_bound = 0.00017025999999999999
+low_case = 0.0008919000000000002
+base_case = 0.018841600000000003
+high_case = 0.6397083648
+upper_bound = 0.9746620416
 label = "D"
-sources = ["deepseek-v3-hardware"]
-basis = "Reloading a cached token's KV entry from DRAM or SSD, and decompressing it where the cache is compressed, once per call."
+sources = ["config-deepseek-v4-pro", "card-deepseek-v4-pro", "config-glm-5-3", "config-kimi-k3", "config-qwen3-8-2-4t-a95b", "config-llama-3-3-70b-instruct", "config-deepseek-v4-1-flash", "card-deepseek-v4-1-flash", "llama-3-herd", "deepseek-v3-hardware", "mlenergy-v3", "flashmla"]
+basis = "Reloading a cached token's key-value entries once per call, as the open-weight sets derive it from their configurations. Low case, base case and high case: the lowest, the median and the highest base case of the open-weight sets with at least 40 billion active parameters: DeepSeek V4 Pro, GLM 5.3, Kimi K3, Qwen3.8-2.4T-A95B, Llama 3.3 70B Instruct. Lower bound: the lowest lower bound of every open-weight set. Upper bound: the highest upper bound of those sets and of Llama 3.1 405B on the high scenario. No lab discloses the attention design of its closed models, so this assumes a closed model's attention is no less efficient than the median documented large open-weight model. Llama 3.1 405B: 126 full grouped-query attention layers, 128 query heads, 8 key-value heads, head width 128; dense. KV in BF16, 516,096 bytes per token. The lower bound is DeepSeek V4.1 Flash's."
 
 [parameter_set.idle]
 lower_bound = 1.0

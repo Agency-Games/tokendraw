@@ -1,5 +1,6 @@
 ---
 source: tests/cli.rs
+assertion_line: 1246
 expression: "projects.shown(&[\"report\"])?"
 ---
 tokendraw report, all calls
@@ -16,19 +17,19 @@ Coverage            status      location
   pi                not found   ~/no-logs/sessions
 
 Emissions, g CO2e           base case   low to high case   bounds
-  example-proxy (unknown)       0.142   0.0065 to 0.55     0.0012 to 3.0
+  example-proxy (unknown)       0.145   0.0065 to 0.55     0.0012 to 3.0
 
-  total                         0.142   0.0065 to 0.55     0.0012 to 3.0
+  total                         0.145   0.0065 to 0.55     0.0012 to 3.0
 
 These are cases, not confidence intervals: see `tokendraw report --help`.
 
 Projects, g CO2e   calls   base case   low to high case   bounds
-  ~/repo               5       0.142   0.0065 to 0.55     0.0012 to 3.0
+  ~/repo               5       0.145   0.0065 to 0.55     0.0012 to 3.0
 
 These are cases, not confidence intervals: see `tokendraw report --help`.
 
 Where the energy goes (base case)
-  rereading the context               1%
+  rereading the context               <1%
   calls above 200,000 cached tokens   0%
 
 No data record for model example-medium, provider example-proxy; a data

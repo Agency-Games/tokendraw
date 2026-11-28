@@ -9,10 +9,10 @@ with your own files.
 | File | Holds |
 | --- | --- |
 | `data.toml` | The data version, the review interval and the sources the other files cite |
-| `energy/parameter-sets.toml` | The parameter sets of the per-call energy model |
+| `energy/parameter-sets.toml` | The `frontier` parameter set of the per-call energy model, whose attention terms `cargo xtask open-weight-sets` writes |
 | `energy/open-weight-sets.toml` | Parameter sets of open-weight models from their published configurations, written by `cargo xtask open-weight-sets` |
 | `energy/price-calibration.toml` | The weight energy per USD at open-weight hosts' prices and the markup band, written by `cargo xtask price-calibration` |
-| `energy/prices.toml` | Closed models' list prices, with long-context tiers |
+| `energy/prices.toml` | Closed models' list prices, with their long-context prices |
 | `energy/models.toml` | Model-name patterns, each with a parameter set, optionally a price, and whether its weights are open, closed or unknown |
 | `providers.toml` | Per provider: the grid geographies it serves from, and its PUE |
 | `grid/ember.toml` | Grid intensity per country and US state, from Ember (CC BY 4.0, see `grid/README.md`) |
@@ -184,6 +184,25 @@ only the serving hardware is not, the base case is a B200 node, and
 the low and high case and the bounds all run from a GB200-class node with
 FP8 attention to an H100 node.
 
+## The frontier set
+
+`frontier` is the set for a closed model, whose attention design no lab
+discloses. Its attention and reload terms, `a_p`, `a_d` and `c0`, come
+from the open-weight sets, so they assume a closed model's attention is no
+less efficient than that of the documented large open-weight models:
+
+- the low case, base case and high case are the lowest, the median and
+  the highest base case of the sets of models with at least 40 billion
+  active parameters;
+- the lower bound is the lowest lower bound of every open-weight set;
+- the upper bound is the highest upper bound of those large sets and of
+  Llama 3.1 405B, a dense model with full attention, on an H100 node.
+
+`cargo xtask open-weight-sets` writes these three terms into
+`energy/parameter-sets.toml` and keeps the set's other values, which are
+edited there. `b_in` and `b_out` scale DeepSeek's measured weight energy
+per token to about 100 billion active parameters on a B200 node.
+
 ## Prices
 
 No lab discloses the energy of its closed models, but each lists a price,
@@ -199,12 +218,14 @@ and `idle` stay the set's.
   in order.
 - `b_in` and `b_out` split that energy in the ratio `anchor_in_j` :
   `anchor_out_j`.
-- When a call's prompt (uncached input, cache writes and cache reads)
-  exceeds a tier's `above_prompt_tokens`, both scale by the tier's prices
-  over the base prices.
 
-The derived sets are named `<set>@<price>`, and `<set>@<price>>N` above a
-tier at N tokens; `tokendraw data` lists them. They are computed when the
+A price's `tier` records a listed long-context price: above
+`above_prompt_tokens` prompt tokens (uncached input, cache writes and
+cache reads), the lab charges the whole call at the tier's prices. Tiers
+do not change the estimate. The labs do not say what the surcharge pays
+for, and the attention terms already grow with the context.
+
+The derived sets are named `<set>@<price>`; `tokendraw data` lists them. They are computed when the
 data loads, so overriding a price, the calibration or the base set changes
 every set derived from it. Parameter set and price ids may hold only
 ASCII letters, digits, `.`, `-` and `_`.
@@ -214,7 +235,10 @@ buys at the hosts of ten open-weight models listed on OpenRouter: for
 every host and model, the reference call's weight energy from the model's
 active parameters over its price there. `markup` is how far a closed
 lab's price may sit above those hosts' for the same serving cost, which no
-lab or host publishes. Both bands are wide, so priced models have wider
+lab or host publishes: from 1, the same margin, to 3.33, a lab at a
+reported 70 percent compute margin with hosts at cost. The base case is
+their geometric mean, 1.825, and the low and high case are the geometric
+means of the base case and each bound, 1.351 and 2.465. Both bands are wide, so priced models have wider
 bands than `frontier`; what prices add is the difference between models.
 
 The calibration can be rerun but not reproduced exactly: OpenRouter's
@@ -239,7 +263,12 @@ SHA-256 of each file used are in `energy/price-calibration.toml`.
 
   which rewrites `grid/ember.toml` with the files' URLs and SHA-256. Do
   not commit the CSV files.
-- Regenerate the price calibration when its models or their prices change:
+- Regenerate the price calibration when its models, their prices, the
+  anchor or the reference call change, since every host cell uses them. A
+  change to the markup alone, which no cell uses, can be copied from
+  `xtask/price-calibration.toml` into `energy/price-calibration.toml` by
+  hand; a test fails while the fields the two share differ. To
+  regenerate:
   download `https://openrouter.ai/api/v1/models/<slug>/endpoints` for every
   slug in `xtask/price-calibration.toml`, one file each, then run
 
@@ -251,12 +280,14 @@ SHA-256 of each file used are in `energy/price-calibration.toml`.
   and each file's URL and SHA-256. OpenRouter's terms do not allow copying
   its data, so do not commit the files or any price from them.
 - Regenerate the open-weight sets when a model's configuration, its active
-  parameters in `xtask/price-calibration.toml`, the hardware scenarios in
-  `xtask/open-weight-sets.toml` or the `frontier` set's `idle` change:
+  parameters in `xtask/price-calibration.toml`, the hardware scenarios or
+  the `frontier` rule in `xtask/open-weight-sets.toml` or the `frontier`
+  set's `idle` change:
 
   ```
   cargo xtask open-weight-sets --reviewed <date>
   ```
 
-  which rewrites `energy/open-weight-sets.toml`. A test fails while the
-  shipped file differs from what the command writes.
+  which rewrites `energy/open-weight-sets.toml` and the `frontier` set's
+  attention terms in `energy/parameter-sets.toml`. A test fails while
+  either shipped file differs from what the command writes.

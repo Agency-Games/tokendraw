@@ -44,13 +44,13 @@ basis = "Over 171 host and model cells of OpenRouter's endpoints for 10 open-wei
 
 [price_calibration.markup]
 lower_bound = 1.0
-low_case = 1.0
+low_case = 1.351
 base_case = 1.825
-high_case = 3.33
+high_case = 2.465
 upper_bound = 3.33
 label = "D"
 sources = ["margin-anthropic", "margin-openai"]
-basis = "How far a closed lab's list price sits above the price hosts of open-weight models charge for the same serving cost. Neither the labs nor the hosts publish it. Low: lab and hosts at the same margin. High: a lab at OpenAI's reported compute margin of 70 percent, 1 / (1 - 0.70) = 3.33 times compute cost, with hosts at cost; Anthropic's reported 40 percent gross margin gives at least 1.67. Both are leaked figures that neither company confirmed. Base case: the geometric mean of 1 and 3.33."
+basis = "How far a closed lab's list price sits above the price hosts of open-weight models charge for the same serving cost. Neither the labs nor the hosts publish it. Lower bound: lab and hosts at the same margin. Upper bound: a lab at OpenAI's reported compute margin of 70 percent, 1 / (1 - 0.70) = 3.33 times compute cost, with hosts at cost; Anthropic's reported 40 percent gross margin gives at least 1.67. Both are leaked figures that neither company confirmed. Base case: the geometric mean of 1 and 3.33. Low and high case: the geometric means of each bound and the base case, 1.351 and 2.465, so that neither case is a bound."
 
 [sources.card-deepseek-v4-1-flash]
 title = "deepseek-ai/DeepSeek-V4.1-Flash model card and technical report, commit 2cba9e42aa026125f3ed06c6d98c1db82f7ca027"

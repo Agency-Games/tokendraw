@@ -60,6 +60,33 @@ url = "https://github.com/deepseek-ai/FlashMLA"
 publisher = "DeepSeek-AI"
 accessed = 2026-10-06
 
+# The frontier set's attention terms, a_p, a_d and c0, which every closed
+# model without a set of its own and every priced set uses. The command
+# writes them into data/energy/parameter-sets.toml from the sets above:
+# the low, base and high case from the sets of models with at least
+# `min_active_b` billion active parameters, the lower bound from every set
+# and the upper bound from those large sets and the reference designs on
+# the high scenario. A reference design bounds the range but ships no set.
+[frontier]
+min_active_b = 40
+basis = "No lab discloses the attention design of its closed models, so this assumes a closed model's attention is no less efficient than the median documented large open-weight model."
+
+[[frontier.reference]]
+id = "llama-3.1-405b"
+name = "Llama 3.1 405B"
+sources = ["llama-3-herd", "deepseek-v3-hardware"]
+basis = "126 full grouped-query attention layers, 128 query heads, 8 key-value heads, head width 128; dense. KV in BF16, 516,096 bytes per token."
+
+[[frontier.reference.group]]
+kind = "full"
+layers = 126
+layout = "gqa"
+heads = 128
+kv_heads = 8
+qk_dim = 128
+v_dim = 128
+kv_bytes = 2
+
 [[model]]
 id = "deepseek-v4-pro"
 name = "DeepSeek V4 Pro"
@@ -344,6 +371,13 @@ qk_dim = 192
 v_dim = 128
 kv_bytes = 2
 window = 128
+
+[sources.llama-3-herd]
+title = "The Llama 3 Herd of Models (table 3, the architecture of Llama 3 405B)"
+url = "https://arxiv.org/abs/2407.21783"
+publisher = "Meta, on arXiv"
+published = "2024-07-31"
+accessed = 2026-11-28
 
 [sources.config-deepseek-v4-pro]
 title = "deepseek-ai/DeepSeek-V4-Pro config.json, commit b5968e9190ef611bbf34a7229255be88a0e937c1"

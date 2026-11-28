@@ -714,3 +714,10 @@ title = "FlashMLA: efficient multi-head latent attention kernels (sparse prefill
 url = "https://github.com/deepseek-ai/FlashMLA"
 publisher = "DeepSeek-AI"
 accessed = 2026-10-06
+
+[sources.llama-3-herd]
+title = "The Llama 3 Herd of Models (table 3, the architecture of Llama 3 405B)"
+url = "https://arxiv.org/abs/2407.21783"
+publisher = "Meta, on arXiv"
+published = "2024-07-31"
+accessed = 2026-11-28

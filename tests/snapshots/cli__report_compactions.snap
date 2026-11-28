@@ -1,5 +1,6 @@
 ---
 source: tests/cli.rs
+assertion_line: 1507
 expression: stdout(&output)
 ---
 tokendraw report, all calls
@@ -20,14 +21,14 @@ Coverage        status      location
   pi            not found   ~/logs/pi/sessions
 
 Emissions, g CO2e   base case   low to high case   bounds
-  openai                 40.8   11 to 290          0.48 to 1,700
+  openai                 35.9   10 to 220          0.42 to 1,700
 
-  total                  40.8   11 to 290          0.48 to 1,700
+  total                  35.9   10 to 220          0.42 to 1,700
 
 These are cases, not confidence intervals: see `tokendraw report --help`.
 
 Projects, g CO2e   calls   base case   low to high case   bounds
-  unresolved          34        40.8   11 to 290          0.48 to 1,700
+  unresolved          34        35.9   10 to 220          0.42 to 1,700
 
 These are cases, not confidence intervals: see `tokendraw report --help`.
 
@@ -35,7 +36,7 @@ These are cases, not confidence intervals: see `tokendraw report --help`.
 list them with the labels that would assign them.
 
 Where the energy goes (base case)
-  rereading the context               19%
+  rereading the context               9%
   calls above 200,000 cached tokens   0%
 
 fixed-context
@@ -52,7 +53,7 @@ fixed-context
 model-choice
   Subagents and headless runs on models pricier than gpt-6-luna (codex) used
   100% of the energy. On those models, the same tokens would have made the
-  total 80% lower.
+  total 90% lower.
   What you can do:
     codex:
       agents.default_subagent_model = "gpt-6-luna" in config.toml

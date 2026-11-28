@@ -47,8 +47,7 @@ pub struct Breakdown {
     /// clients they have an action for.
     pub cached_above_by_client: BTreeMap<String, Calls>,
     /// By client, every call and the energy of the fixed context of the
-    /// calls: their energy less that of the same calls without it, each
-    /// priced at the prompt threshold it then falls under.
+    /// calls: their energy less that of the same calls without it.
     pub fixed_by_client: BTreeMap<String, Fixed>,
     /// By client, the calls in the roles of `model-choice` whose per-token
     /// terms exceed those of the model the data compares them with.

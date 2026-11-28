@@ -1,5 +1,6 @@
 ---
 source: tests/cli.rs
+assertion_line: 2164
 expression: stdout(&output)
 ---
 tokendraw findings, all calls
@@ -7,7 +8,7 @@ tokendraw findings, all calls
 fixed-context
   Each call re-read on average 4,840 tokens its session or subagent started
   with: the system prompt, tool definitions, instruction files and first
-  prompt or brief. That used 81% of the energy.
+  prompt or brief. That used 80% of the energy.
   What you can do:
     claude-code:
       /context to see what fills the context
@@ -25,7 +26,7 @@ fixed-context
 model-choice
   Subagents and headless runs on models pricier than claude-haiku-5-5
   (claude-code) or gpt-6-luna (codex) used 16% of the energy. On those
-  models, the same tokens would have made the total 14% lower.
+  models, the same tokens would have made the total 15% lower.
   What you can do:
     claude-code:
       model: haiku in a subagent's definition
