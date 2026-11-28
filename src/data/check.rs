@@ -315,7 +315,7 @@ fn check_prices(merged: &Merged, origins: &[Origin]) -> Result<(), Error> {
     Ok(())
 }
 
-/// [`priced_set_id`] relies on written ids holding no `@` or `>`.
+/// [`priced_set_id`] relies on written ids holding no `@`.
 fn check_id(origin: &Origin, kind: Kind, id: &str) -> Result<(), Error> {
     if id
         .chars()

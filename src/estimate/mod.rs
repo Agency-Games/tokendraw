@@ -127,7 +127,7 @@ pub fn l1(data: &Data, usage: &[Usage]) -> L1 {
     };
     let mut sets = BTreeSet::new();
     for row in usage {
-        let set = data.parameter_set(&row.model, row.prompt_above);
+        let set = data.parameter_set(&row.model);
         if !set.matched {
             *unmatched_models.entry(row.model.clone()).or_default() += row.calls;
         }
@@ -184,7 +184,7 @@ pub fn l1(data: &Data, usage: &[Usage]) -> L1 {
             client.calls += row.calls;
             client.energy = client.energy + base_case;
         }
-        add_fixed(data, row, base_case, pue.base_case, breakdown);
+        add_fixed(row, set, base_case, pue.base_case, breakdown);
         add_larger_model(data, row, set, base_case, pue.base_case, breakdown);
         total.calls += row.calls;
         for (part, key) in [
@@ -208,9 +208,14 @@ pub fn l1(data: &Data, usage: &[Usage]) -> L1 {
 /// Adds the calls of `row`, also those without fixed context, so the mean
 /// does not depend on how calls are grouped, and the energy of their fixed
 /// context: `energy`, their base case energy, less that of the calls
-/// without it, at the parameter set of the prompt threshold they then fall
-/// under.
-fn add_fixed(data: &Data, row: &Usage, energy: WattHours, pue: f64, breakdown: &mut Breakdown) {
+/// without it at the same parameter set.
+fn add_fixed(
+    row: &Usage,
+    set: &ParameterSet,
+    energy: WattHours,
+    pue: f64,
+    breakdown: &mut Breakdown,
+) {
     let without: &WithoutFixed = &row.without_fixed;
     let fixed = breakdown
         .fixed_by_client
@@ -220,7 +225,6 @@ fn add_fixed(data: &Data, row: &Usage, energy: WattHours, pue: f64, breakdown: &
     if without.fixed.0 == 0 {
         return;
     }
-    let set = data.parameter_set(&row.model, without.prompt_above).record;
     let (node, _) = node(set, &Load::without_fixed(row));
     fixed.tokens = Tokens(fixed.tokens.0 + without.fixed.0);
     fixed.energy = fixed.energy + WattHours(energy.0 - node.base_case * set.idle.base_case * pue);
@@ -229,9 +233,8 @@ fn add_fixed(data: &Data, row: &Usage, energy: WattHours, pue: f64, breakdown: &
 /// Adds the calls of `row` when its client has a `model-choice` action,
 /// its role is one the finding counts, its model has a list price and its
 /// set's per-token terms give more energy than the compared model's at the
-/// same tokens and prompt tier, so the finding can call the model
-/// pricier. The other terms are the row's own on both sides, so only `b_in`
-/// and `b_out` differ.
+/// same tokens, so the finding can call the model pricier. The other terms
+/// are the row's own on both sides, so only `b_in` and `b_out` differ.
 fn add_larger_model(
     data: &Data,
     row: &Usage,
@@ -250,7 +253,7 @@ fn add_larger_model(
     {
         return;
     }
-    let Some(compared) = data.set_of_model(model, row.prompt_above) else {
+    let Some(compared) = data.set_of_model(model) else {
         return;
     };
     let load = Load::of(row);

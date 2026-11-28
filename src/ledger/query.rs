@@ -80,9 +80,6 @@ pub struct Usage {
     pub model: String,
     /// As the ledger stores [`crate::adapters::Role`].
     pub role: String,
-    /// The highest threshold the query was given that the prompt of these
-    /// calls, `L + n_new`, exceeds; 0 when it exceeds none.
-    pub prompt_above: u64,
     /// Whether `L` of these calls exceeds [`Split::cached_above`].
     pub cached_above: bool,
     pub calls: u64,
@@ -110,8 +107,6 @@ pub struct Usage {
 /// defines it, and the sums the energy model needs for them.
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct WithoutFixed {
-    /// As [`Usage::prompt_above`], for the prompt without the fixed context.
-    pub prompt_above: u64,
     /// The sum of the fixed context removed.
     pub fixed: Tokens,
     pub cache_read: Tokens,
@@ -123,13 +118,10 @@ pub struct WithoutFixed {
 /// How [`Ledger::usage`] splits the calls besides client, provider, model
 /// and role; the default splits them no further.
 #[derive(Clone, Copy, Debug, Default)]
-pub struct Split<'a> {
-    /// Prompt thresholds, as [`Usage::prompt_above`].
-    pub prompt_above: &'a [u64],
+pub struct Split {
     /// A threshold of cache-read tokens, as [`Usage::cached_above`].
     pub cached_above: Option<u64>,
-    /// Whether to fill [`Usage::without_fixed`], which also splits the
-    /// calls by its prompt threshold.
+    /// Whether to fill [`Usage::without_fixed`].
     pub fixed: bool,
 }
 
@@ -302,9 +294,8 @@ impl Ledger {
     /// output length are correlated; products of sums or means would be
     /// wrong. They are floating point, so a long history cannot overflow.
     ///
-    /// The calls are also split by the highest prompt threshold they
-    /// exceed, so a price tier applies per call, and by whether their
-    /// cache-read tokens exceed the threshold of `split`.
+    /// The calls are also split by whether their cache-read tokens exceed
+    /// the threshold of `split`.
     pub fn usage(
         &self,
         since: Option<Timestamp>,
@@ -445,33 +436,18 @@ const USAGE_SUMS: &str = "count(*),
     sum(n_uncached_input - uncached_input + n_cache_read - cache_read)";
 
 /// The columns [`usage_groups`] names.
-const USAGE_GROUPS: &str =
-    "client, provider, model, role, prompt_above, cached_above, fixed_prompt_above";
+const USAGE_GROUPS: &str = "client, provider, model, role, cached_above";
 
-/// The prompt of a call, and of a call of the `fixed` view without its
-/// fixed context.
-const PROMPT: &str = "n_cache_read + n_uncached_input + cache_write";
-const PROMPT_WITHOUT_FIXED: &str = "r_cache_read + r_new_input";
-
-/// The thresholds are numbers, so they are written into the query.
+/// The threshold is a number, so it is written into the query.
 fn usage_groups(split: &Split) -> String {
     let cached_above = match split.cached_above {
         Some(threshold) => format!("n_cache_read > {threshold}"),
         None => "0".to_owned(),
     };
-    let fixed_prompt_above = if split.fixed {
-        prompt_above(split.prompt_above, PROMPT_WITHOUT_FIXED)
-    } else {
-        "0".to_owned()
-    };
-    format!(
-        "client, provider, model, role, {} AS prompt_above, {cached_above} AS cached_above,
-         {fixed_prompt_above} AS fixed_prompt_above",
-        prompt_above(split.prompt_above, PROMPT)
-    )
+    format!("client, provider, model, role, {cached_above} AS cached_above")
 }
 
-/// The sums of [`WithoutFixed`] after its prompt threshold.
+/// The sums of [`WithoutFixed`].
 fn fixed_sums(split: &Split) -> &'static str {
     if split.fixed {
         "sum(f), sum(r_cache_read), sum(r_new_input),
@@ -482,22 +458,6 @@ fn fixed_sums(split: &Split) -> &'static str {
     }
 }
 
-fn prompt_above(thresholds: &[u64], prompt: &str) -> String {
-    use std::fmt::Write as _;
-    let mut thresholds = thresholds.to_vec();
-    thresholds.sort_unstable();
-    thresholds.dedup();
-    if thresholds.is_empty() {
-        return "0".to_owned();
-    }
-    let mut sql = "CASE".to_owned();
-    for threshold in thresholds.iter().rev() {
-        let _ = write!(sql, " WHEN {prompt} > {threshold} THEN {threshold}");
-    }
-    sql.push_str(" ELSE 0 END");
-    sql
-}
-
 /// A [`Usage`] from a row holding the columns of [`USAGE_GROUPS`] from
 /// column `first`, then [`USAGE_SUMS`] and [`fixed_sums`].
 fn usage(row: &rusqlite::Row, first: usize) -> rusqlite::Result<Usage> {
@@ -506,23 +466,21 @@ fn usage(row: &rusqlite::Row, first: usize) -> rusqlite::Result<Usage> {
         provider: row.get(first + 1)?,
         model: row.get(first + 2)?,
         role: row.get(first + 3)?,
-        prompt_above: row.get(first + 4)?,
-        cached_above: row.get(first + 5)?,
-        calls: row.get(first + 7)?,
-        cache_read: Tokens(row.get(first + 8)?),
-        new_input: Tokens(row.get(first + 9)?),
-        output: Tokens(row.get(first + 10)?),
-        prefill_pairs: row.get(first + 11)?,
-        decode_pairs: row.get(first + 12)?,
-        estimated_output: Tokens(row.get(first + 13)?),
-        estimated_input: Tokens(row.get(first + 14)?),
+        cached_above: row.get(first + 4)?,
+        calls: row.get(first + 5)?,
+        cache_read: Tokens(row.get(first + 6)?),
+        new_input: Tokens(row.get(first + 7)?),
+        output: Tokens(row.get(first + 8)?),
+        prefill_pairs: row.get(first + 9)?,
+        decode_pairs: row.get(first + 10)?,
+        estimated_output: Tokens(row.get(first + 11)?),
+        estimated_input: Tokens(row.get(first + 12)?),
         without_fixed: WithoutFixed {
-            prompt_above: row.get(first + 6)?,
-            fixed: Tokens(row.get(first + 15)?),
-            cache_read: Tokens(row.get(first + 16)?),
-            new_input: Tokens(row.get(first + 17)?),
-            prefill_pairs: row.get(first + 18)?,
-            decode_pairs: row.get(first + 19)?,
+            fixed: Tokens(row.get(first + 13)?),
+            cache_read: Tokens(row.get(first + 14)?),
+            new_input: Tokens(row.get(first + 15)?),
+            prefill_pairs: row.get(first + 16)?,
+            decode_pairs: row.get(first + 17)?,
         },
     })
 }

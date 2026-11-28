@@ -178,7 +178,8 @@ pub struct Price {
     pub calibration: String,
     pub input_usd_per_mtok: f64,
     pub output_usd_per_mtok: f64,
-    /// Long-context prices, lowest threshold first.
+    /// Long-context prices, lowest threshold first. They are listed only:
+    /// the derived parameter set takes its weight terms from the base price.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub tier: Vec<PriceTier>,
     pub label: Label,

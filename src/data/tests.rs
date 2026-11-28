@@ -227,11 +227,11 @@ fn open_weight_models_resolve_to_the_sets_of_their_configurations() -> Result<()
         ("glm-5.2", "frontier"),
         ("kimi-k2.6", "frontier"),
     ] {
-        let found = data.parameter_set(name, 0);
+        let found = data.parameter_set(name);
         assert!(found.matched, "{name}");
         assert_eq!(found.record.id, set, "{name}");
     }
-    assert!(!data.parameter_set("glm-5.3-flash", 0).matched);
+    assert!(!data.parameter_set("glm-5.3-flash").matched);
     Ok(())
 }
 
@@ -389,10 +389,10 @@ fn an_exact_pattern_wins_then_the_longest_prefix() -> Result<(), Error> {
 #[test]
 fn an_unmatched_model_uses_the_fallback_set() -> Result<(), Error> {
     let data = Shipped::new().load(&[])?;
-    let found = data.parameter_set("gpt-6", 0);
+    let found = data.parameter_set("gpt-6");
     assert!(!found.matched);
     assert_eq!(found.record.id, FALLBACK_PARAMETER_SET);
-    assert!(data.parameter_set("claude-x", 0).matched);
+    assert!(data.parameter_set("claude-x").matched);
     Ok(())
 }
 
@@ -779,7 +779,7 @@ fn close(actual: f64, expected: f64) -> bool {
 #[test]
 fn a_priced_model_gets_weight_terms_from_its_list_price() -> Result<(), Error> {
     let data = Shipped::new().load(&[("a.toml", &priced())])?;
-    let found = data.parameter_set("priced-model", 0);
+    let found = data.parameter_set("priced-model");
     assert!(found.matched);
     let set = found.record;
     assert_eq!(set.id, "frontier@p");
@@ -816,27 +816,10 @@ fn a_priced_model_gets_weight_terms_from_its_list_price() -> Result<(), Error> {
 }
 
 #[test]
-fn a_price_tier_applies_above_its_threshold() -> Result<(), Error> {
+fn a_price_tier_is_a_listed_price_that_derives_no_parameter_set() -> Result<(), Error> {
     let data = Shipped::new().load(&[("a.toml", &priced())])?;
-    assert_eq!(data.prompt_thresholds(), [100]);
-    let base = data.parameter_set("priced-model", 0).record;
-    let tier = data.parameter_set("priced-model", 100).record;
-    assert_eq!(tier.id, "frontier@p>100");
-    assert_eq!(
-        data.parameter_set("priced-model", 500).record.id,
-        "frontier@p>100"
-    );
-    // Input price 8 over 4, output 30 over 20.
-    assert!(close(
-        tier.b_in_j_per_token.base_case,
-        base.b_in_j_per_token.base_case * 2.0
-    ));
-    assert!(close(
-        tier.b_out_j_per_token.base_case,
-        base.b_out_j_per_token.base_case * 1.5
-    ));
-    // A model without a price ignores the threshold.
-    assert_eq!(data.parameter_set("claude-x", 100).record.id, "frontier");
+    assert_eq!(data.prices["p"].tier.len(), 1);
+    assert_eq!(data.priced_sets.keys().collect::<Vec<_>>(), ["frontier@p"]);
     Ok(())
 }
 
@@ -845,8 +828,7 @@ fn an_override_of_a_price_reaches_its_derived_sets() -> Result<(), Error> {
     let mut shipped = Shipped::new();
     shipped.energy += &priced();
     let data = shipped.load(&[("b.toml", &price("p", 8.0, 40.0, &[]))])?;
-    assert_eq!(data.prompt_thresholds(), Vec::<u64>::new());
-    let set = data.parameter_set("priced-model", 100).record;
+    let set = data.parameter_set("priced-model").record;
     assert_eq!(set.id, "frontier@p");
     assert!(close(
         set.b_in_j_per_token.base_case,
@@ -856,14 +838,7 @@ fn an_override_of_a_price_reaches_its_derived_sets() -> Result<(), Error> {
 }
 
 #[test]
-fn ids_that_could_make_derived_ids_collide_are_refused() {
-    // Price "p>100000" at its base would have the id of price p above 100,000.
-    let text =
-        calibration("hosts", "10 20 30 40 50", "1 1 2 4 4") + &price("p>100000", 4.0, 20.0, &[]);
-    assert!(
-        problem(Shipped::new().load(&[("a.toml", &text)]))
-            .contains("price p>100000 has an id with other characters")
-    );
+fn an_id_that_could_make_a_derived_id_collide_is_refused() {
     let text = parameter_set("frontier@p", "1.1 1.1 1.2 1.3 1.5");
     assert!(
         problem(Shipped::new().load(&[("a.toml", &text)]))
@@ -959,7 +934,7 @@ fn every_ranked_closed_model_with_a_list_price_uses_its_own_price() -> Result<()
         ("gemini-2.5-pro", "gemini-2.5-pro"),
     ];
     for (name, price) in priced {
-        let found = data.parameter_set(name, 0);
+        let found = data.parameter_set(name);
         assert!(found.matched, "{name}");
         assert_eq!(found.record.id, format!("frontier@{price}"), "{name}");
     }
@@ -968,7 +943,7 @@ fn every_ranked_closed_model_with_a_list_price_uses_its_own_price() -> Result<()
         "codex-auto-review",
         "claude-mythos-5-1",
     ] {
-        assert_eq!(data.parameter_set(name, 0).record.id, "frontier", "{name}");
+        assert_eq!(data.parameter_set(name).record.id, "frontier", "{name}");
     }
     Ok(())
 }
@@ -1072,8 +1047,8 @@ fn model_choice_names_its_roles_and_the_model_of_each_client() -> Result<(), Err
     );
     assert_eq!(data.model_choice("codex"), None);
     assert_eq!(
-        data.set_of_model("priced", 100).map(|set| set.id.as_str()),
-        Some(data.parameter_set("priced-model", 100).record.id.as_str())
+        data.set_of_model("priced").map(|set| set.id.as_str()),
+        Some(data.parameter_set("priced-model").record.id.as_str())
     );
     Ok(())
 }

@@ -899,72 +899,6 @@ fn usage_sums_the_pairs_of_each_call_not_the_product_of_sums() -> TestResult {
 }
 
 #[test]
-fn usage_splits_calls_by_the_highest_threshold_their_prompt_exceeds() -> TestResult {
-    let dir = tempfile::tempdir()?;
-    let mut ledger = Ledger::open(&dir.path().join("ledger.sqlite"))?;
-    let defined = definition(dir.path(), "a");
-    // Prompts of 100 (at the first threshold, not above it), 101, 250 and
-    // 1,000 tokens: cache reads plus uncached input plus the cache write.
-    let output = format!(
-        "{}\n{}\n{}\n{}\n",
-        shaped("r1", "m", 90, 9, 1),
-        shaped("r2", "m", 90, 10, 1),
-        shaped("r3", "m", 200, 49, 1),
-        shaped("r4", "m", 900, 99, 1),
-    );
-    ledger.ingest_output(
-        "tool",
-        &defined,
-        &defined.file,
-        output.into_bytes(),
-        external::reader(),
-    )?;
-    let split = |thresholds: &[u64]| -> Result<Vec<(u64, u64, Tokens)>, Error> {
-        Ok(ledger
-            .usage(None, None, None, &prompt(thresholds))?
-            .into_iter()
-            .map(|row| (row.prompt_above, row.calls, row.cache_read))
-            .collect())
-    };
-    assert_eq!(
-        split(&[500, 100, 100])?,
-        [
-            (0, 1, Tokens(90)),
-            (100, 2, Tokens(290)),
-            (500, 1, Tokens(900))
-        ]
-    );
-    assert_eq!(split(&[])?, [(0, 4, Tokens(1280))]);
-    let contexts = ledger.contexts(None, None)?;
-    let attributions: Vec<Attribution> = contexts
-        .iter()
-        .map(|context| Attribution {
-            client: &context.client,
-            session_id: &context.session_id,
-            cwd: context.cwd.as_deref(),
-            project: Some("/work"),
-            resolution: "checkout",
-        })
-        .collect();
-    ledger.attribute(&attributions)?;
-    let by_project = ledger.usage_by_project(None, None, &prompt(&[100]))?;
-    let rows: Vec<(u64, u64)> = by_project
-        .iter()
-        .map(|row| (row.usage.prompt_above, row.usage.calls))
-        .collect();
-    assert_eq!(rows, [(0, 1), (100, 3)]);
-    Ok(())
-}
-
-fn prompt(thresholds: &[u64]) -> Split<'_> {
-    Split {
-        prompt_above: thresholds,
-        cached_above: None,
-        fixed: false,
-    }
-}
-
-#[test]
 fn usage_splits_calls_by_role_and_by_cache_reads_above_a_threshold() -> TestResult {
     let dir = tempfile::tempdir()?;
     let mut ledger = Ledger::open(&dir.path().join("ledger.sqlite"))?;
@@ -991,7 +925,6 @@ fn usage_splits_calls_by_role_and_by_cache_reads_above_a_threshold() -> TestResu
         external::reader(),
     )?;
     let split = Split {
-        prompt_above: &[],
         cached_above: Some(100),
         fixed: false,
     };
@@ -1428,16 +1361,14 @@ fn a_compaction_without_a_record_gets_the_previous_calls_input_split_like_record
             without_output_estimate: 2,
         }
     );
-    // The 400,000-token compaction falls above the threshold with the call
-    // before it, the 100,000-token one below it with the other `gpt-5.5`
-    // calls.
-    let above = |rows: Vec<Usage>| -> Vec<(String, u64, u64, Tokens, Tokens, Tokens, Tokens)> {
+    // The 400,000-token compaction counts with the other `gpt-6-astra`
+    // calls, the 100,000-token one with the other `gpt-5.5` calls.
+    let estimated = |rows: Vec<Usage>| -> Vec<(String, u64, Tokens, Tokens, Tokens, Tokens)> {
         rows.into_iter()
             .filter(|row| row.estimated_input.0 > 0)
             .map(|row| {
                 (
                     row.model,
-                    row.prompt_above,
                     row.calls,
                     row.cache_read,
                     row.new_input,
@@ -1450,7 +1381,6 @@ fn a_compaction_without_a_record_gets_the_previous_calls_input_split_like_record
     let expected = [
         (
             "gpt-5.5".to_owned(),
-            0,
             3,
             Tokens(75_000),
             Tokens(100_000 + 25_000),
@@ -1459,16 +1389,15 @@ fn a_compaction_without_a_record_gets_the_previous_calls_input_split_like_record
         ),
         (
             "gpt-6-astra".to_owned(),
-            272_000,
-            2,
-            Tokens(300_000),
-            Tokens(400_000 + 100_000),
+            30 + 1 + 2,
+            Tokens(30 * 750 + 300_000),
+            Tokens(30 * 250 + 1000 + 400_000 + 100_000),
             Tokens(400_000),
             Tokens(60),
         ),
     ];
     assert_eq!(
-        above(ledger.usage(None, None, None, &prompt(&[272_000]))?),
+        estimated(ledger.usage(None, None, None, &Split::default())?),
         expected
     );
     let contexts = ledger.contexts(None, None)?;
@@ -1484,11 +1413,11 @@ fn a_compaction_without_a_record_gets_the_previous_calls_input_split_like_record
         .collect();
     ledger.attribute(&attributions)?;
     let by_project = ledger
-        .usage_by_project(None, None, &prompt(&[272_000]))?
+        .usage_by_project(None, None, &Split::default())?
         .into_iter()
         .map(|row| row.usage)
         .collect();
-    assert_eq!(above(by_project), expected);
+    assert_eq!(estimated(by_project), expected);
     Ok(())
 }
 
@@ -1497,7 +1426,6 @@ fn a_compaction_counts_above_the_cached_threshold_with_its_estimated_cache_read(
     let dir = tempfile::tempdir()?;
     let ledger = codex_compactions(dir.path(), 30)?;
     let split = Split {
-        prompt_above: &[],
         cached_above: Some(200_000),
         fixed: false,
     };
@@ -1529,7 +1457,7 @@ fn fewer_than_30_recorded_compactions_give_no_estimate() -> TestResult {
     );
     assert!(
         ledger
-            .usage(None, None, None, &prompt(&[272_000]))?
+            .usage(None, None, None, &Split::default())?
             .iter()
             .all(|row| row.estimated_input.0 == 0 && row.estimated_output.0 == 0)
     );
@@ -1889,7 +1817,6 @@ fn a_range_that_begins_within_a_session_finds_the_context_it_started_with() -> T
     session_with_two_subagents(&fixture)?;
     let ledger = fixture.ingest()?;
     let split = Split {
-        prompt_above: &[],
         cached_above: None,
         fixed: true,
     };

@@ -496,8 +496,12 @@ fn data_json_holds_every_record_and_source() -> TestResult {
     assert_eq!(json["findings"]["long-context"]["cached_tokens"], 200_000);
     assert!(json["prices"]["claude-opus-5-5"]["input_usd_per_mtok"].is_number());
     assert!(json["price_calibrations"]["open-weight-hosts"]["wh_per_usd"]["base_case"].is_number());
+    assert_eq!(
+        json["prices"]["claude-haiku-5-5"]["tier"][0]["above_prompt_tokens"],
+        100_000
+    );
     assert!(
-        json["priced_sets"]["frontier@claude-haiku-5-5>100000"]["b_in_j_per_token"]["base_case"]
+        json["priced_sets"]["frontier@claude-haiku-5-5"]["b_in_j_per_token"]["base_case"]
             .is_number()
     );
     assert_eq!(json["price_review_interval_days"], 30);

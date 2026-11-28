@@ -3,8 +3,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use super::check::check;
 use super::load::{Merged, Origin, Records, Version, invalid, records};
 use super::records::{
-    BoundsSites, Factor, Five, Geography, ParameterSet, Price, PriceCalibration, PriceTier,
-    Provider, Sites,
+    BoundsSites, Factor, Five, Geography, ParameterSet, Price, PriceCalibration, Provider, Sites,
 };
 use super::{Data, Error, ResolvedProvider};
 use crate::quantity::GramsCo2ePerKwh;
@@ -117,14 +116,11 @@ pub(super) fn resolve(
     })
 }
 
-/// Written ids hold neither `@` nor `>`, so no derived id equals another
-/// or a written one.
+/// Written ids hold no `@`, so no derived id equals another or a written
+/// one.
 #[must_use]
-pub fn priced_set_id(set: &str, price: &str, tier: Option<&PriceTier>) -> String {
-    match tier {
-        None => format!("{set}@{price}"),
-        Some(tier) => format!("{set}@{price}>{}", tier.above_prompt_tokens),
-    }
+pub fn priced_set_id(set: &str, price: &str) -> String {
+    format!("{set}@{price}")
 }
 
 fn priced_sets(
@@ -139,21 +135,18 @@ fn priced_sets(
         let (base, _) = &merged.parameter_sets[&model.parameter_set];
         let (price, _) = &merged.prices[price_id];
         let (calibration, _) = &merged.price_calibrations[&price.calibration];
-        let tiers = std::iter::once(None).chain(price.tier.iter().map(Some));
-        for tier in tiers {
-            let id = priced_set_id(&base.id, &price.id, tier);
-            if merged.parameter_sets.contains_key(&id) {
-                return Err(invalid(
-                    &origins[*origin],
-                    format!(
-                        "model {}: the derived parameter set {id} has the id of a written one",
-                        model.id
-                    ),
-                ));
-            }
-            sets.entry(id.clone())
-                .or_insert_with(|| priced_set(id, base, price, calibration, tier));
+        let id = priced_set_id(&base.id, &price.id);
+        if merged.parameter_sets.contains_key(&id) {
+            return Err(invalid(
+                &origins[*origin],
+                format!(
+                    "model {}: the derived parameter set {id} has the id of a written one",
+                    model.id
+                ),
+            ));
         }
+        sets.entry(id.clone())
+            .or_insert_with(|| priced_set(id, base, price, calibration));
     }
     Ok(sets)
 }
@@ -164,7 +157,6 @@ fn priced_set(
     base: &ParameterSet,
     price: &Price,
     calibration: &PriceCalibration,
-    tier: Option<&PriceTier>,
 ) -> ParameterSet {
     #[expect(
         clippy::cast_precision_loss,
@@ -191,17 +183,6 @@ fn priced_set(
             chat_usd * wh_per_usd / markup * 3600.0
         });
     let anchor = chat_in * calibration.anchor_in_j + chat_out * calibration.anchor_out_j;
-    let (in_scale, out_scale, tier_text) = match tier {
-        None => (1.0, 1.0, String::new()),
-        Some(tier) => (
-            tier.input_usd_per_mtok / price.input_usd_per_mtok,
-            tier.output_usd_per_mtok / price.output_usd_per_mtok,
-            format!(
-                " Above {} prompt tokens the tier's prices, {} and {}, scale the base values.",
-                tier.above_prompt_tokens, tier.input_usd_per_mtok, tier.output_usd_per_mtok
-            ),
-        ),
-    };
     let mut sources = Vec::new();
     for source in price
         .sources
@@ -217,9 +198,9 @@ fn priced_set(
         .label
         .max(calibration.wh_per_usd.label)
         .max(calibration.markup.label);
-    let basis = priced_basis(price, calibration) + &tier_text;
-    let factor = |anchor_j: f64, scale: f64| {
-        let values = joules.map(|joules| joules * anchor_j / anchor * scale);
+    let basis = priced_basis(price, calibration);
+    let factor = |anchor_j: f64| {
+        let values = joules.map(|joules| joules * anchor_j / anchor);
         Factor {
             lower_bound: values.lower_bound,
             low_case: values.low_case,
@@ -231,24 +212,18 @@ fn priced_set(
             basis: basis.clone(),
         }
     };
-    let description = match tier {
-        None => format!(
-            "{}, with weight terms from price {}",
-            base.description, price.id
-        ),
-        Some(tier) => format!(
-            "{}, with weight terms from price {} above {} prompt tokens",
-            base.description, price.id, tier.above_prompt_tokens
-        ),
-    };
+    let description = format!(
+        "{}, with weight terms from price {}",
+        base.description, price.id
+    );
     ParameterSet {
         id,
         description,
         reviewed: base.reviewed.min(price.reviewed).min(calibration.reviewed),
         a_p_uj_per_pair: base.a_p_uj_per_pair.clone(),
         a_d_uj_per_pair: base.a_d_uj_per_pair.clone(),
-        b_in_j_per_token: factor(calibration.anchor_in_j, in_scale),
-        b_out_j_per_token: factor(calibration.anchor_out_j, out_scale),
+        b_in_j_per_token: factor(calibration.anchor_in_j),
+        b_out_j_per_token: factor(calibration.anchor_out_j),
         c0_mj_per_cached_token: base.c0_mj_per_cached_token.clone(),
         idle: base.idle.clone(),
     }

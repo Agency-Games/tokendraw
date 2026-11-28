@@ -346,9 +346,7 @@ pub fn run(args: &ReportArgs, data: &Data, config: Config, today: Date) -> Resul
         scope,
     )?;
     let providers = ledger.providers(args.since, args.until, scope)?;
-    let thresholds = data.prompt_thresholds();
     let split = Split {
-        prompt_above: &thresholds,
         cached_above: Some(data.long_context_tokens()),
         fixed: true,
     };
@@ -359,7 +357,6 @@ pub fn run(args: &ReportArgs, data: &Data, config: Config, today: Date) -> Resul
             args.since,
             args.until,
             &Split {
-                prompt_above: &thresholds,
                 cached_above: None,
                 fixed: false,
             },

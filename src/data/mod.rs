@@ -1,7 +1,7 @@
 //! An override record replaces the shipped record with the same id whole,
 //! never field by field, or adds a record with a new id.
 
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeMap;
 use std::fmt;
 use std::fs;
 use std::io;
@@ -189,12 +189,11 @@ impl Data {
             .map(|(_, model)| model)
     }
 
-    /// `prompt_above` is a threshold of [`Data::prompt_thresholds`] or 0.
-    pub fn parameter_set(&self, name: &str, prompt_above: u64) -> Match<'_, ParameterSet> {
+    pub fn parameter_set(&self, name: &str) -> Match<'_, ParameterSet> {
         let model = self.model(name);
         let record = match model {
             None => &self.parameter_sets[FALLBACK_PARAMETER_SET],
-            Some(model) => self.model_set(model, prompt_above),
+            Some(model) => self.model_set(model),
         };
         Match {
             record,
@@ -205,22 +204,14 @@ impl Data {
     /// The set of the model record `id`, as [`Data::parameter_set`] gives it
     /// for a call; `None` when no record has that id.
     #[must_use]
-    pub fn set_of_model(&self, id: &str, prompt_above: u64) -> Option<&ParameterSet> {
-        self.models
-            .get(id)
-            .map(|model| self.model_set(model, prompt_above))
+    pub fn set_of_model(&self, id: &str) -> Option<&ParameterSet> {
+        self.models.get(id).map(|model| self.model_set(model))
     }
 
-    fn model_set(&self, model: &Model, prompt_above: u64) -> &ParameterSet {
+    fn model_set(&self, model: &Model) -> &ParameterSet {
         match &model.price {
             None => &self.parameter_sets[&model.parameter_set],
-            Some(price) => {
-                let tier = self.prices[price]
-                    .tier
-                    .iter()
-                    .rfind(|tier| tier.above_prompt_tokens <= prompt_above);
-                &self.priced_sets[&priced_set_id(&model.parameter_set, price, tier)]
-            }
+            Some(price) => &self.priced_sets[&priced_set_id(&model.parameter_set, price)],
         }
     }
 
@@ -262,16 +253,6 @@ impl Data {
         self.actions
             .get(&action_id(finding, client))
             .map(|action| action.steps.as_slice())
-    }
-
-    #[must_use]
-    pub fn prompt_thresholds(&self) -> Vec<u64> {
-        self.prices
-            .values()
-            .flat_map(|price| price.tier.iter().map(|tier| tier.above_prompt_tokens))
-            .collect::<BTreeSet<_>>()
-            .into_iter()
-            .collect()
     }
 
     pub fn provider(&self, name: &str) -> Match<'_, ResolvedProvider> {

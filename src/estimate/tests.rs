@@ -22,7 +22,6 @@ fn usage(client: &str, provider: &str, model: &str, sums: [f64; 6]) -> Usage {
         provider: provider.to_owned(),
         model: model.to_owned(),
         role: "interactive".to_owned(),
-        prompt_above: 0,
         cached_above: false,
         calls: count(calls),
         cache_read: Tokens(count(cache_read)),
@@ -258,18 +257,11 @@ fn the_breakdown_splits_the_base_case_energy_by_terms_threshold_client_and_role(
 }
 
 // A call of 280,000 cache-read, 2,000 new and 500 output tokens whose
-// thread started with 20,000 tokens: without them its prompt of 262,000
-// tokens falls below the 272,000-token tier of its price.
+// thread started with 20,000 tokens.
 #[test]
-fn the_fixed_context_is_the_energy_less_that_of_the_call_without_it_at_its_own_tier()
--> Result<(), Error> {
+fn the_fixed_context_is_the_energy_less_that_of_the_call_without_it() -> Result<(), Error> {
     let data = data::load(None)?;
     let model = "gpt-6-astra";
-    assert_ne!(
-        data.parameter_set(model, 272_000).record.id,
-        data.parameter_set(model, 0).record.id,
-        "the tiers have their own parameter sets"
-    );
     let pairs = |cached: f64, new: f64, out: f64| {
         [new * (cached + new / 2.0), out * (cached + new + out / 2.0)]
     };
@@ -280,7 +272,6 @@ fn the_fixed_context_is_the_energy_less_that_of_the_call_without_it_at_its_own_t
         model,
         [1.0, 280_000.0, 2_000.0, 500.0, prefill, decode],
     );
-    call.prompt_above = 272_000;
     let [prefill, decode] = pairs(260_000.0, 2_000.0, 500.0);
     let without = usage(
         "codex",
@@ -288,7 +279,6 @@ fn the_fixed_context_is_the_energy_less_that_of_the_call_without_it_at_its_own_t
         model,
         [1.0, 260_000.0, 2_000.0, 500.0, prefill, decode],
     );
-    call.without_fixed.prompt_above = 0;
     call.without_fixed.fixed = Tokens(20_000);
     call.without_fixed.cache_read = without.cache_read;
     call.without_fixed.new_input = without.new_input;
@@ -301,6 +291,24 @@ fn the_fixed_context_is_the_energy_less_that_of_the_call_without_it_at_its_own_t
     assert_eq!((fixed.calls, fixed.tokens), (1, Tokens(20_000)));
     assert!(expected > 0.0);
     assert!((fixed.energy.0 - expected).abs() < 1e-9);
+    Ok(())
+}
+
+// gpt-6-astra's price has a tier above 272,000 prompt tokens.
+#[test]
+fn a_call_above_a_price_tier_gets_the_same_parameter_set_as_one_below_it() -> Result<(), Error> {
+    let data = data::load(None)?;
+    let call = |cached: f64| {
+        usage(
+            "codex",
+            "openai",
+            "gpt-6-astra",
+            [1.0, cached, 2_000.0, 500.0, 0.0, 0.0],
+        )
+    };
+    let sets = |cached: f64| l1(&data, &[call(cached)]).parameter_sets;
+    assert_eq!(sets(100_000.0), ["frontier@gpt-6-astra"]);
+    assert_eq!(sets(400_000.0), sets(100_000.0));
     Ok(())
 }
 
@@ -471,7 +479,6 @@ fn one_call(client: &str, role: &str, model: &str) -> Usage {
         ],
     );
     call.role = role.to_owned();
-    call.prompt_above = 100_000;
     call
 }
 
@@ -480,16 +487,11 @@ fn larger(data: &Data, calls: &[Usage]) -> BTreeMap<String, LargerModel> {
 }
 
 #[test]
-fn a_larger_model_counts_its_energy_above_the_compared_model_at_its_tier() -> Result<(), Error> {
+fn a_larger_model_counts_its_energy_above_the_compared_model() -> Result<(), Error> {
     let data = data::load(None)?;
     let call = one_call("claude-code", "subagent", "claude-opus-5-5");
     let mut on_haiku = call.clone();
     on_haiku.model = "claude-haiku-5-5".to_owned();
-    assert_ne!(
-        data.parameter_set("claude-haiku-5-5", 100_000).record.id,
-        data.parameter_set("claude-haiku-5-5", 0).record.id,
-        "the compared model's own tier applies"
-    );
     // Closed models share every term but `b_in` and `b_out`, so the
     // difference is that of the whole calls.
     let energy = l1(&data, std::slice::from_ref(&call)).energy.base_case.0;
@@ -523,7 +525,7 @@ fn only_the_roles_and_clients_of_the_finding_count() -> Result<(), Error> {
 fn a_model_without_a_price_is_not_counted() -> Result<(), Error> {
     let data = data::load(None)?;
     let call = one_call("claude-code", "subagent", "claude-unpriced-9");
-    let set = data.parameter_set(&call.model, call.prompt_above);
+    let set = data.parameter_set(&call.model);
     assert!(set.matched && set.record.id == "frontier");
     assert!(larger(&data, &[call]).is_empty());
     Ok(())
@@ -534,11 +536,7 @@ fn only_the_per_token_terms_decide_and_size_the_difference() -> Result<(), Error
     let data = data::load(None)?;
     let call = one_call("claude-code", "subagent", "claude-opus-5-5");
     let before = larger(&data, std::slice::from_ref(&call))["claude-code"].difference;
-    let id = data
-        .parameter_set(&call.model, call.prompt_above)
-        .record
-        .id
-        .clone();
+    let id = data.parameter_set(&call.model).record.id.clone();
     let mut attention = data.clone();
     if let Some(set) = attention.priced_sets.get_mut(&id) {
         set.a_p_uj_per_pair.base_case *= 3.0;
