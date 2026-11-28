@@ -4,6 +4,17 @@ All notable changes to tokendraw are recorded in this file. The format is
 based on Keep a Changelog 1.1.0 (https://keepachangelog.com/en/1.1.0/),
 and tokendraw follows Semantic Versioning (https://semver.org/).
 
+## [Unreleased]
+
+### Security
+
+- The bundled SQLite is 3.54.1, past RUSTSEC-2026-0459
+  (https://rustsec.org/advisories/RUSTSEC-2026-0459): SQLite before 3.54.0
+  can return uninitialised memory to a process that opens a database
+  together with a `-wal` file of another page size. tokendraw opens only
+  its own ledger, so only someone who can write files beside the ledger
+  could cause it. A ledger written by 0.3.0 reads the same.
+
 ## [0.3.0] - 2026-10-15
 
 ### Added
