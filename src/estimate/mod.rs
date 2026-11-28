@@ -99,6 +99,9 @@ pub struct L1 {
     pub parameter_sets: Vec<String>,
     /// Model names no pattern matched, with their calls.
     pub unmatched_models: Vec<(String, u64)>,
+    /// Model names only a family record matched, with that record's id and
+    /// their calls.
+    pub family_models: Vec<(String, String, u64)>,
     /// Provider names no record named, with their calls.
     pub unmatched_providers: Vec<(String, u64)>,
     pub breakdown: Breakdown,
@@ -109,8 +112,7 @@ pub struct L1 {
 pub fn l1(data: &Data, usage: &[Usage]) -> L1 {
     let zero = Five::same(WattHours(0.0));
     let mut groups: BTreeMap<String, Group> = BTreeMap::new();
-    let mut unmatched_models: BTreeMap<String, u64> = BTreeMap::new();
-    let mut unmatched_providers: BTreeMap<String, u64> = BTreeMap::new();
+    let mut uncovered = Uncovered::default();
     let mut total = L1 {
         groups: Vec::new(),
         energy: zero,
@@ -120,20 +122,16 @@ pub fn l1(data: &Data, usage: &[Usage]) -> L1 {
         emissions_quality: None,
         parameter_sets: Vec::new(),
         unmatched_models: Vec::new(),
+        family_models: Vec::new(),
         unmatched_providers: Vec::new(),
         breakdown: Breakdown::default(),
         calls: 0,
     };
     let mut sets = BTreeSet::new();
     for row in usage {
+        uncovered.add(data, row);
         let set = data.parameter_set(&row.model);
-        if !set.matched {
-            *unmatched_models.entry(row.model.clone()).or_default() += row.calls;
-        }
         let provider = data.provider(&row.provider);
-        if !provider.matched {
-            *unmatched_providers.entry(row.provider.clone()).or_default() += row.calls;
-        }
         let (set, provider) = (set.record, provider.record);
         sets.insert(set.id.clone());
         let energy_label = parameter_label(set).max(provider.provider.pue.label);
@@ -199,9 +197,41 @@ pub fn l1(data: &Data, usage: &[Usage]) -> L1 {
     }
     total.groups = groups.into_values().collect();
     total.parameter_sets = sets.into_iter().collect();
-    total.unmatched_models = unmatched_models.into_iter().collect();
-    total.unmatched_providers = unmatched_providers.into_iter().collect();
+    total.unmatched_models = uncovered.models.into_iter().collect();
+    total.family_models = uncovered
+        .family_models
+        .into_iter()
+        .map(|((name, record), calls)| (name, record, calls))
+        .collect();
+    total.unmatched_providers = uncovered.providers.into_iter().collect();
     total
+}
+
+/// The calls of models and providers without a data record of their own.
+#[derive(Default)]
+struct Uncovered {
+    models: BTreeMap<String, u64>,
+    /// Keyed by model name and family record id.
+    family_models: BTreeMap<(String, String), u64>,
+    providers: BTreeMap<String, u64>,
+}
+
+impl Uncovered {
+    fn add(&mut self, data: &Data, row: &Usage) {
+        match data.model(&row.model) {
+            None => *self.models.entry(row.model.clone()).or_default() += row.calls,
+            Some(model) if model.is_family() => {
+                *self
+                    .family_models
+                    .entry((row.model.clone(), model.id.clone()))
+                    .or_default() += row.calls;
+            }
+            Some(_) => {}
+        }
+        if !data.provider(&row.provider).matched {
+            *self.providers.entry(row.provider.clone()).or_default() += row.calls;
+        }
+    }
 }
 
 /// Adds the calls of `row`, also those without fixed context, so the mean

@@ -1,6 +1,5 @@
 ---
 source: tests/cli.rs
-assertion_line: 1804
 expression: "marked.report(&[\"--redact\"])?"
 ---
 tokendraw report, all calls
@@ -43,5 +42,5 @@ Where the energy goes (base case)
 1 finding below 10% of the energy: `tokendraw findings`
 
 No data record for model example-large, model example-small; a data override
-can add one, and `--verbose` shows what was used instead.
+can add the missing records, and `--verbose` shows what was used instead.
 Data overrides in effect: override 1.

@@ -1,6 +1,5 @@
 ---
 source: tests/cli.rs
-assertion_line: 1803
 expression: without_platform(&json)?
 ---
 {
@@ -12,7 +11,7 @@ expression: without_platform(&json)?
   },
   "data_version": {
     "id": "2026-11-28",
-    "shipped_sha256": "3acaf4c0e2ce1eca98a0a938edf9b3b6899b7b67a961b1ef169a03ded898fa54",
+    "shipped_sha256": "cc8c085812532b6d18fe056306875a5912a27ed413b2ba3b6f73744af4400f7f",
     "overrides": [
       {
         "path": "override 1",
@@ -386,7 +385,8 @@ expression: without_platform(&json)?
         "calls": 1
       }
     ],
-    "providers": []
+    "providers": [],
+    "family_models": []
   },
   "projects": [
     {

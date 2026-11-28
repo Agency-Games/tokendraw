@@ -1,6 +1,5 @@
 ---
 source: tests/cli.rs
-assertion_line: 626
 expression: stdout(&output)
 ---
 tokendraw report, all calls
@@ -101,7 +100,7 @@ model-choice
   `tokendraw findings --since <tomorrow>`
 
 Data sources
-  data version                2026-11-28, shipped sha256 3acaf4c0e2ce, no
+  data version                2026-11-28, shipped sha256 cc8c08581253, no
                               overrides
   energy per call             parameter sets frontier,
                               frontier@claude-opus-5-5,

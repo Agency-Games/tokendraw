@@ -6,8 +6,21 @@ and tokendraw follows Semantic Versioning (https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- `report` names the models that only a family record such as `gpt-*` or
+  `claude-*` covers. The note below the report names them, `--verbose`
+  adds their calls under "models without data", and the JSON's
+  `unmatched.family_models` gives their calls, the family record and the
+  parameter set it gave. Such a model has no data of its own, so a new
+  model id now shows up in the first report that has its calls.
+
 ### Changed
 
+- Breaking: a data override's model record with a prefix pattern and no
+  price needs `family = true` if it covers a family of models or `family =
+  false` if it covers the dated or aliased ids of one model. tokendraw
+  refuses an override without it and names the record.
 - Data version 2026-11-28. The attention and cache reload terms of the
   `frontier` set (`a_p`, `a_d` and `c0`), which every closed model uses,
   now come from the open-weight models whose configurations the data

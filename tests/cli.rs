@@ -913,7 +913,11 @@ fn report_computes_hand_worked_values_with_overridden_data() -> TestResult {
         json["unmatched"],
         serde_json::json!({
             "models": [{"name": "mystery", "calls": 1}],
-            "providers": [{"name": "nowhere", "calls": 1}]
+            "providers": [{"name": "nowhere", "calls": 1}],
+            "family_models": [
+                {"name": "claude-test", "calls": 1, "record": "claude", "parameter_set": "frontier"},
+                {"name": "gpt-test", "calls": 1, "record": "gpt", "parameter_set": "frontier"}
+            ]
         })
     );
     let records = &json["data_version"]["overrides"][0]["records"];
@@ -1054,7 +1058,7 @@ fn report_text_names_the_data_and_its_quality() -> TestResult {
     assert!(!text.contains("Electricity"), "{text}");
     assert!(!text.contains("Data sources"), "{text}");
     assert!(
-        words(&text).contains("No data record for model mystery, provider nowhere; "),
+        words(&text).contains("No data record for model mystery, provider nowhere, and only a family record covers model claude-test, model gpt-test; a data override can add the missing records, "),
         "{text}"
     );
     assert!(
@@ -1075,7 +1079,7 @@ fn report_text_names_the_data_and_its_quality() -> TestResult {
         "{text}"
     );
     assert!(
-        prose.contains("models without data mystery (1 call), so the frontier parameter set "),
+        prose.contains("models without data mystery (1 call), claude-test (family claude, 1 call), gpt-test (family gpt, 1 call), so the frontier parameter set "),
         "{text}"
     );
     let verbose = stdout(&run(

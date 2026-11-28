@@ -1,16 +1,15 @@
 ---
 source: tests/cli.rs
-assertion_line: 484
 expression: without_stale(&stdout(&output))
 ---
-data 2026-11-28, shipped sha256 3acaf4c0e2ce1eca98a0a938edf9b3b6899b7b67a961b1ef169a03ded898fa54
+data 2026-11-28, shipped sha256 cc8c085812532b6d18fe056306875a5912a27ed413b2ba3b6f73744af4400f7f
 shipped files, sha256
   data/data.toml                      55164ade0262e40c348f4129e274f18846b9a1e9422cafe1e1801c90f03381d0
   data/energy/parameter-sets.toml     5d7ae5ced225e6eedf471555bf3657ec7e675ee85d7639d95931736dc5aeb012
   data/energy/open-weight-sets.toml   febd3b991b1c362ccb49c4b429bd3ab80ad890f64ccfdcc24c06de1a8069d8d0
   data/energy/price-calibration.toml  2d15a1ac59eb51e70f88335074ff340f577031a7ab2bfb508542784e034d715a
   data/energy/prices.toml             7d14d82ed10dc963332a669ee9a8433a8dc02328166bc315e5f82d5611c5c025
-  data/energy/models.toml             cec9d4bf7012815bfe855f55249f2775f137fda66e9ddaf96fd418993a9cf99c
+  data/energy/models.toml             885afe180d7795626b51f4befddde76ab1488fa2d116c9c8d4a31524c5648f58
   data/providers.toml                 eeaabbb01f5db1fa15f24f60ef46dbc91655fe1aab6ba4729c3f48cd41134cf9
   data/grid/ember.toml                3ddbe09b98b603d46a2354c71b6fb5983a7de374bfa1c0a61d6032656ebaf398
   data/discovery.toml                 d6e01b132e02c0ac5e8628f05a1cddae7b8e769ca55ccc5da19d50fbe07a2f06

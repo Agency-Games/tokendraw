@@ -300,6 +300,17 @@ pub struct Unmatched {
     pub models: Vec<Named>,
     /// Providers no record named; they use the unknown provider.
     pub providers: Vec<Named>,
+    /// Models only a family record matched; they use its parameter set.
+    pub family_models: Vec<FamilyModel>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct FamilyModel {
+    pub name: String,
+    pub calls: u64,
+    /// The id of the family record.
+    pub record: String,
+    pub parameter_set: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -553,10 +564,7 @@ pub fn build(
             })
             .collect(),
         grid,
-        unmatched: Unmatched {
-            models: named(&l1.unmatched_models),
-            providers: named(&l1.unmatched_providers),
-        },
+        unmatched: unmatched(data, &l1),
         projects: by_project.map(|rows| projects(data, rows)),
         unresolved: by_project.map(|rows| unresolved(data, rows)),
         breakdown: breakdown(&l1, data.long_context_tokens()),
@@ -676,6 +684,25 @@ fn l1_group(data: &Data, group: &estimate::Group) -> Group {
         sites_quality: provider.provider.label,
         pue: provider.provider.pue.five(),
         pue_label: provider.provider.pue.label,
+    }
+}
+
+fn unmatched(data: &Data, l1: &L1) -> Unmatched {
+    Unmatched {
+        models: named(&l1.unmatched_models),
+        providers: named(&l1.unmatched_providers),
+        family_models: l1
+            .family_models
+            .iter()
+            .filter_map(|(name, record, calls)| {
+                Some(FamilyModel {
+                    name: name.clone(),
+                    calls: *calls,
+                    record: record.clone(),
+                    parameter_set: data.set_of_model(record)?.id.clone(),
+                })
+            })
+            .collect(),
     }
 }
 

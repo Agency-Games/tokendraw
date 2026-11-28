@@ -255,8 +255,10 @@ published by a company and not verified, independent research, or the tool's
 default with a range.
 
 A provider that no data record names is computed with the record unknown,
-and a model that no record names with the frontier parameter set; without
---verbose a note names them. tokendraw data prints every record.
+and a model that no record names with the frontier parameter set. A model
+that only a family record such as gpt-* names has no data of its own either
+and uses that record's parameter set. Without --verbose a note names them
+all. tokendraw data prints every record.
 
 Calls are assigned to projects from labels and Git checkouts, as
 tokendraw projects --help explains. The report shows the emissions of each

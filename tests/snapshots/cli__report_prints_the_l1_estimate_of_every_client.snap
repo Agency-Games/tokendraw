@@ -1,6 +1,5 @@
 ---
 source: tests/cli.rs
-assertion_line: 617
 expression: stdout(&output)
 ---
 tokendraw report, all calls
@@ -79,5 +78,5 @@ model-choice
   To see the effect, run this after the change:
   `tokendraw findings --since <tomorrow>`
 
-No data record for provider litellm; a data override can add one, and
-`--verbose` shows what was used instead.
+No data record for provider litellm; a data override can add the missing
+record, and `--verbose` shows what was used instead.

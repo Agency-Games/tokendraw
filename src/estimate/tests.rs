@@ -366,6 +366,34 @@ fn calls_without_fixed_context_count_toward_the_finding() -> Result<(), Error> {
 }
 
 #[test]
+fn a_model_only_a_family_record_matches_is_counted_with_that_record() -> Result<(), Error> {
+    let data = data::load(None)?;
+    let tokens = [2.0, 0.0, 20.0, 4.0, 200.0, 80.0];
+    let rows = [
+        usage("claude-code", "anthropic", "claude-unreleased-9", tokens),
+        usage("codex", "openai", "gpt-unreleased-9", tokens),
+        usage("codex", "openai", "gpt-unreleased-9", tokens),
+        usage("claude-code", "anthropic", "claude-opus-5-5", tokens),
+        usage(
+            "claude-code",
+            "anthropic",
+            "claude-haiku-4-5-20251001",
+            tokens,
+        ),
+    ];
+    let estimate = l1(&data, &rows);
+    assert_eq!(
+        estimate.family_models,
+        [
+            ("claude-unreleased-9".to_owned(), "claude".to_owned(), 2),
+            ("gpt-unreleased-9".to_owned(), "gpt".to_owned(), 4),
+        ]
+    );
+    assert_eq!(estimate.unmatched_models, []);
+    Ok(())
+}
+
+#[test]
 fn an_unmatched_model_and_provider_use_the_fallbacks_and_are_counted() -> Result<(), Error> {
     let data = data::load(None)?;
     let rows = [

@@ -157,6 +157,11 @@ pub struct Model {
     pub id: String,
     /// An exact model name, or a prefix followed by `*`.
     pub pattern: String,
+    /// For a prefix pattern without a price: whether it covers a family of
+    /// models, which a report then names as without a record of their own,
+    /// or the dated or aliased ids of one model.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub family: Option<bool>,
     pub parameter_set: String,
     /// The list price whose weight terms replace the set's `b_in` and
     /// `b_out`.
@@ -168,6 +173,14 @@ pub struct Model {
     pub basis: String,
     #[serde(deserialize_with = "toml_date")]
     pub reviewed: Date,
+}
+
+impl Model {
+    /// True when the record says it covers a family of models.
+    #[must_use]
+    pub fn is_family(&self) -> bool {
+        self.family == Some(true)
+    }
 }
 
 /// A closed model's list price, from which its weight terms are derived.

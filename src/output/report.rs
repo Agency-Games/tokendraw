@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use std::fmt::Write as _;
 use std::io::{self, Write};
 
@@ -436,11 +437,33 @@ fn write_notes(out: &mut impl Write, report: &Report) -> io::Result<()> {
                 .map(|provider| format!("provider {}", provider.name)),
         )
         .collect();
+    let families: Vec<String> = unmatched
+        .family_models
+        .iter()
+        .map(|model| format!("model {}", model.name))
+        .collect();
+    let missing = match (names.is_empty(), families.is_empty()) {
+        (true, true) => None,
+        (false, true) => Some(format!("No data record for {}", names.join(", "))),
+        (true, false) => Some(format!(
+            "Only a family record covers {}",
+            families.join(", ")
+        )),
+        (false, false) => Some(format!(
+            "No data record for {}, and only a family record covers {}",
+            names.join(", "),
+            families.join(", ")
+        )),
+    };
+    let records = if names.len() + families.len() == 1 {
+        "record"
+    } else {
+        "records"
+    };
     let mut notes = Vec::new();
-    if !names.is_empty() {
+    if let Some(missing) = missing {
         notes.push(format!(
-            "No data record for {}; a data override can add one, and `--verbose` shows what was used instead.",
-            names.join(", ")
+            "{missing}; a data override can add the missing {records}, and `--verbose` shows what was used instead."
         ));
     }
     let overrides: Vec<&str> = report
@@ -918,19 +941,33 @@ fn data_version(report: &Report) -> String {
     )
 }
 
+/// The models without a record of their own, grouped by the parameter set
+/// they used.
 fn unmatched_models(report: &Report) -> Option<String> {
-    let models: Vec<String> = report
-        .unmatched
-        .models
-        .iter()
-        .map(|model| format!("{} ({})", model.name, calls(model.calls)))
+    let unmatched = &report.unmatched;
+    let mut by_set: BTreeMap<&str, Vec<String>> = BTreeMap::new();
+    for model in &unmatched.models {
+        by_set
+            .entry(FALLBACK_PARAMETER_SET)
+            .or_default()
+            .push(format!("{} ({})", model.name, calls(model.calls)));
+    }
+    for model in &unmatched.family_models {
+        by_set
+            .entry(&model.parameter_set)
+            .or_default()
+            .push(format!(
+                "{} (family {}, {})",
+                model.name,
+                model.record,
+                calls(model.calls)
+            ));
+    }
+    let groups: Vec<String> = by_set
+        .into_iter()
+        .map(|(set, models)| format!("{}, so the {set} parameter set", models.join(", ")))
         .collect();
-    (!models.is_empty()).then(|| {
-        format!(
-            "{}, so the {FALLBACK_PARAMETER_SET} parameter set",
-            models.join(", ")
-        )
-    })
+    (!groups.is_empty()).then(|| groups.join("; "))
 }
 
 fn band_cells(five: &Five<f64>, scale: f64) -> Vec<String> {

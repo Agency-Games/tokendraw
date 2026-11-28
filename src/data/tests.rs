@@ -74,9 +74,15 @@ fn parameter_set(id: &str, idle: &str) -> String {
     text
 }
 
+/// A model record; a prefix pattern covers a family.
 fn model(id: &str, pattern: &str) -> String {
+    let family = if pattern.ends_with('*') {
+        "family = true\n"
+    } else {
+        ""
+    };
     format!(
-        "[[model]]\nid = \"{id}\"\npattern = \"{pattern}\"\nparameter_set = \"frontier\"\nweights = \"closed\"\nlabel = \"C\"\nsources = [\"study\"]\nbasis = \"b\"\nreviewed = 2026-10-06\n"
+        "[[model]]\nid = \"{id}\"\npattern = \"{pattern}\"\n{family}parameter_set = \"frontier\"\nweights = \"closed\"\nlabel = \"C\"\nsources = [\"study\"]\nbasis = \"b\"\nreviewed = 2026-10-06\n"
     )
 }
 
@@ -117,11 +123,13 @@ fn price(id: &str, input: f64, output: f64, tiers: &[(u64, f64, f64)]) -> String
 }
 
 fn priced_model(id: &str, pattern: &str, price: &str) -> String {
-    model(id, pattern).replacen(
-        "parameter_set = \"frontier\"\n",
-        &format!("parameter_set = \"frontier\"\nprice = \"{price}\"\n"),
-        1,
-    )
+    model(id, pattern)
+        .replacen("family = true\n", "", 1)
+        .replacen(
+            "parameter_set = \"frontier\"\n",
+            &format!("parameter_set = \"frontier\"\nprice = \"{price}\"\n"),
+            1,
+        )
 }
 
 /// A calibration, a price with one tier and a model that names it.
@@ -401,6 +409,39 @@ fn two_models_with_the_same_pattern_are_refused() {
     let mut shipped = Shipped::new();
     shipped.energy.push_str(&model("again", "claude-*"));
     assert!(problem(shipped.load(&[])).contains("the same pattern as model"));
+}
+
+#[test]
+fn a_prefix_without_a_price_says_whether_it_covers_a_family() -> Result<(), Error> {
+    let one_model = model("kimi", "kimi-k2.6*").replacen("family = true", "family = false", 1);
+    let data = Shipped::new().load(&[("mine.toml", &one_model)])?;
+    let family = |name: &str| data.model(name).map(Model::is_family);
+    assert_eq!(family("claude-x"), Some(true));
+    assert_eq!(family("claude-opus-5"), Some(false), "an exact pattern");
+    assert_eq!(family("kimi-k2.6-turbo"), Some(false));
+    let haiku = Shipped::new().load(&[(
+        "mine.toml",
+        &(priced() + &priced_model("haiku", "claude-haiku-4-5*", "p")),
+    )])?;
+    assert!(
+        haiku
+            .model("claude-haiku-4-5-20251001")
+            .is_some_and(|model| !model.is_family()),
+        "a price is one model's"
+    );
+    let refused = |text: &str| problem(Shipped::new().load(&[("mine.toml", text)]));
+    let unsaid = model("claude", "claude-*").replacen("family = true\n", "", 1);
+    assert!(refused(&unsaid).contains("add family = true if it covers a family"));
+    let exact = model("odd", "claude-sonnet").replacen("pattern", "family = true\npattern", 1);
+    assert!(refused(&exact).contains("family applies to a prefix"));
+    let priced_family = priced()
+        + &model("odd", "claude-sonnet-*").replacen(
+            "parameter_set = \"frontier\"\n",
+            "parameter_set = \"frontier\"\nprice = \"p\"\n",
+            1,
+        );
+    assert!(refused(&priced_family).contains("a price is one model's"));
+    Ok(())
 }
 
 #[test]

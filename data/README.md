@@ -93,6 +93,16 @@ A model's `pattern` is an exact model name or a prefix followed by `*`; an
 exact match wins, then the longest prefix. A model that no pattern matches
 uses the `frontier` parameter set and is reported as unmatched.
 
+A record with a prefix pattern and no price says what it covers:
+`family = true` for a family of models such as `gpt-*`, or `family =
+false` for the dated or aliased ids of one model such as `kimi-k2.6*`.
+The report lists every model that only a family record matches, with its
+calls, so a new model id shows up in the first report that has its calls.
+A record of the model's own, with an exact pattern, takes it off the
+list. A price is one model's, so a priced prefix such as
+`claude-haiku-4-5*` takes no `family`, and neither does an exact pattern.
+Loading refuses a record that breaks these rules.
+
 ## Providers
 
 A provider's `id` is its name as the logs record it; a provider that no

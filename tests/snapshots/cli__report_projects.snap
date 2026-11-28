@@ -1,6 +1,5 @@
 ---
 source: tests/cli.rs
-assertion_line: 1246
 expression: "projects.shown(&[\"report\"])?"
 ---
 tokendraw report, all calls
@@ -33,4 +32,5 @@ Where the energy goes (base case)
   calls above 200,000 cached tokens   0%
 
 No data record for model example-medium, provider example-proxy; a data
-override can add one, and `--verbose` shows what was used instead.
+override can add the missing records, and `--verbose` shows what was used
+instead.

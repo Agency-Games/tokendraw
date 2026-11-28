@@ -1,5 +1,5 @@
 use super::load::{Merged, Origin, Records, SHIPPED_RECOVERY, invalid};
-use super::records::{ClientAction, Five, Label, Source};
+use super::records::{ClientAction, Five, Label, Model, Source};
 use super::{
     Error, FALLBACK_PARAMETER_SET, FALLBACK_PROVIDER, FINDINGS, Kind, LONG_CONTEXT, MODEL_CHOICE,
 };
@@ -190,6 +190,22 @@ fn check_action_model(
     }
 }
 
+/// A prefix pattern without a price says whether it covers a family; an
+/// exact pattern or a price covers one model, so neither takes the key.
+fn check_family(origin: &Origin, what: &str, model: &Model, prefix: bool) -> Result<(), Error> {
+    let problem = match (prefix, model.price.is_some(), model.family) {
+        (false, _, Some(_)) => "has an exact pattern and family; family applies to a prefix",
+        (true, true, Some(_)) => {
+            "has a price and family; a price is one model's, so leave family out"
+        }
+        (true, false, None) => {
+            "has a prefix pattern without a price; add family = true if it covers a family of models, or family = false if it covers the dated or aliased ids of one model"
+        }
+        _ => return Ok(()),
+    };
+    Err(invalid(origin, format!("{what} {problem}")))
+}
+
 fn check_models(merged: &Merged, origins: &[Origin]) -> Result<(), Error> {
     let sources = &merged.sources;
     for (id, (model, origin)) in &merged.models {
@@ -234,6 +250,7 @@ fn check_models(merged: &Merged, origins: &[Origin]) -> Result<(), Error> {
                 format!("{what} has the same pattern as model {other}"),
             ));
         }
+        check_family(origin, &what, model, model.pattern != prefix)?;
     }
     Ok(())
 }

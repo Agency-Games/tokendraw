@@ -46,6 +46,7 @@ fn l1(calls: u64, clients: &[(&str, f64, Calls)]) -> L1 {
         emissions_quality: None,
         parameter_sets: Vec::new(),
         unmatched_models: Vec::new(),
+        family_models: Vec::new(),
         unmatched_providers: Vec::new(),
         breakdown: Breakdown {
             by_client: clients
