@@ -47,8 +47,10 @@ reasoning = "/usage/reasoning_tokens"
 
 - `timestamp`, `model` and `provider` are required; `model` and
   `provider` come either from a field in `[fields]` or from `[values]`.
-  `[tokens]` needs `input` and `output`; `cache_read`, `cache_write` and
-  `reasoning` are optional, and a count missing from a line is zero.
+  `[tokens]` needs `input` and `output`, and a call line that lacks one
+  of them is unreadable. `cache_read`, `cache_write` and `reasoning` are
+  optional: a missing cache count is zero, and a missing reasoning count
+  is not recorded.
 - `input_includes_cache` (default `false`) says that `input` counts the
   cache reads and writes, so uncached input is input minus both.
   `output_includes_reasoning` (default `true`) says that `output` counts

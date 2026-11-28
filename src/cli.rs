@@ -220,9 +220,10 @@ the calls by provider.
 
 The emissions are those of layer L1, inference electricity: the energy of
 serving the calls, estimated per call from the tokens each reads and writes,
-times the grid intensity where the provider serves from. Holding a cache
-between calls, the embodied emissions of serving hardware, training and
-water are not estimated yet and do not appear in the output.
+times the grid intensity of the provider's sites, as the data lists or
+assumes them. Holding a cache between calls, the embodied emissions of
+serving hardware, training and water are not estimated yet and do not
+appear in the output.
 
 Model providers do not disclose per-token energy, attention design or
 serving hardware, so every figure is given in three cases. Each case
